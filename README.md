@@ -1,121 +1,164 @@
-# Clothing Dashboard - Flutter Mobile App
+# AteliePro Mobile
 
-A mobile dashboard application built with Flutter that mirrors the functionality of the React dashboard located at [/Users/s312/Desktop/start/clothing/dashboard-react](/Users/s312/Desktop/start/clothing/dashboard-react).
-
-## Features
-
-This Flutter mobile app includes screens for:
-
-- Login
-- Dashboard Overview
-- Orders Management
-- Clients Management
-- Finance Tracking
-- Analytics & Reports
-- Team Management
-- Payroll
-- Position Management
-- Billing & Subscriptions
-- Reporting with AI
-- Workflows
-- Templates
-- Product Management
-- CRM
-- Settings
-
-## Screenshots
-
-![Dashboard](assets/dashboard.png)
-_Dashboard Overview_
-
-![Orders](assets/orders.png)
-_Orders Management_
-
-![Team](assets/team.png)
-_Team Management_
+Flutter mobile application for the AteliePro platform. Designed for employees to manage orders, track work, and access client information on the go.
 
 ## Tech Stack
 
-- **Flutter**: Cross-platform mobile development framework
-- **Dart**: Programming language
-- **Provider**: State management
-- **HTTP**: API communication
-- **Syncfusion**: Charts and data visualization
+- **Flutter** - Cross-platform mobile framework
+- **Dart** - Programming language
+- **Riverpod** - State management
+- **Dio** - HTTP client
+- **Syncfusion** - Charts and data visualization
 
 ## Getting Started
 
 ### Prerequisites
 
-- Flutter SDK (3.0 or higher)
+- Flutter SDK 3.0+
 - Dart SDK
 - Android Studio or VS Code
 - iOS Simulator or Android Emulator
 
 ### Installation
 
-1. Clone the repository:
+```bash
+flutter pub get
+```
 
-   ```bash
-   git clone <repository-url>
-   ```
+### Configuration
 
-2. Navigate to the project directory:
+Update API URL in `lib/services/api_service.dart`:
 
-   ```bash
-   cd mobile_flutter
-   ```
+```dart
+static const String baseUrl = 'http://localhost:3000/api/v1';
+```
 
-3. Install dependencies:
+### Running
 
-   ```bash
-   flutter pub get
-   ```
+```bash
+# Run on connected device/emulator
+flutter run
 
-4. Run the app:
-   ```bash
-   flutter run
-   ```
+# Run on specific device
+flutter run -d <device_id>
+```
 
 ## Project Structure
 
 ```
 lib/
-├── main.dart                 # Entry point
-├── providers/                # State management providers
-├── screens/                  # All screen widgets
-├── widgets/                  # Reusable UI components
-├── services/                 # API and business logic
-├── models/                   # Data models
-└── utils/                    # Utility functions
+├── main.dart              # Entry point
+├── providers/             # Riverpod state providers
+│   ├── auth_provider.dart
+│   ├── orders_provider.dart
+│   └── ...
+├── screens/               # App screens
+│   ├── login_screen.dart
+│   ├── dashboard_screen.dart
+│   ├── orders_screen.dart
+│   ├── clients_screen.dart
+│   └── ...
+├── services/              # API and business logic
+│   ├── api_service.dart
+│   ├── auth_service.dart
+│   └── ...
+├── models/                # Data models
+│   ├── order.dart
+│   ├── client.dart
+│   └── ...
+├── widgets/               # Reusable UI components
+│   ├── order_card.dart
+│   ├── status_badge.dart
+│   └── ...
+└── utils/                 # Utility functions
+    ├── constants.dart
+    └── helpers.dart
+```
+
+## Features
+
+### Screens
+
+- **Login** - Employee authentication
+- **Dashboard** - Overview with today's tasks
+- **Orders** - Order list and details
+- **Clients** - Client information and measurements
+- **Work Logs** - Track work time and progress
+- **Finance** - View transactions
+- **Analytics** - Business metrics
+- **Settings** - Profile and preferences
+
+### State Management
+
+Using Riverpod for reactive state:
+
+```dart
+final ordersProvider = FutureProvider<List<Order>>((ref) async {
+  final api = ref.read(apiServiceProvider);
+  return api.getOrders();
+});
+```
+
+### Authentication
+
+JWT-based with secure token storage:
+
+```dart
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  return AuthNotifier();
+});
+```
+
+## Building
+
+### Android
+
+```bash
+# Debug APK
+flutter build apk --debug
+
+# Release APK
+flutter build apk --release
+
+# App Bundle (for Play Store)
+flutter build appbundle
+```
+
+### iOS
+
+```bash
+# Debug build
+flutter build ios --debug
+
+# Release build
+flutter build ios --release
 ```
 
 ## Development
 
-To add new features:
+### Adding New Screens
 
-1. Create a new screen in `lib/screens/`
-2. Add the route in `lib/main.dart`
-3. Add navigation in the bottom navigation bar
+1. Create screen in `lib/screens/`
+2. Add route in `lib/main.dart`
+3. Create provider if needed in `lib/providers/`
 
-## Building for Production
+### Code Style
 
 ```bash
-# Build for Android
-flutter build apk
+# Analyze code
+flutter analyze
 
-# Build for iOS
-flutter build ios
+# Format code
+dart format lib/
 ```
 
-## Contributing
+## Scripts
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a pull request
-
-## License
-
-This project is licensed under the MIT License.
-# fin-mobile
+| Command | Description |
+|---------|-------------|
+| `flutter pub get` | Install dependencies |
+| `flutter run` | Run on device/emulator |
+| `flutter build apk` | Build Android APK |
+| `flutter build ios` | Build iOS app |
+| `flutter test` | Run tests |
+| `flutter analyze` | Analyze code |

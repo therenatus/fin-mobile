@@ -20,9 +20,6 @@ class ClientFormScreen extends StatefulWidget {
 class _ClientFormScreenState extends State<ClientFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _telegramController = TextEditingController();
-  final _notesController = TextEditingController();
 
   bool _isSubmitting = false;
   bool _isSearchingUser = false;
@@ -36,10 +33,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   void initState() {
     super.initState();
     if (widget.client != null) {
-      _phoneController.text = widget.client!.contacts.phone ?? '';
       _emailController.text = widget.client!.contacts.email ?? '';
-      _telegramController.text = widget.client!.contacts.telegram ?? '';
-      _notesController.text = widget.client!.notes ?? '';
     }
   }
 
@@ -47,9 +41,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   void dispose() {
     _debounceTimer?.cancel();
     _emailController.dispose();
-    _phoneController.dispose();
-    _telegramController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -111,26 +102,12 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       final api = ApiService(StorageService());
 
       if (isEditMode) {
-        await api.updateClient(
-          id: widget.client!.id,
-          phone: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : null,
-          telegram: _telegramController.text.trim().isNotEmpty
-              ? _telegramController.text.trim()
-              : null,
-          notes: _notesController.text.trim().isNotEmpty
-              ? _notesController.text.trim()
-              : null,
-        );
+        await api.updateClient(id: widget.client!.id);
       } else {
         // Create client linked to found ClientUser
         await api.createClient(
           name: _foundUser!['name'],
           email: _emailController.text.trim(),
-          phone: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : null,
         );
       }
 
@@ -297,46 +274,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
             ],
-
-            // Phone (optional)
-            _buildSectionTitle('Телефон'),
-            const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              controller: _phoneController,
-              decoration: _inputDecoration(
-                hint: '+7 999 123-45-67',
-                icon: Icons.phone_outlined,
-              ),
-              keyboardType: TextInputType.phone,
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Telegram (optional)
-            _buildSectionTitle('Telegram'),
-            const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              controller: _telegramController,
-              decoration: _inputDecoration(
-                hint: '@username',
-                icon: Icons.telegram,
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Notes
-            _buildSectionTitle('Заметки'),
-            const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              controller: _notesController,
-              decoration: _inputDecoration(
-                hint: 'Дополнительная информация...',
-                icon: Icons.notes_outlined,
-              ),
-              maxLines: 3,
-              textCapitalization: TextCapitalization.sentences,
-            ),
 
             const SizedBox(height: AppSpacing.xl),
 
