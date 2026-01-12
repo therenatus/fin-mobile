@@ -6,218 +6,64 @@ import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import 'storage_service.dart';
+import 'base_api_service.dart';
 
-void _log(String message) {
-  debugPrint('[ApiService] $message');
+/// Exception class for ApiService
+class ApiException extends BaseApiException {
+  ApiException(
+    super.message, {
+    super.statusCode,
+    super.data,
+    super.isNetworkError,
+  });
 }
 
-class ApiException implements Exception {
-  final String message;
-  final int? statusCode;
-  final dynamic data;
-  final bool isNetworkError;
+class ApiService extends BaseApiService {
+  ApiService(StorageService storage) : super(storage);
 
-  ApiException(this.message, {this.statusCode, this.data, this.isNetworkError = false});
+  // ==================== ABSTRACT METHOD IMPLEMENTATIONS ====================
 
   @override
-  String toString() => message;
-}
+  String get logPrefix => '[ApiService]';
 
-/// Helper to handle network errors
-Future<T> _withNetworkErrorHandling<T>(Future<T> Function() request) async {
-  try {
-    return await request();
-  } on SocketException catch (_) {
-    throw ApiException(
-      'Не удалось подключиться к серверу. Проверьте интернет-соединение.',
-      isNetworkError: true,
-    );
-  } on TimeoutException catch (_) {
-    throw ApiException(
-      'Сервер не отвечает. Попробуйте позже.',
-      isNetworkError: true,
-    );
-  } on HttpException catch (_) {
-    throw ApiException(
-      'Ошибка соединения с сервером.',
-      isNetworkError: true,
-    );
-  } on HandshakeException catch (_) {
-    throw ApiException(
-      'Ошибка безопасного соединения.',
-      isNetworkError: true,
-    );
-  }
-}
+  @override
+  String get authRefreshEndpoint => '/auth/refresh';
 
-class ApiService {
-  // API URL from build-time configuration
-  // Usage: flutter build apk --dart-define=API_URL=https://api.yourdomain.com/api/v1
-  static const String _apiUrl = String.fromEnvironment('API_URL', defaultValue: '');
+  @override
+  Future<String?> getAccessToken() => storage.getAccessToken();
 
-  static String get baseUrl {
-    // If API_URL is configured via dart-define, use it
-    if (_apiUrl.isNotEmpty) {
-      return _apiUrl;
-    }
+  @override
+  Future<String?> getRefreshToken() => storage.getRefreshToken();
 
-    // Fallback for development
-    if (kIsWeb) {
-      return 'http://localhost:4000/api/v1';
-    }
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the special alias to host machine from Android emulator
-      return 'http://10.0.2.2:4000/api/v1';
-    }
-    // iOS Simulator uses localhost
-    return 'http://localhost:4000/api/v1';
-  }
+  @override
+  Future<void> saveTokens(String accessToken, String refreshToken) =>
+      storage.saveTokens(accessToken, refreshToken);
 
-  /// Callback для обработки истечения сессии
-  static VoidCallback? onSessionExpired;
+  @override
+  Future<void> clearTokens() => storage.clearTokens();
 
-  final StorageService _storage;
-
-  ApiService(this._storage);
-
-  Future<Map<String, String>> _getHeaders({bool auth = true}) async {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
-    if (auth) {
-      final token = await _storage.getAccessToken();
-      if (token != null) {
-        headers['Authorization'] = 'Bearer $token';
-      }
-    }
-
-    return headers;
-  }
-
-  /// Wrapper для автоматического retry при 401 после refresh токена
-  Future<T> _withRetry<T>(Future<T> Function() request) async {
-    try {
-      return await request();
-    } on ApiException catch (e) {
-      if (e.message == 'Retry' && e.statusCode == 401) {
-        // Повторяем запрос с обновлёнными токенами
-        return await request();
-      }
-      rethrow;
-    }
-  }
-
-  Future<T> _handleResponse<T>(
-    http.Response response,
-    T Function(Map<String, dynamic>) fromJson,
-  ) async {
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      if (body['success'] == true && body['data'] != null) {
-        return fromJson(body['data'] as Map<String, dynamic>);
-      }
-      return fromJson(body);
-    }
-
-    if (response.statusCode == 401) {
-      // Try to refresh token
-      final refreshed = await _refreshToken();
-      if (!refreshed) {
-        throw ApiException('Сессия истекла. Войдите снова.', statusCode: 401);
-      }
-      throw ApiException('Retry', statusCode: 401);
-    }
-
-    final errorMessage = body['error']?['message'] ??
-                         body['message'] ??
-                         'Произошла ошибка';
-    throw ApiException(errorMessage, statusCode: response.statusCode, data: body);
-  }
-
-  Future<List<T>> _handleListResponse<T>(
-    http.Response response,
-    T Function(Map<String, dynamic>) fromJson,
-    String key,
-  ) async {
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      final data = body['data'] ?? body;
-      // If data is already a list, use it directly; otherwise try to get by key
-      List<dynamic> list;
-      if (data is List) {
-        list = data;
-      } else if (data is Map && data[key] != null) {
-        list = data[key] as List<dynamic>;
-      } else {
-        list = [];
-      }
-      return list.map((e) => fromJson(e as Map<String, dynamic>)).toList();
-    }
-
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshToken();
-      if (!refreshed) {
-        // Вызываем callback для выхода из приложения
-        onSessionExpired?.call();
-        throw ApiException('Сессия истекла', statusCode: 401);
-      }
-      throw ApiException('Retry', statusCode: 401);
-    }
-
-    throw ApiException(
-      body['error']?['message'] ?? 'Произошла ошибка',
-      statusCode: response.statusCode,
-    );
-  }
-
-  Future<bool> _refreshToken() async {
-    try {
-      final refreshToken = await _storage.getRefreshToken();
-      if (refreshToken == null) return false;
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/refresh'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $refreshToken',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
-        final data = body['data'] ?? body;
-        await _storage.saveTokens(
-          data['accessToken'] as String,
-          data['refreshToken'] as String,
-        );
-        return true;
-      }
-
-      await _storage.clearTokens();
-      return false;
-    } catch (e) {
-      await _storage.clearTokens();
-      return false;
-    }
-  }
+  @override
+  ApiException createException(
+    String message, {
+    int? statusCode,
+    dynamic data,
+    bool isNetworkError = false,
+  }) =>
+      ApiException(message, statusCode: statusCode, data: data, isNetworkError: isNetworkError);
 
   // ==================== AUTH ====================
 
   Future<AuthResponse> login(String email, String password) async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final url = '$baseUrl/auth/login';
-      _log('LOGIN: Attempting login to $url');
-      _log('LOGIN: Email: $email');
+      log('LOGIN: Attempting login to $url');
+      log('LOGIN: Email: $email');
 
-      final headers = await _getHeaders(auth: false);
-      _log('LOGIN: Headers: $headers');
+      final headers = await getHeaders(auth: false);
+      log('LOGIN: Headers: $headers');
 
       final requestBody = jsonEncode({'email': email, 'password': password});
-      _log('LOGIN: Request body: $requestBody');
+      log('LOGIN: Request body: $requestBody');
 
       final response = await http.post(
         Uri.parse(url),
@@ -225,17 +71,17 @@ class ApiService {
         body: requestBody,
       ).timeout(const Duration(seconds: 15));
 
-      _log('LOGIN: Response status: ${response.statusCode}');
-      _log('LOGIN: Response body: ${response.body}');
+      log('LOGIN: Response status: ${response.statusCode}');
+      log('LOGIN: Response body: ${response.body}');
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = body['data'] ?? body;
         final authResponse = AuthResponse.fromJson(data as Map<String, dynamic>);
-        await _storage.saveTokens(authResponse.accessToken, authResponse.refreshToken);
-        await _storage.saveUser(authResponse.user);
-        _log('LOGIN: Success! User: ${authResponse.user.email}');
+        await storage.saveTokens(authResponse.accessToken, authResponse.refreshToken);
+        await storage.saveUser(authResponse.user);
+        log('LOGIN: Success! User: ${authResponse.user.email}');
         return authResponse;
       }
 
@@ -250,10 +96,10 @@ class ApiService {
   }
 
   Future<AuthResponse> register(String email, String password, String tenantName) async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/signup'),
-        headers: await _getHeaders(auth: false),
+        headers: await getHeaders(auth: false),
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -261,9 +107,9 @@ class ApiService {
         }),
       ).timeout(const Duration(seconds: 15));
 
-      final authResponse = await _handleResponse(response, AuthResponse.fromJson);
-      await _storage.saveTokens(authResponse.accessToken, authResponse.refreshToken);
-      await _storage.saveUser(authResponse.user);
+      final authResponse = await handleResponse(response, AuthResponse.fromJson);
+      await storage.saveTokens(authResponse.accessToken, authResponse.refreshToken);
+      await storage.saveUser(authResponse.user);
 
       return authResponse;
     });
@@ -273,21 +119,21 @@ class ApiService {
     try {
       await http.post(
         Uri.parse('$baseUrl/auth/logout'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       );
     } finally {
-      await _storage.clearAll();
+      await storage.clearAll();
     }
   }
 
   Future<Map<String, dynamic>> getProfile() async {
-    _log('getProfile: calling $baseUrl/auth/me');
+    log('getProfile: calling $baseUrl/auth/me');
     final response = await http.get(
       Uri.parse('$baseUrl/auth/me'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    _log('getProfile: status=${response.statusCode}, body=${response.body}');
+    log('getProfile: status=${response.statusCode}, body=${response.body}');
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body['data'] ?? body;
@@ -301,7 +147,7 @@ class ApiService {
   Future<void> changePassword(String currentPassword, String newPassword) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/change-password'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'currentPassword': currentPassword,
         'newPassword': newPassword,
@@ -318,8 +164,8 @@ class ApiService {
   }
 
   Future<User> uploadAvatar(File file) async {
-    final token = await _storage.getAccessToken();
-    _log('uploadAvatar: file=${file.path}');
+    final token = await getAccessToken();
+    log('uploadAvatar: file=${file.path}');
 
     final request = http.MultipartRequest(
       'POST',
@@ -338,24 +184,24 @@ class ApiService {
     );
     request.files.add(multipartFile);
 
-    _log('uploadAvatar: sending to $baseUrl/auth/profile/avatar');
+    log('uploadAvatar: sending to $baseUrl/auth/profile/avatar');
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
-    _log('uploadAvatar: status=${response.statusCode}, body=${response.body}');
+    log('uploadAvatar: status=${response.statusCode}, body=${response.body}');
 
-    final user = await _handleResponse(response, User.fromJson);
-    await _storage.saveUser(user);
+    final user = await handleResponse(response, User.fromJson);
+    await storage.saveUser(user);
     return user;
   }
 
   Future<User> deleteAvatar() async {
     final response = await http.delete(
       Uri.parse('$baseUrl/auth/profile/avatar'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    final user = await _handleResponse(response, User.fromJson);
-    await _storage.saveUser(user);
+    final user = await handleResponse(response, User.fromJson);
+    await storage.saveUser(user);
     return user;
   }
 
@@ -377,18 +223,18 @@ class ApiService {
     if (sortOrder != null) queryParams['sortOrder'] = sortOrder;
 
     final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
-    final response = await http.get(uri, headers: await _getHeaders());
+    final response = await http.get(uri, headers: await getHeaders());
 
-    return _handleResponse(response, OrdersResponse.fromJson);
+    return handleResponse(response, OrdersResponse.fromJson);
   }
 
   Future<Order> getOrder(String id) async {
     final response = await http.get(
       Uri.parse('$baseUrl/orders/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, Order.fromJson);
+    return handleResponse(response, Order.fromJson);
   }
 
   Future<Order> createOrder({
@@ -399,7 +245,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/orders'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'clientId': clientId,
         'modelId': modelId,
@@ -408,17 +254,17 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, Order.fromJson);
+    return handleResponse(response, Order.fromJson);
   }
 
   Future<Order> updateOrderStatus(String id, String status) async {
     final response = await http.put(
       Uri.parse('$baseUrl/orders/$id/status'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({'status': status}),
     );
 
-    return _handleResponse(response, Order.fromJson);
+    return handleResponse(response, Order.fromJson);
   }
 
   // ==================== CLIENTS ====================
@@ -430,7 +276,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/clients/search-user?email=${Uri.encodeComponent(email)}'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -443,41 +289,23 @@ class ApiService {
   }
 
   Future<List<Client>> getClients({int page = 1, int limit = 20}) async {
-    return _getListWithRetry(
+    return getListWithRetry(
       () async => http.get(
         Uri.parse('$baseUrl/clients?page=$page&limit=$limit'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       ),
       Client.fromJson,
       'clients',
     );
   }
 
-  Future<List<T>> _getListWithRetry<T>(
-    Future<http.Response> Function() request,
-    T Function(Map<String, dynamic>) fromJson,
-    String key,
-  ) async {
-    try {
-      final response = await request();
-      return await _handleListResponse(response, fromJson, key);
-    } on ApiException catch (e) {
-      if (e.message == 'Retry') {
-        // Token was refreshed, retry the request
-        final response = await request();
-        return await _handleListResponse(response, fromJson, key);
-      }
-      rethrow;
-    }
-  }
-
   Future<Client> getClient(String id) async {
     final response = await http.get(
       Uri.parse('$baseUrl/clients/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, Client.fromJson);
+    return handleResponse(response, Client.fromJson);
   }
 
   Future<Client> createClient({
@@ -487,14 +315,14 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/clients'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'name': name,
         'contacts': {'email': email, 'phone': phone},
       }),
     );
 
-    return _handleResponse(response, Client.fromJson);
+    return handleResponse(response, Client.fromJson);
   }
 
   Future<Client> updateClient({
@@ -507,7 +335,7 @@ class ApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/clients/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
         'contacts': {
@@ -519,13 +347,13 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, Client.fromJson);
+    return handleResponse(response, Client.fromJson);
   }
 
   Future<void> deleteClient(String id) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/clients/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -543,51 +371,51 @@ class ApiService {
   Future<List<OrderModel>> getClientAssignedModels(String clientId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/clients/$clientId/models'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, OrderModel.fromJson, 'models');
+    return handleListResponse(response, OrderModel.fromJson, 'models');
   }
 
   /// Add models to client (merges with existing assignments)
   Future<Client> assignModelsToClient(String clientId, List<String> modelIds) async {
     final response = await http.post(
       Uri.parse('$baseUrl/clients/$clientId/models'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({'modelIds': modelIds}),
     );
 
-    return _handleResponse(response, Client.fromJson);
+    return handleResponse(response, Client.fromJson);
   }
 
   /// Set assigned models for client (replaces all existing assignments)
   Future<Client> setClientAssignedModels(String clientId, List<String> modelIds) async {
     final response = await http.put(
       Uri.parse('$baseUrl/clients/$clientId/models'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({'modelIds': modelIds}),
     );
 
-    return _handleResponse(response, Client.fromJson);
+    return handleResponse(response, Client.fromJson);
   }
 
   /// Remove a single model from client's assignments
   Future<Client> unassignModelFromClient(String clientId, String modelId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/clients/$clientId/models/$modelId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, Client.fromJson);
+    return handleResponse(response, Client.fromJson);
   }
 
   // ==================== MODELS ====================
 
   Future<List<OrderModel>> getModels({int page = 1, int limit = 50}) async {
-    return _getListWithRetry(
+    return getListWithRetry(
       () async => http.get(
         Uri.parse('$baseUrl/models?page=$page&limit=$limit'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       ),
       OrderModel.fromJson,
       'models',
@@ -597,10 +425,10 @@ class ApiService {
   Future<OrderModel> getModel(String id) async {
     final response = await http.get(
       Uri.parse('$baseUrl/models/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, OrderModel.fromJson);
+    return handleResponse(response, OrderModel.fromJson);
   }
 
   Future<OrderModel> createModel({
@@ -611,7 +439,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/models'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'name': name,
         if (category != null) 'category': category,
@@ -620,7 +448,7 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, OrderModel.fromJson);
+    return handleResponse(response, OrderModel.fromJson);
   }
 
   Future<OrderModel> updateModel({
@@ -632,7 +460,7 @@ class ApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/models/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
         if (category != null) 'category': category,
@@ -641,13 +469,13 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, OrderModel.fromJson);
+    return handleResponse(response, OrderModel.fromJson);
   }
 
   Future<void> deleteModel(String id) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/models/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -660,7 +488,7 @@ class ApiService {
   }
 
   Future<OrderModel> uploadModelImage(String modelId, File file) async {
-    final token = await _storage.getAccessToken();
+    final token = await getAccessToken();
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$baseUrl/models/$modelId/image'),
@@ -671,16 +499,16 @@ class ApiService {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
-    return _handleResponse(response, OrderModel.fromJson);
+    return handleResponse(response, OrderModel.fromJson);
   }
 
   Future<OrderModel> deleteModelImage(String modelId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/models/$modelId/image'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, OrderModel.fromJson);
+    return handleResponse(response, OrderModel.fromJson);
   }
 
   // ==================== WORK LOGS (PAYROLL) ====================
@@ -688,10 +516,10 @@ class ApiService {
   Future<List<WorkLog>> getWorkLogs() async {
     final response = await http.get(
       Uri.parse('$baseUrl/payroll/worklogs'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, WorkLog.fromJson, 'worklogs');
+    return handleListResponse(response, WorkLog.fromJson, 'worklogs');
   }
 
   Future<WorkLog> createWorkLog({
@@ -704,7 +532,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/payroll/worklogs'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'employeeId': employeeId,
         'orderId': orderId,
@@ -715,7 +543,7 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, WorkLog.fromJson);
+    return handleResponse(response, WorkLog.fromJson);
   }
 
   // ==================== PAYROLL ====================
@@ -723,10 +551,10 @@ class ApiService {
   Future<List<Payroll>> getPayrolls() async {
     final response = await http.get(
       Uri.parse('$baseUrl/payroll'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, Payroll.fromJson, 'payrolls');
+    return handleListResponse(response, Payroll.fromJson, 'payrolls');
   }
 
   Future<Payroll> generatePayroll({
@@ -735,14 +563,14 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/payroll/generate'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'periodStart': periodStart.toIso8601String(),
         'periodEnd': periodEnd.toIso8601String(),
       }),
     );
 
-    return _handleResponse(response, Payroll.fromJson);
+    return handleResponse(response, Payroll.fromJson);
   }
 
   // ==================== PROCESS STEPS ====================
@@ -750,10 +578,10 @@ class ApiService {
   Future<List<ProcessStep>> getProcessSteps(String modelId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/models/$modelId/steps'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, ProcessStep.fromJson, 'steps');
+    return handleListResponse(response, ProcessStep.fromJson, 'steps');
   }
 
   Future<ProcessStep> createProcessStep({
@@ -767,7 +595,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/models/$modelId/steps'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'stepOrder': stepOrder,
         'name': name,
@@ -778,7 +606,7 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, ProcessStep.fromJson);
+    return handleResponse(response, ProcessStep.fromJson);
   }
 
   Future<ProcessStep> updateProcessStep({
@@ -792,7 +620,7 @@ class ApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/models/steps/$stepId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         if (stepOrder != null) 'stepOrder': stepOrder,
         if (name != null) 'name': name,
@@ -803,13 +631,13 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, ProcessStep.fromJson);
+    return handleResponse(response, ProcessStep.fromJson);
   }
 
   Future<void> deleteProcessStep(String stepId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/models/steps/$stepId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -826,10 +654,10 @@ class ApiService {
   Future<AnalyticsDashboard> getAnalyticsDashboard({String period = 'month'}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/analytics/dashboard?period=$period'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, AnalyticsDashboard.fromJson);
+    return handleResponse(response, AnalyticsDashboard.fromJson);
   }
 
   Future<DashboardStats> getDashboardStats({String period = 'month'}) async {
@@ -852,17 +680,17 @@ class ApiService {
 
     final response = await http.get(
       uri,
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode == 200) {
-      final body = json.decode(response.body) as Map<String, dynamic>;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
       // Extract data field from response wrapper
       final data = body['data'] ?? body;
       return data as Map<String, dynamic>;
     } else if (response.statusCode == 401) {
       // Try to refresh token
-      final refreshed = await _refreshToken();
+      final refreshed = await refreshToken();
       if (!refreshed) {
         onSessionExpired?.call();
         throw ApiException('Сессия истекла', statusCode: 401);
@@ -870,10 +698,10 @@ class ApiService {
       // Retry request after token refresh
       final retryResponse = await http.get(
         uri,
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       );
       if (retryResponse.statusCode == 200) {
-        final body = json.decode(retryResponse.body) as Map<String, dynamic>;
+        final body = jsonDecode(retryResponse.body) as Map<String, dynamic>;
         final data = body['data'] ?? body;
         return data as Map<String, dynamic>;
       }
@@ -908,10 +736,10 @@ class ApiService {
 
     final response = await http.get(
       uri,
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, Transaction.fromJson, 'transactions');
+    return handleListResponse(response, Transaction.fromJson, 'transactions');
   }
 
   Future<Transaction> createTransaction({
@@ -924,7 +752,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/finance/transactions'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'date': date.toIso8601String(),
         'type': type,
@@ -935,13 +763,13 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, Transaction.fromJson);
+    return handleResponse(response, Transaction.fromJson);
   }
 
   Future<void> deleteTransaction(String id) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/finance/transactions/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -966,10 +794,10 @@ class ApiService {
 
     final response = await http.get(
       uri,
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, FinanceReport.fromJson);
+    return handleResponse(response, FinanceReport.fromJson);
   }
 
   // ==================== EMPLOYEE ROLES ====================
@@ -977,10 +805,10 @@ class ApiService {
   Future<List<EmployeeRole>> getEmployeeRoles() async {
     final response = await http.get(
       Uri.parse('$baseUrl/employee-roles'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, EmployeeRole.fromJson, 'roles');
+    return handleListResponse(response, EmployeeRole.fromJson, 'roles');
   }
 
   // ==================== EMPLOYEES ====================
@@ -1001,10 +829,10 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/employees?${params.join('&')}'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, Employee.fromJson, 'employees');
+    return handleListResponse(response, Employee.fromJson, 'employees');
   }
 
   Future<List<Map<String, dynamic>>> getEmployeeWorkLogs(
@@ -1022,7 +850,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(url),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     final body = jsonDecode(response.body);
@@ -1059,7 +887,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(url),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     final body = jsonDecode(response.body);
@@ -1094,7 +922,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(url),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     final body = jsonDecode(response.body);
@@ -1112,10 +940,10 @@ class ApiService {
   Future<Employee> getEmployee(String id) async {
     final response = await http.get(
       Uri.parse('$baseUrl/employees/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, Employee.fromJson);
+    return handleResponse(response, Employee.fromJson);
   }
 
   Future<Employee> createEmployee({
@@ -1126,7 +954,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/employees'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'name': name,
         'role': role,
@@ -1135,7 +963,7 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, Employee.fromJson);
+    return handleResponse(response, Employee.fromJson);
   }
 
   Future<Employee> updateEmployee({
@@ -1147,7 +975,7 @@ class ApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/employees/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
         if (role != null) 'role': role,
@@ -1156,13 +984,13 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, Employee.fromJson);
+    return handleResponse(response, Employee.fromJson);
   }
 
   Future<void> deleteEmployee(String id) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/employees/$id'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -1179,10 +1007,10 @@ class ApiService {
   Future<List<OrderAssignment>> getOrderAssignments(String orderId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/orders/$orderId/assignments'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, OrderAssignment.fromJson, 'assignments');
+    return handleListResponse(response, OrderAssignment.fromJson, 'assignments');
   }
 
   Future<OrderAssignment> createOrderAssignment({
@@ -1192,20 +1020,20 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/orders/$orderId/assignments'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'stepName': stepName,
         'employeeId': employeeId,
       }),
     );
 
-    return _handleResponse(response, OrderAssignment.fromJson);
+    return handleResponse(response, OrderAssignment.fromJson);
   }
 
   Future<void> deleteOrderAssignment(String orderId, String assignmentId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/orders/$orderId/assignments/$assignmentId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -1224,17 +1052,17 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/notifications/devices/register'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
         body: jsonEncode({'playerId': playerId}),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        _log('Push device registered successfully');
+        log('Push device registered successfully');
       } else {
-        _log('Failed to register push device: ${response.statusCode}');
+        log('Failed to register push device: ${response.statusCode}');
       }
     } catch (e) {
-      _log('Error registering push device: $e');
+      log('Error registering push device: $e');
     }
   }
 
@@ -1243,16 +1071,16 @@ class ApiService {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/notifications/devices/unregister'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        _log('Push device unregistered successfully');
+        log('Push device unregistered successfully');
       } else {
-        _log('Failed to unregister push device: ${response.statusCode}');
+        log('Failed to unregister push device: ${response.statusCode}');
       }
     } catch (e) {
-      _log('Error unregistering push device: $e');
+      log('Error unregistering push device: $e');
     }
   }
 
@@ -1262,30 +1090,30 @@ class ApiService {
   Future<Forecast> getOrdersForecast({int days = 7}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/ml/forecast/orders?days=$days'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, Forecast.fromJson);
+    return handleResponse(response, Forecast.fromJson);
   }
 
   /// Get revenue forecast for specified days
   Future<Forecast> getRevenueForecast({int days = 7}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/ml/forecast/revenue?days=$days'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, Forecast.fromJson);
+    return handleResponse(response, Forecast.fromJson);
   }
 
   /// Get AI-generated business insights
   Future<BusinessInsights> getBusinessInsights() async {
     final response = await http.get(
       Uri.parse('$baseUrl/ml/insights'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, BusinessInsights.fromJson);
+    return handleResponse(response, BusinessInsights.fromJson);
   }
 
   /// Generate AI report
@@ -1296,7 +1124,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/ml/report'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'type': type,
         if (periodStart != null) 'periodStart': periodStart,
@@ -1304,7 +1132,7 @@ class ApiService {
       }),
     );
 
-    return _handleResponse(response, MlReport.fromJson);
+    return handleResponse(response, MlReport.fromJson);
   }
 
   /// Get report history
@@ -1317,20 +1145,20 @@ class ApiService {
 
     final response = await http.get(
       uri,
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, MlReport.fromJson, 'reports');
+    return handleListResponse(response, MlReport.fromJson, 'reports');
   }
 
   /// Get ML usage info and limits
   Future<MlUsageInfo> getMlUsageInfo() async {
     final response = await http.get(
       Uri.parse('$baseUrl/ml/usage'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, MlUsageInfo.fromJson);
+    return handleResponse(response, MlUsageInfo.fromJson);
   }
 
   // ==================== BILLING / SUBSCRIPTIONS ====================
@@ -1339,34 +1167,34 @@ class ApiService {
   Future<List<SubscriptionPlan>> getSubscriptionPlans() async {
     final response = await http.get(
       Uri.parse('$baseUrl/billing/plans'),
-      headers: await _getHeaders(auth: false),
+      headers: await getHeaders(auth: false),
     );
 
-    return _handleListResponse(response, SubscriptionPlan.fromJson, 'plans');
+    return handleListResponse(response, SubscriptionPlan.fromJson, 'plans');
   }
 
   /// Get current resource usage and limits
   Future<ResourceUsage> getResourceUsage() async {
     final response = await http.get(
       Uri.parse('$baseUrl/billing/usage'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, ResourceUsage.fromJson);
+    return handleResponse(response, ResourceUsage.fromJson);
   }
 
   /// Get current subscription
   Future<Subscription?> getCurrentSubscription() async {
     final response = await http.get(
       Uri.parse('$baseUrl/billing/subscription'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode == 404) {
       return null;
     }
 
-    return _handleResponse(response, Subscription.fromJson);
+    return handleResponse(response, Subscription.fromJson);
   }
 
   /// Verify Google Play purchase
@@ -1376,14 +1204,14 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/billing/verify/google-play'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'productId': productId,
         'purchaseToken': purchaseToken,
       }),
     );
 
-    return _handleResponse(response, Subscription.fromJson);
+    return handleResponse(response, Subscription.fromJson);
   }
 
   /// Verify App Store purchase
@@ -1392,12 +1220,12 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/billing/verify/app-store'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'receiptData': receiptData,
       }),
     );
 
-    return _handleResponse(response, Subscription.fromJson);
+    return handleResponse(response, Subscription.fromJson);
   }
 }

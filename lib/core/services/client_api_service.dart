@@ -1,213 +1,61 @@
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import '../models/client_user.dart';
 import 'storage_service.dart';
+import 'base_api_service.dart';
 
-void _log(String message) {
-  debugPrint('[ClientApiService] $message');
+/// Exception class for ClientApiService
+class ClientApiException extends BaseApiException {
+  ClientApiException(
+    super.message, {
+    super.statusCode,
+    super.isNetworkError,
+  });
 }
 
-class ClientApiException implements Exception {
-  final String message;
-  final int? statusCode;
-  final bool isNetworkError;
+class ClientApiService extends BaseApiService {
+  ClientApiService(StorageService storage) : super(storage);
 
-  ClientApiException(this.message, {this.statusCode, this.isNetworkError = false});
+  // ==================== ABSTRACT METHOD IMPLEMENTATIONS ====================
 
   @override
-  String toString() => message;
-}
+  String get logPrefix => '[ClientApiService]';
 
-/// Helper to handle network errors
-Future<T> _withNetworkErrorHandling<T>(Future<T> Function() request) async {
-  try {
-    return await request();
-  } on SocketException catch (_) {
-    throw ClientApiException(
-      'Не удалось подключиться к серверу. Проверьте интернет-соединение.',
-      isNetworkError: true,
-    );
-  } on TimeoutException catch (_) {
-    throw ClientApiException(
-      'Сервер не отвечает. Попробуйте позже.',
-      isNetworkError: true,
-    );
-  } on HttpException catch (_) {
-    throw ClientApiException(
-      'Ошибка соединения с сервером.',
-      isNetworkError: true,
-    );
-  } on HandshakeException catch (_) {
-    throw ClientApiException(
-      'Ошибка безопасного соединения.',
-      isNetworkError: true,
-    );
-  }
-}
+  @override
+  String get authRefreshEndpoint => '/client/auth/refresh';
 
-class ClientApiService {
-  // API URL from build-time configuration
-  // Usage: flutter build apk --dart-define=API_URL=https://api.yourdomain.com/api/v1
-  static const String _apiUrl = String.fromEnvironment('API_URL', defaultValue: '');
+  @override
+  Future<String?> getAccessToken() => storage.getClientAccessToken();
 
-  static String get baseUrl {
-    // If API_URL is configured via dart-define, use it
-    if (_apiUrl.isNotEmpty) {
-      return _apiUrl;
-    }
+  @override
+  Future<String?> getRefreshToken() => storage.getClientRefreshToken();
 
-    // Fallback for development
-    if (kIsWeb) {
-      return 'http://localhost:4000/api/v1';
-    }
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the special alias to host machine from Android emulator
-      return 'http://10.0.2.2:4000/api/v1';
-    }
-    // iOS Simulator uses localhost
-    return 'http://localhost:4000/api/v1';
-  }
+  @override
+  Future<void> saveTokens(String accessToken, String refreshToken) =>
+      storage.saveClientTokens(accessToken, refreshToken);
 
-  /// Callback для обработки истечения сессии
-  static VoidCallback? onSessionExpired;
+  @override
+  Future<void> clearTokens() => storage.clearClientTokens();
 
-  final StorageService _storage;
-
-  ClientApiService(this._storage);
-
-  Future<Map<String, String>> _getHeaders({bool auth = true}) async {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
-    if (auth) {
-      final token = await _storage.getClientAccessToken();
-      if (token != null) {
-        headers['Authorization'] = 'Bearer $token';
-      }
-    }
-
-    return headers;
-  }
-
-  /// Wrapper для автоматического retry при 401 после refresh токена
-  Future<T> _withRetry<T>(Future<T> Function() request) async {
-    try {
-      return await request();
-    } on ClientApiException catch (e) {
-      if (e.message == 'Retry' && e.statusCode == 401) {
-        // Повторяем запрос с обновлёнными токенами
-        return await request();
-      }
-      rethrow;
-    }
-  }
-
-  Future<T> _handleResponse<T>(
-    http.Response response,
-    T Function(Map<String, dynamic>) fromJson,
-  ) async {
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      if (body['data'] != null) {
-        return fromJson(body['data'] as Map<String, dynamic>);
-      }
-      return fromJson(body);
-    }
-
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshToken();
-      if (!refreshed) {
-        onSessionExpired?.call();
-        throw ClientApiException('Сессия истекла. Войдите снова.',
-            statusCode: 401);
-      }
-      throw ClientApiException('Retry', statusCode: 401);
-    }
-
-    final errorMessage =
-        body['error']?['message'] ?? body['message'] ?? 'Произошла ошибка';
-    throw ClientApiException(errorMessage, statusCode: response.statusCode);
-  }
-
-  Future<List<T>> _handleListResponse<T>(
-    http.Response response,
-    T Function(Map<String, dynamic>) fromJson,
-  ) async {
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      final data = body['data'] ?? body;
-      if (data is List) {
-        return data.map((e) => fromJson(e as Map<String, dynamic>)).toList();
-      }
-      return (data as List<dynamic>)
-          .map((e) => fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
-
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshToken();
-      if (!refreshed) {
-        onSessionExpired?.call();
-        throw ClientApiException('Сессия истекла. Войдите снова.',
-            statusCode: 401);
-      }
-      throw ClientApiException('Retry', statusCode: 401);
-    }
-
-    throw ClientApiException(
-      body['error']?['message'] ?? 'Произошла ошибка',
-      statusCode: response.statusCode,
-    );
-  }
-
-  Future<bool> _refreshToken() async {
-    try {
-      final refreshToken = await _storage.getClientRefreshToken();
-      if (refreshToken == null) return false;
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/client/auth/refresh'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $refreshToken',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
-        final data = body['data'] ?? body;
-        await _storage.saveClientTokens(
-          data['accessToken'] as String,
-          data['refreshToken'] as String,
-        );
-        return true;
-      }
-
-      await _storage.clearClientTokens();
-      return false;
-    } catch (e) {
-      await _storage.clearClientTokens();
-      return false;
-    }
-  }
+  @override
+  ClientApiException createException(
+    String message, {
+    int? statusCode,
+    dynamic data,
+    bool isNetworkError = false,
+  }) =>
+      ClientApiException(message, statusCode: statusCode, isNetworkError: isNetworkError);
 
   // ==================== AUTH ====================
 
   Future<ClientAuthResponse> login({String? email, String? phone, required String password}) async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final url = '$baseUrl/client/auth/login';
-      _log('LOGIN: Attempting client login to $url');
+      log('LOGIN: Attempting client login to $url');
 
       final response = await http.post(
         Uri.parse(url),
-        headers: await _getHeaders(auth: false),
+        headers: await getHeaders(auth: false),
         body: jsonEncode({
           if (email != null) 'email': email,
           if (phone != null) 'phone': phone,
@@ -215,16 +63,16 @@ class ClientApiService {
         }),
       ).timeout(const Duration(seconds: 15));
 
-      _log('LOGIN: Response status: ${response.statusCode}');
+      log('LOGIN: Response status: ${response.statusCode}');
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = body['data'] ?? body;
         final authResponse = ClientAuthResponse.fromJson(data as Map<String, dynamic>);
-        await _storage.saveClientTokens(
+        await storage.saveClientTokens(
             authResponse.accessToken, authResponse.refreshToken);
-        await _storage.saveClientUser(authResponse.user);
+        await storage.saveClientUser(authResponse.user);
         return authResponse;
       }
 
@@ -244,10 +92,10 @@ class ClientApiService {
     required String password,
     required String name,
   }) async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final response = await http.post(
         Uri.parse('$baseUrl/client/auth/register'),
-        headers: await _getHeaders(auth: false),
+        headers: await getHeaders(auth: false),
         body: jsonEncode({
           if (email != null) 'email': email,
           if (phone != null) 'phone': phone,
@@ -257,10 +105,10 @@ class ClientApiService {
       ).timeout(const Duration(seconds: 15));
 
       final authResponse =
-          await _handleResponse(response, ClientAuthResponse.fromJson);
-      await _storage.saveClientTokens(
+          await handleResponse(response, ClientAuthResponse.fromJson);
+      await storage.saveClientTokens(
           authResponse.accessToken, authResponse.refreshToken);
-      await _storage.saveClientUser(authResponse.user);
+      await storage.saveClientUser(authResponse.user);
 
       return authResponse;
     });
@@ -270,57 +118,57 @@ class ClientApiService {
     try {
       await http.post(
         Uri.parse('$baseUrl/client/auth/logout'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       );
     } finally {
-      await _storage.clearClientTokens();
+      await storage.clearClientTokens();
     }
   }
 
   Future<ClientUser> getProfile() async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final response = await http.get(
         Uri.parse('$baseUrl/client/auth/me'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
-      return _handleResponse(response, ClientUser.fromJson);
+      return handleResponse(response, ClientUser.fromJson);
     });
   }
 
   // ==================== PORTAL ====================
 
   Future<List<TenantLink>> getMyTenants() async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final response = await http.get(
         Uri.parse('$baseUrl/client/portal/tenants'),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
-      return _handleListResponse(response, TenantLink.fromJson);
+      return handleListResponse(response, TenantLink.fromJson);
     });
   }
 
   Future<TenantLink> linkToTenant(String tenantId, {String? name}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/client/portal/tenants/link'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'tenantId': tenantId,
         if (name != null) 'name': name,
       }),
     );
 
-    return _handleResponse(response, TenantLink.fromJson);
+    return handleResponse(response, TenantLink.fromJson);
   }
 
   Future<List<ClientOrderModel>> getTenantModels(String tenantId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/client/portal/tenants/$tenantId/models'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleListResponse(response, ClientOrderModel.fromJson);
+    return handleListResponse(response, ClientOrderModel.fromJson);
   }
 
   Future<ClientOrdersResponse> getMyOrders({
@@ -329,7 +177,7 @@ class ClientApiService {
     int limit = 20,
     String? status,
   }) async {
-    return _withNetworkErrorHandling(() async {
+    return withNetworkErrorHandling(() async {
       final params = <String>['page=$page', 'limit=$limit'];
       if (tenantId != null) params.add('tenantId=$tenantId');
       if (status != null) params.add('status=$status');
@@ -338,20 +186,20 @@ class ClientApiService {
 
       final response = await http.get(
         Uri.parse(url),
-        headers: await _getHeaders(),
+        headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
-      return _handleResponse(response, ClientOrdersResponse.fromJson);
+      return handleResponse(response, ClientOrdersResponse.fromJson);
     });
   }
 
   Future<ClientOrder> getOrder(String orderId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/client/portal/orders/$orderId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
-    return _handleResponse(response, ClientOrder.fromJson);
+    return handleResponse(response, ClientOrder.fromJson);
   }
 
   Future<ClientOrder> createOrder({
@@ -362,7 +210,7 @@ class ClientApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/client/portal/orders'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         'tenantId': tenantId,
         'modelId': modelId,
@@ -371,7 +219,7 @@ class ClientApiService {
       }),
     );
 
-    return _handleResponse(response, ClientOrder.fromJson);
+    return handleResponse(response, ClientOrder.fromJson);
   }
 
   Future<ClientOrder> updateOrder({
@@ -382,7 +230,7 @@ class ClientApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/client/portal/orders/$orderId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
       body: jsonEncode({
         if (modelId != null) 'modelId': modelId,
         if (quantity != null) 'quantity': quantity,
@@ -390,13 +238,13 @@ class ClientApiService {
       }),
     );
 
-    return _handleResponse(response, ClientOrder.fromJson);
+    return handleResponse(response, ClientOrder.fromJson);
   }
 
   Future<void> cancelOrder(String orderId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/client/portal/orders/$orderId'),
-      headers: await _getHeaders(),
+      headers: await getHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {

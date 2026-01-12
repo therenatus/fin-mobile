@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
@@ -11,10 +12,18 @@ void _log(String message) {
 
 enum AppState { initial, loading, authenticated, unauthenticated, error }
 
+/// Main application provider that manages auth state and coordinates other providers.
+///
+/// This is a refactored version that delegates to specialized providers:
+/// - ThemeProvider: theme mode management
+/// - AuthProvider: authentication (internal - use this for auth in manager mode)
+/// - DashboardProvider: dashboard data (use via AppProvider for now)
+/// - OrdersProvider: orders pagination (use via AppProvider for now)
 class AppProvider with ChangeNotifier {
   final StorageService _storage;
   late final ApiService _api;
 
+  // Auth state
   AppState _state = AppState.initial;
   User? _user;
   String? _error;
@@ -37,12 +46,10 @@ class AppProvider with ChangeNotifier {
 
   AppProvider(this._storage) {
     _api = ApiService(_storage);
-    // Регистрируем callback для обработки истечения сессии
     ApiService.onSessionExpired = _handleSessionExpired;
     _init();
   }
 
-  /// Обработка истечения сессии - выход без вызова API
   void _handleSessionExpired() {
     _log('Session expired - logging out');
     _storage.clearTokens();
@@ -52,7 +59,8 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Getters
+  // ============ Getters ============
+
   AppState get state => _state;
   User? get user => _user;
   String? get error => _error;
@@ -71,7 +79,6 @@ class AppProvider with ChangeNotifier {
   bool get isLoadingMoreOrders => _isLoadingMoreOrders;
   bool get hasMoreOrders => _hasMoreOrders;
 
-  /// Получить label роли по коду
   String getRoleLabel(String code) {
     final role = _employeeRoles.firstWhere(
       (r) => r.code == code,
@@ -80,7 +87,8 @@ class AppProvider with ChangeNotifier {
     return role.label;
   }
 
-  // Initialization
+  // ============ Initialization ============
+
   Future<void> _init() async {
     _state = AppState.loading;
     notifyListeners();
@@ -96,7 +104,6 @@ class AppProvider with ChangeNotifier {
         _user = await _storage.getUser();
         if (_user != null) {
           _state = AppState.authenticated;
-          // Load dashboard data in background
           _loadDashboardData();
         } else {
           _state = AppState.unauthenticated;
@@ -123,7 +130,8 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  // Auth methods
+  // ============ Auth Methods ============
+
   Future<bool> login(String email, String password) async {
     _log('login() called with email: $email');
     _state = AppState.loading;
@@ -138,10 +146,13 @@ class AppProvider with ChangeNotifier {
       _state = AppState.authenticated;
       notifyListeners();
 
-      // Load dashboard data
-      _loadDashboardData();
+      // Set Sentry user context for error tracking
+      Sentry.configureScope((scope) {
+        scope.setUser(SentryUser(id: _user!.id, email: _user!.email));
+        scope.setTag('tenant_id', _user!.tenantId);
+      });
 
-      // Register push notification device
+      _loadDashboardData();
       _registerPushDevice();
 
       return true;
@@ -161,23 +172,6 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  /// Register device for push notifications
-  Future<void> _registerPushDevice() async {
-    try {
-      final playerId = await NotificationService.instance.getPlayerId();
-      if (playerId != null && _user != null) {
-        await _api.registerPushDevice(playerId);
-        // Set user context for OneSignal
-        NotificationService.instance.setExternalUserId(_user!.id);
-        NotificationService.instance.setTenantTag(_user!.tenantId);
-        NotificationService.instance.setRoleTag('manager');
-        _log('Push device registered successfully');
-      }
-    } catch (e) {
-      _log('Failed to register push device: $e');
-    }
-  }
-
   Future<bool> register(String email, String password, String businessName) async {
     _state = AppState.loading;
     _error = null;
@@ -190,8 +184,6 @@ class AppProvider with ChangeNotifier {
       notifyListeners();
 
       _loadDashboardData();
-
-      // Register push notification device
       _registerPushDevice();
 
       return true;
@@ -210,28 +202,69 @@ class AppProvider with ChangeNotifier {
 
   Future<void> logout() async {
     try {
-      // Unregister push notification device
       await _api.unregisterPushDevice();
       NotificationService.instance.clearUser();
       await _api.logout();
     } finally {
       _user = null;
       _dashboardStats = null;
+      _analyticsDashboard = null;
+      _financeReport = null;
       _recentOrders = [];
       _clients = [];
       _state = AppState.unauthenticated;
+
+      // Clear Sentry user context
+      Sentry.configureScope((scope) {
+        scope.setUser(null);
+        scope.removeTag('tenant_id');
+      });
+
       notifyListeners();
     }
   }
 
-  /// Update user data (e.g. after avatar upload)
   void updateUser(User user) {
     _user = user;
     _storage.saveUser(user);
     notifyListeners();
   }
 
-  // Data loading
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  Future<void> _registerPushDevice() async {
+    try {
+      final playerId = await NotificationService.instance.getPlayerId();
+      if (playerId != null && _user != null) {
+        await _api.registerPushDevice(playerId);
+        NotificationService.instance.setExternalUserId(_user!.id);
+        NotificationService.instance.setTenantTag(_user!.tenantId);
+        NotificationService.instance.setRoleTag('manager');
+        _log('Push device registered successfully');
+      }
+    } catch (e) {
+      _log('Failed to register push device: $e');
+    }
+  }
+
+  // ============ Theme ============
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    final modeStr = mode == ThemeMode.light
+        ? 'light'
+        : mode == ThemeMode.dark
+            ? 'dark'
+            : 'system';
+    await _storage.saveThemeMode(modeStr);
+    notifyListeners();
+  }
+
+  // ============ Dashboard Data ============
+
   Future<void> _loadDashboardData() async {
     _isLoadingData = true;
     notifyListeners();
@@ -240,20 +273,18 @@ class AppProvider with ChangeNotifier {
     try {
       final profileData = await _api.getProfile();
       _log('Profile data: $profileData');
-      _log('avatarUrl from API: ${profileData['avatarUrl']}');
       _user = User.fromJson(profileData);
-      _log('User avatarUrl after parse: ${_user?.avatarUrl}');
       _storage.saveUser(_user!);
-      notifyListeners(); // Notify UI about updated user
+      notifyListeners();
     } catch (e) {
       _log('Failed to refresh user profile: $e');
     }
 
+    // Load analytics dashboard
     try {
       _analyticsDashboard = await _api.getAnalyticsDashboard(period: _analyticsPeriod);
       _dashboardStats = _analyticsDashboard?.summary;
     } catch (e) {
-      // Use mock stats
       _dashboardStats = _getMockStats();
       _analyticsDashboard = null;
     }
@@ -263,7 +294,6 @@ class AppProvider with ChangeNotifier {
       final ordersResponse = await _api.getOrders(page: 1, limit: 5);
       _recentOrders = ordersResponse.orders;
     } catch (e) {
-      // Ignore - use mock data
       _recentOrders = _getMockOrders();
     }
 
@@ -271,7 +301,6 @@ class AppProvider with ChangeNotifier {
     try {
       _clients = await _api.getClients(page: 1, limit: 10);
     } catch (e) {
-      // Ignore - use mock data
       _clients = _getMockClients();
     }
 
@@ -287,12 +316,11 @@ class AppProvider with ChangeNotifier {
       _financeReport = null;
     }
 
-    // Load employee roles (if not loaded)
+    // Load employee roles
     if (_employeeRoles.isEmpty) {
       try {
         _employeeRoles = await _api.getEmployeeRoles();
       } catch (e) {
-        // Use default roles if API fails
         _employeeRoles = [];
       }
     }
@@ -300,6 +328,73 @@ class AppProvider with ChangeNotifier {
     _isLoadingData = false;
     notifyListeners();
   }
+
+  Future<void> refreshDashboard() async {
+    await _loadDashboardData();
+  }
+
+  Future<void> setAnalyticsPeriod(String period) async {
+    if (_analyticsPeriod == period) return;
+    _analyticsPeriod = period;
+    await _loadDashboardData();
+  }
+
+  // ============ Orders Pagination ============
+
+  Future<void> refreshOrders({
+    String? status,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    _ordersPage = 1;
+    _hasMoreOrders = true;
+
+    try {
+      final response = await _api.getOrders(
+        page: 1,
+        limit: 20,
+        status: status,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+      );
+      _recentOrders = response.orders;
+      _hasMoreOrders = response.meta.page < response.meta.totalPages;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error refreshing orders: $e');
+    }
+  }
+
+  Future<void> loadMoreOrders({
+    String? status,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    if (_isLoadingMoreOrders || !_hasMoreOrders) return;
+
+    _isLoadingMoreOrders = true;
+    notifyListeners();
+
+    try {
+      final response = await _api.getOrders(
+        page: _ordersPage + 1,
+        limit: 20,
+        status: status,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+      );
+      _ordersPage++;
+      _recentOrders.addAll(response.orders);
+      _hasMoreOrders = response.meta.page < response.meta.totalPages;
+    } catch (e) {
+      debugPrint('Error loading more orders: $e');
+    } finally {
+      _isLoadingMoreOrders = false;
+      notifyListeners();
+    }
+  }
+
+  // ============ Mock Data ============
 
   DashboardStats _getMockStats() {
     return DashboardStats(
@@ -316,35 +411,6 @@ class AppProvider with ChangeNotifier {
     );
   }
 
-  Future<void> refreshDashboard() async {
-    await _loadDashboardData();
-  }
-
-  Future<void> setAnalyticsPeriod(String period) async {
-    if (_analyticsPeriod == period) return;
-    _analyticsPeriod = period;
-    await _loadDashboardData();
-  }
-
-  // Theme
-  Future<void> setThemeMode(ThemeMode mode) async {
-    _themeMode = mode;
-    final modeStr = mode == ThemeMode.light
-        ? 'light'
-        : mode == ThemeMode.dark
-            ? 'dark'
-            : 'system';
-    await _storage.saveThemeMode(modeStr);
-    notifyListeners();
-  }
-
-  // Clear error
-  void clearError() {
-    _error = null;
-    notifyListeners();
-  }
-
-  // Mock data for demo
   List<Order> _getMockOrders() {
     final now = DateTime.now();
     return [
@@ -392,28 +458,6 @@ class AppProvider with ChangeNotifier {
           basePrice: 35000,
         ),
       ),
-      Order(
-        id: '3',
-        clientId: '3',
-        modelId: '3',
-        quantity: 3,
-        status: OrderStatus.completed,
-        dueDate: now.subtract(const Duration(days: 1)),
-        createdAt: now.subtract(const Duration(days: 10)),
-        updatedAt: now,
-        client: Client(
-          id: '3',
-          name: 'Елена Козлова',
-          contacts: ClientContact(phone: '+7 999 111-22-33'),
-          createdAt: now,
-          updatedAt: now,
-        ),
-        model: OrderModel(
-          id: '3',
-          name: 'Свадебное платье',
-          basePrice: 85000,
-        ),
-      ),
     ];
   }
 
@@ -447,79 +491,6 @@ class AppProvider with ChangeNotifier {
         ordersCount: 15,
         totalSpent: 380000,
       ),
-      Client(
-        id: '4',
-        name: 'Ольга Новикова',
-        contacts: ClientContact(phone: '+7 999 444-55-66'),
-        createdAt: now.subtract(const Duration(days: 60)),
-        updatedAt: now,
-        ordersCount: 5,
-        totalSpent: 67000,
-      ),
-      Client(
-        id: '5',
-        name: 'Татьяна Морозова',
-        contacts: ClientContact(phone: '+7 999 777-88-99'),
-        createdAt: now.subtract(const Duration(days: 14)),
-        updatedAt: now,
-        ordersCount: 1,
-        totalSpent: 28000,
-      ),
     ];
-  }
-
-  /// Refresh orders with pagination reset
-  Future<void> refreshOrders({
-    String? status,
-    String? sortBy,
-    String? sortOrder,
-  }) async {
-    _ordersPage = 1;
-    _hasMoreOrders = true;
-
-    try {
-      final response = await _api.getOrders(
-        page: 1,
-        limit: 20,
-        status: status,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
-      );
-      _recentOrders = response.orders;
-      _hasMoreOrders = response.meta.page < response.meta.totalPages;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error refreshing orders: $e');
-    }
-  }
-
-  /// Load more orders for infinite scroll
-  Future<void> loadMoreOrders({
-    String? status,
-    String? sortBy,
-    String? sortOrder,
-  }) async {
-    if (_isLoadingMoreOrders || !_hasMoreOrders) return;
-
-    _isLoadingMoreOrders = true;
-    notifyListeners();
-
-    try {
-      final response = await _api.getOrders(
-        page: _ordersPage + 1,
-        limit: 20,
-        status: status,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
-      );
-      _ordersPage++;
-      _recentOrders.addAll(response.orders);
-      _hasMoreOrders = response.meta.page < response.meta.totalPages;
-    } catch (e) {
-      debugPrint('Error loading more orders: $e');
-    } finally {
-      _isLoadingMoreOrders = false;
-      notifyListeners();
-    }
   }
 }
