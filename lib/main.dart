@@ -3,12 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/providers/app_provider.dart';
 import 'core/providers/client_provider.dart';
 import 'core/providers/employee_provider.dart';
 import 'core/providers/subscription_provider.dart';
+import 'core/providers/theme_provider.dart';
+import 'core/providers/dashboard_provider.dart';
+import 'core/providers/orders_provider.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/local_notification_service.dart';
@@ -20,6 +24,9 @@ import 'features/employee_mode/shell/employee_app_shell.dart';
 
 // OneSignal App ID - replace with your actual app ID from OneSignal dashboard
 const String kOneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+
+// Sentry DSN - configure via flutter build --dart-define=SENTRY_DSN=...
+const String kSentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 
 // Maintenance mode - set to true when backend is down
 const bool kMaintenanceMode = false;
@@ -40,19 +47,59 @@ void main() async {
 
   final storageService = StorageService();
 
+  // Initialize Sentry if DSN is configured
+  if (kSentryDsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = kSentryDsn;
+        options.environment = const String.fromEnvironment('ENV', defaultValue: 'development');
+        options.tracesSampleRate = 0.1;
+      },
+      appRunner: () => _runApp(storageService),
+    );
+  } else {
+    _runApp(storageService);
+  }
+}
+
+void _runApp(StorageService storageService) {
   runApp(
     MultiProvider(
       providers: [
+        // Core services
         Provider<StorageService>.value(value: storageService),
+
+        // Theme provider (standalone)
+        ChangeNotifierProvider(create: (_) => ThemeProvider(storageService)),
+
+        // Main app provider (backward compatible)
         ChangeNotifierProvider(create: (_) => AppProvider(storageService)),
+
+        // Mode-specific providers
         ChangeNotifierProvider(create: (_) => ClientProvider(storageService)..init()),
         ChangeNotifierProvider(create: (_) => EmployeeProvider(storageService)..init()),
+
+        // Providers that depend on AppProvider.api
         ChangeNotifierProxyProvider<AppProvider, SubscriptionProvider>(
           create: (context) => SubscriptionProvider(
             context.read<AppProvider>().api,
           ),
           update: (context, appProvider, previous) =>
               previous ?? SubscriptionProvider(appProvider.api),
+        ),
+        ChangeNotifierProxyProvider<AppProvider, DashboardProvider>(
+          create: (context) => DashboardProvider(
+            context.read<AppProvider>().api,
+          ),
+          update: (context, appProvider, previous) =>
+              previous ?? DashboardProvider(appProvider.api),
+        ),
+        ChangeNotifierProxyProvider<AppProvider, OrdersProvider>(
+          create: (context) => OrdersProvider(
+            context.read<AppProvider>().api,
+          ),
+          update: (context, appProvider, previous) =>
+              previous ?? OrdersProvider(appProvider.api),
         ),
       ],
       child: const AtelieProApp(),
