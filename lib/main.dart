@@ -11,8 +11,6 @@ import 'core/providers/client_provider.dart';
 import 'core/providers/employee_provider.dart';
 import 'core/providers/subscription_provider.dart';
 import 'core/providers/theme_provider.dart';
-import 'core/providers/dashboard_provider.dart';
-import 'core/providers/orders_provider.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/local_notification_service.dart';
@@ -86,20 +84,6 @@ void _runApp(StorageService storageService) {
           ),
           update: (context, appProvider, previous) =>
               previous ?? SubscriptionProvider(appProvider.api),
-        ),
-        ChangeNotifierProxyProvider<AppProvider, DashboardProvider>(
-          create: (context) => DashboardProvider(
-            context.read<AppProvider>().api,
-          ),
-          update: (context, appProvider, previous) =>
-              previous ?? DashboardProvider(appProvider.api),
-        ),
-        ChangeNotifierProxyProvider<AppProvider, OrdersProvider>(
-          create: (context) => OrdersProvider(
-            context.read<AppProvider>().api,
-          ),
-          update: (context, appProvider, previous) =>
-              previous ?? OrdersProvider(appProvider.api),
         ),
       ],
       child: const AtelieProApp(),

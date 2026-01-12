@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (!_managerFormKey.currentState!.validate()) return;
 
     final appProvider = context.read<AppProvider>();
-    final storage = StorageService();
+    final storage = context.read<StorageService>();
 
     bool success;
     if (_isManagerRegister) {
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (!_clientFormKey.currentState!.validate()) return;
 
     final clientProvider = context.read<ClientProvider>();
-    final storage = StorageService();
+    final storage = context.read<StorageService>();
 
     bool success;
     if (_isClientRegister) {
@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (!_employeeFormKey.currentState!.validate()) return;
 
     final employeeProvider = context.read<EmployeeProvider>();
-    final storage = StorageService();
+    final storage = context.read<StorageService>();
 
     final success = await employeeProvider.login(
       email: _employeeEmailController.text.trim(),

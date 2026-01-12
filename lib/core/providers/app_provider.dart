@@ -13,12 +13,12 @@ void _log(String message) {
 
 enum AppState { initial, loading, authenticated, unauthenticated, error }
 
-/// Main application provider that manages auth state and coordinates other providers.
+/// Main application provider that manages authentication, dashboard data, and app state.
 ///
-/// This is a refactored version that delegates to specialized providers:
-/// - ThemeProvider: theme mode management
-/// - DashboardProvider: dashboard data (use via AppProvider for now)
-/// - OrdersProvider: orders pagination (use via AppProvider for now)
+/// Related providers:
+/// - ThemeProvider: theme mode management (separate provider)
+/// - ClientProvider: client mode authentication
+/// - EmployeeProvider: employee mode authentication
 class AppProvider with ChangeNotifier {
   final StorageService _storage;
   late final ApiService _api;
