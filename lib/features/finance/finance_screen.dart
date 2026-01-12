@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import 'transaction_form_screen.dart';
 
 class FinanceScreen extends StatefulWidget {
@@ -21,17 +22,28 @@ class _FinanceScreenState extends State<FinanceScreen> {
   FinanceReport? _report;
   List<Transaction> _transactions = [];
   String? _typeFilter; // null = all, 'income', 'expense'
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final now = DateTime.now();
       DateTime startDate;
 
@@ -297,7 +309,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
-                final api = ApiService(StorageService());
+                final api = _api;
                 await api.deleteTransaction(transaction.id);
                 _loadData();
                 if (mounted) {

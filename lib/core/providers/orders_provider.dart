@@ -14,6 +14,7 @@ class OrdersProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMore = true;
+  String? _error;
 
   OrdersProvider(this._api);
 
@@ -22,6 +23,7 @@ class OrdersProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMore => _hasMore;
+  String? get error => _error;
 
   Future<void> loadOrders({
     String? status,
@@ -32,6 +34,7 @@ class OrdersProvider with ChangeNotifier {
     _isLoading = true;
     _page = 1;
     _hasMore = true;
+    _error = null;
     notifyListeners();
 
     try {
@@ -46,7 +49,8 @@ class OrdersProvider with ChangeNotifier {
       _hasMore = response.meta.page < response.meta.totalPages;
     } catch (e) {
       _log('Error loading orders: $e');
-      _orders = _getMockOrders();
+      _orders = [];
+      _error = e.toString();
       _hasMore = false;
     }
 
@@ -111,78 +115,7 @@ class OrdersProvider with ChangeNotifier {
     _orders = [];
     _page = 1;
     _hasMore = true;
+    _error = null;
     notifyListeners();
-  }
-
-  List<Order> _getMockOrders() {
-    final now = DateTime.now();
-    return [
-      Order(
-        id: '1',
-        clientId: '1',
-        modelId: '1',
-        quantity: 2,
-        status: OrderStatus.inProgress,
-        dueDate: now.add(const Duration(days: 3)),
-        createdAt: now.subtract(const Duration(days: 2)),
-        updatedAt: now,
-        client: Client(
-          id: '1',
-          name: 'Анна Петрова',
-          contacts: ClientContact(phone: '+7 999 123-45-67'),
-          createdAt: now,
-          updatedAt: now,
-        ),
-        model: OrderModel(
-          id: '1',
-          name: 'Вечернее платье',
-          basePrice: 25000,
-        ),
-      ),
-      Order(
-        id: '2',
-        clientId: '2',
-        modelId: '2',
-        quantity: 1,
-        status: OrderStatus.pending,
-        dueDate: now.add(const Duration(days: 7)),
-        createdAt: now.subtract(const Duration(days: 1)),
-        updatedAt: now,
-        client: Client(
-          id: '2',
-          name: 'Мария Сидорова',
-          contacts: ClientContact(phone: '+7 999 765-43-21'),
-          createdAt: now,
-          updatedAt: now,
-        ),
-        model: OrderModel(
-          id: '2',
-          name: 'Деловой костюм',
-          basePrice: 35000,
-        ),
-      ),
-      Order(
-        id: '3',
-        clientId: '3',
-        modelId: '3',
-        quantity: 3,
-        status: OrderStatus.completed,
-        dueDate: now.subtract(const Duration(days: 1)),
-        createdAt: now.subtract(const Duration(days: 10)),
-        updatedAt: now,
-        client: Client(
-          id: '3',
-          name: 'Елена Козлова',
-          contacts: ClientContact(phone: '+7 999 111-22-33'),
-          createdAt: now,
-          updatedAt: now,
-        ),
-        model: OrderModel(
-          id: '3',
-          name: 'Свадебное платье',
-          basePrice: 85000,
-        ),
-      ),
-    ];
   }
 }

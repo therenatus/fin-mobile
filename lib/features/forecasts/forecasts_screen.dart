@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
 
@@ -16,11 +17,10 @@ class ForecastsScreen extends StatefulWidget {
 }
 
 class _ForecastsScreenState extends State<ForecastsScreen> {
-  late final ApiService _api;
-
   bool _isLoading = true;
   String? _error;
   String? _limitError;
+  bool _initialized = false;
 
   Forecast? _ordersForecast;
   Forecast? _revenueForecast;
@@ -31,6 +31,8 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
   int _selectedDays = 7;
   bool _isGeneratingReport = false;
   String _selectedReportType = 'monthly_summary';
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   final List<Map<String, String>> _reportTypes = [
     {'value': 'monthly_summary', 'label': 'Месячный обзор'},
@@ -43,8 +45,15 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
   @override
   void initState() {
     super.initState();
-    _api = ApiService(StorageService());
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/providers/app_provider.dart';
 
 class EmployeeFormScreen extends StatefulWidget {
@@ -26,6 +25,8 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   bool _isSubmitting = false;
 
   bool get isEditMode => widget.employee != null;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -61,10 +62,8 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = ApiService(StorageService());
-
       if (isEditMode) {
-        await api.updateEmployee(
+        await _api.updateEmployee(
           id: widget.employee!.id,
           name: _nameController.text.trim(),
           role: _selectedRoleCode!,
@@ -76,7 +75,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
               : null,
         );
       } else {
-        await api.createEmployee(
+        await _api.createEmployee(
           name: _nameController.text.trim(),
           role: _selectedRoleCode!,
           phone: _phoneController.text.trim().isNotEmpty

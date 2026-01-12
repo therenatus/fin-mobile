@@ -6,7 +6,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 
 class ClientFormScreen extends StatefulWidget {
   final Client? client; // null for create, not null for edit
@@ -18,6 +17,8 @@ class ClientFormScreen extends StatefulWidget {
 }
 
 class _ClientFormScreenState extends State<ClientFormScreen> {
+  ApiService get _api => context.read<AppProvider>().api;
+
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -59,8 +60,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       setState(() => _isSearchingUser = true);
 
       try {
-        final api = ApiService(StorageService());
-        final user = await api.searchClientUserByEmail(email.trim());
+        final user = await _api.searchClientUserByEmail(email.trim());
 
         if (mounted) {
           setState(() {
@@ -99,13 +99,11 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = ApiService(StorageService());
-
       if (isEditMode) {
-        await api.updateClient(id: widget.client!.id);
+        await _api.updateClient(id: widget.client!.id);
       } else {
         // Create client linked to found ClientUser
-        await api.createClient(
+        await _api.createClient(
           name: _foundUser!['name'],
           email: _emailController.text.trim(),
         );

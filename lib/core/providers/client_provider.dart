@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/client_user.dart';
+import '../services/base_api_service.dart';
 import '../services/client_api_service.dart';
 import '../services/storage_service.dart';
 
@@ -24,7 +25,7 @@ class ClientProvider extends ChangeNotifier {
 
   ClientProvider(this._storage) : _api = ClientApiService(_storage) {
     // Регистрируем callback для обработки истечения сессии
-    ClientApiService.onSessionExpired = _handleSessionExpired;
+    BaseApiService.registerSessionExpiredCallback('client', _handleSessionExpired);
   }
 
   /// Обработка истечения сессии

@@ -16,6 +16,8 @@ class DashboardProvider with ChangeNotifier {
   List<EmployeeRole> _employeeRoles = [];
   bool _isLoading = false;
   String _analyticsPeriod = 'month';
+  String? _error;
+  String? _clientsError;
 
   DashboardProvider(this._api);
 
@@ -27,6 +29,8 @@ class DashboardProvider with ChangeNotifier {
   List<EmployeeRole> get employeeRoles => _employeeRoles;
   bool get isLoading => _isLoading;
   String get analyticsPeriod => _analyticsPeriod;
+  String? get error => _error;
+  String? get clientsError => _clientsError;
 
   String getRoleLabel(String code) {
     final role = _employeeRoles.firstWhere(
@@ -38,6 +42,8 @@ class DashboardProvider with ChangeNotifier {
 
   Future<void> loadDashboardData() async {
     _isLoading = true;
+    _error = null;
+    _clientsError = null;
     notifyListeners();
 
     // Load analytics dashboard
@@ -46,8 +52,9 @@ class DashboardProvider with ChangeNotifier {
       _dashboardStats = _analyticsDashboard?.summary;
     } catch (e) {
       _log('Failed to load analytics: $e');
-      _dashboardStats = _getMockStats();
+      _dashboardStats = null;
       _analyticsDashboard = null;
+      _error = e.toString();
     }
 
     // Load clients
@@ -55,7 +62,8 @@ class DashboardProvider with ChangeNotifier {
       _clients = await _api.getClients(page: 1, limit: 10);
     } catch (e) {
       _log('Failed to load clients: $e');
-      _clients = _getMockClients();
+      _clients = [];
+      _clientsError = e.toString();
     }
 
     // Load finance report for current month
@@ -100,54 +108,8 @@ class DashboardProvider with ChangeNotifier {
     _analyticsDashboard = null;
     _financeReport = null;
     _clients = [];
+    _error = null;
+    _clientsError = null;
     notifyListeners();
-  }
-
-  DashboardStats _getMockStats() {
-    return DashboardStats(
-      totalOrders: 24,
-      activeOrders: 8,
-      completedOrders: 14,
-      pendingOrders: 2,
-      overdueOrders: 1,
-      totalRevenue: 485000,
-      periodRevenue: 125000,
-      avgOrderValue: 15200,
-      totalClients: 42,
-      newClients: 8,
-    );
-  }
-
-  List<Client> _getMockClients() {
-    final now = DateTime.now();
-    return [
-      Client(
-        id: '1',
-        name: 'Анна Петрова',
-        contacts: ClientContact(phone: '+7 999 123-45-67', email: 'anna@mail.ru'),
-        createdAt: now.subtract(const Duration(days: 90)),
-        updatedAt: now,
-        ordersCount: 8,
-        totalSpent: 125000,
-      ),
-      Client(
-        id: '2',
-        name: 'Мария Сидорова',
-        contacts: ClientContact(phone: '+7 999 765-43-21'),
-        createdAt: now.subtract(const Duration(days: 30)),
-        updatedAt: now,
-        ordersCount: 3,
-        totalSpent: 45000,
-      ),
-      Client(
-        id: '3',
-        name: 'Елена Козлова',
-        contacts: ClientContact(phone: '+7 999 111-22-33'),
-        createdAt: now.subtract(const Duration(days: 180)),
-        updatedAt: now,
-        ordersCount: 15,
-        totalSpent: 380000,
-      ),
-    ];
   }
 }

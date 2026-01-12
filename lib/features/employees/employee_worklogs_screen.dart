@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/date_range_picker_button.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
+import '../../core/providers/app_provider.dart';
 
 class EmployeeWorklogsScreen extends StatefulWidget {
   final Employee employee;
@@ -22,18 +23,23 @@ class _EmployeeWorklogsScreenState extends State<EmployeeWorklogsScreen> {
   List<Map<String, dynamic>> _workLogs = [];
   int _totalQuantity = 0;
   double _totalHours = 0;
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
-  void initState() {
-    super.initState();
-    _loadWorkLogs();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadWorkLogs();
+    }
   }
 
   Future<void> _loadWorkLogs() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
-      final workLogs = await api.getEmployeeWorkLogs(
+      final workLogs = await _api.getEmployeeWorkLogs(
         widget.employee.id,
         dateFrom: _dateRange?.start.toIso8601String().split('T')[0],
         dateTo: _dateRange?.end.toIso8601String().split('T')[0],

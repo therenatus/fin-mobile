@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/employee_user.dart';
+import '../services/base_api_service.dart';
 import '../services/employee_api_service.dart';
 import '../services/storage_service.dart';
 
@@ -25,15 +26,17 @@ class EmployeeProvider extends ChangeNotifier {
 
   EmployeeProvider(this._storage) : _api = EmployeeApiService(_storage) {
     // Set up session expiration callback
-    EmployeeApiService.onSessionExpired = () {
-      _log('Session expired - logging out');
-      _user = null;
-      _assignments = [];
-      _workLogs = [];
-      _payrolls = [];
-      _storage.clearEmployeeData();
-      notifyListeners();
-    };
+    BaseApiService.registerSessionExpiredCallback('employee', _handleSessionExpired);
+  }
+
+  void _handleSessionExpired() {
+    _log('Session expired - logging out');
+    _user = null;
+    _assignments = [];
+    _workLogs = [];
+    _payrolls = [];
+    _storage.clearEmployeeData();
+    notifyListeners();
   }
 
   EmployeeUser? get user => _user;

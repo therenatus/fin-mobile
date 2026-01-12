@@ -6,7 +6,6 @@
 /// ```
 
 export 'app_provider.dart';
-export 'auth_provider.dart';
 export 'client_provider.dart';
 export 'dashboard_provider.dart';
 export 'employee_provider.dart';

@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/base_api_service.dart';
 import '../../core/services/storage_service.dart';
 
 class CreateOrderScreen extends StatefulWidget {
@@ -32,12 +33,23 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   bool _isSubmitting = false;
   bool _isLoadingModels = false;
   String? _error;
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
     _quantityController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   @override
@@ -53,20 +65,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     });
 
     try {
-      final storage = StorageService();
-      final api = ApiService(storage);
-
-      // Debug: check if token exists
-      final token = await storage.getAccessToken();
-      debugPrint('DEBUG: Token exists: ${token != null}, length: ${token?.length ?? 0}');
-
       final results = await Future.wait([
-        api.getClients(limit: 100),
-        api.getModels(limit: 100),
+        _api.getClients(limit: 100),
+        _api.getModels(limit: 100),
       ]);
-
-      debugPrint('DEBUG: Clients loaded: ${(results[0] as List).length}');
-      debugPrint('DEBUG: Models loaded: ${(results[1] as List).length}');
 
       setState(() {
         _clients = results[0] as List<Client>;
@@ -74,20 +76,27 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         _availableModels = []; // Don't show models until client is selected
         _isLoading = false;
       });
-    } catch (e, stack) {
+    } on BaseApiException catch (e, stack) {
       debugPrint('ERROR loading data: $e');
       debugPrint('Stack: $stack');
 
       // If session expired, redirect to login
-      if (e.toString().contains('Сессия истекла') || e.toString().contains('401')) {
+      if (e.statusCode == 401) {
         if (mounted) {
-          final storage = StorageService();
+          final storage = context.read<StorageService>();
           await storage.clearAll();
           Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
         }
         return;
       }
 
+      setState(() {
+        _error = 'Ошибка загрузки: ${e.message}';
+        _isLoading = false;
+      });
+    } catch (e, stack) {
+      debugPrint('ERROR loading data: $e');
+      debugPrint('Stack: $stack');
       setState(() {
         _error = 'Ошибка загрузки: $e';
         _isLoading = false;
@@ -109,8 +118,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     setState(() => _isLoadingModels = true);
 
     try {
-      final api = ApiService(StorageService());
-      final clientDetails = await api.getClient(client.id);
+      final clientDetails = await _api.getClient(client.id);
 
       if (mounted) {
         setState(() {
@@ -151,10 +159,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final storage = StorageService();
-      final api = ApiService(storage);
-
-      await api.createOrder(
+      await _api.createOrder(
         clientId: _selectedClient!.id,
         modelId: _selectedModel!.id,
         quantity: _quantity,

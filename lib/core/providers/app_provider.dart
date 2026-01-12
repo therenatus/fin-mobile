@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
+import '../services/base_api_service.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
 
@@ -16,7 +17,6 @@ enum AppState { initial, loading, authenticated, unauthenticated, error }
 ///
 /// This is a refactored version that delegates to specialized providers:
 /// - ThemeProvider: theme mode management
-/// - AuthProvider: authentication (internal - use this for auth in manager mode)
 /// - DashboardProvider: dashboard data (use via AppProvider for now)
 /// - OrdersProvider: orders pagination (use via AppProvider for now)
 class AppProvider with ChangeNotifier {
@@ -39,6 +39,11 @@ class AppProvider with ChangeNotifier {
   bool _isLoadingData = false;
   String _analyticsPeriod = 'month';
 
+  // Dashboard errors
+  String? _dashboardError;
+  String? _ordersError;
+  String? _clientsError;
+
   // Orders pagination state
   int _ordersPage = 1;
   bool _isLoadingMoreOrders = false;
@@ -46,7 +51,7 @@ class AppProvider with ChangeNotifier {
 
   AppProvider(this._storage) {
     _api = ApiService(_storage);
-    ApiService.onSessionExpired = _handleSessionExpired;
+    BaseApiService.registerSessionExpiredCallback('manager', _handleSessionExpired);
     _init();
   }
 
@@ -78,6 +83,9 @@ class AppProvider with ChangeNotifier {
   List<EmployeeRole> get employeeRoles => _employeeRoles;
   bool get isLoadingMoreOrders => _isLoadingMoreOrders;
   bool get hasMoreOrders => _hasMoreOrders;
+  String? get dashboardError => _dashboardError;
+  String? get ordersError => _ordersError;
+  String? get clientsError => _clientsError;
 
   String getRoleLabel(String code) {
     final role = _employeeRoles.firstWhere(
@@ -267,6 +275,9 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadDashboardData() async {
     _isLoadingData = true;
+    _dashboardError = null;
+    _ordersError = null;
+    _clientsError = null;
     notifyListeners();
 
     // Refresh user profile from server
@@ -285,8 +296,10 @@ class AppProvider with ChangeNotifier {
       _analyticsDashboard = await _api.getAnalyticsDashboard(period: _analyticsPeriod);
       _dashboardStats = _analyticsDashboard?.summary;
     } catch (e) {
-      _dashboardStats = _getMockStats();
+      _log('Failed to load analytics: $e');
+      _dashboardStats = null;
       _analyticsDashboard = null;
+      _dashboardError = e.toString();
     }
 
     // Load recent orders
@@ -294,14 +307,18 @@ class AppProvider with ChangeNotifier {
       final ordersResponse = await _api.getOrders(page: 1, limit: 5);
       _recentOrders = ordersResponse.orders;
     } catch (e) {
-      _recentOrders = _getMockOrders();
+      _log('Failed to load orders: $e');
+      _recentOrders = [];
+      _ordersError = e.toString();
     }
 
     // Load clients
     try {
       _clients = await _api.getClients(page: 1, limit: 10);
     } catch (e) {
-      _clients = _getMockClients();
+      _log('Failed to load clients: $e');
+      _clients = [];
+      _clientsError = e.toString();
     }
 
     // Load finance report for current month
@@ -392,105 +409,5 @@ class AppProvider with ChangeNotifier {
       _isLoadingMoreOrders = false;
       notifyListeners();
     }
-  }
-
-  // ============ Mock Data ============
-
-  DashboardStats _getMockStats() {
-    return DashboardStats(
-      totalOrders: 24,
-      activeOrders: 8,
-      completedOrders: 14,
-      pendingOrders: 2,
-      overdueOrders: 1,
-      totalRevenue: 485000,
-      periodRevenue: 125000,
-      avgOrderValue: 15200,
-      totalClients: 42,
-      newClients: 8,
-    );
-  }
-
-  List<Order> _getMockOrders() {
-    final now = DateTime.now();
-    return [
-      Order(
-        id: '1',
-        clientId: '1',
-        modelId: '1',
-        quantity: 2,
-        status: OrderStatus.inProgress,
-        dueDate: now.add(const Duration(days: 3)),
-        createdAt: now.subtract(const Duration(days: 2)),
-        updatedAt: now,
-        client: Client(
-          id: '1',
-          name: 'Анна Петрова',
-          contacts: ClientContact(phone: '+7 999 123-45-67'),
-          createdAt: now,
-          updatedAt: now,
-        ),
-        model: OrderModel(
-          id: '1',
-          name: 'Вечернее платье',
-          basePrice: 25000,
-        ),
-      ),
-      Order(
-        id: '2',
-        clientId: '2',
-        modelId: '2',
-        quantity: 1,
-        status: OrderStatus.pending,
-        dueDate: now.add(const Duration(days: 7)),
-        createdAt: now.subtract(const Duration(days: 1)),
-        updatedAt: now,
-        client: Client(
-          id: '2',
-          name: 'Мария Сидорова',
-          contacts: ClientContact(phone: '+7 999 765-43-21'),
-          createdAt: now,
-          updatedAt: now,
-        ),
-        model: OrderModel(
-          id: '2',
-          name: 'Деловой костюм',
-          basePrice: 35000,
-        ),
-      ),
-    ];
-  }
-
-  List<Client> _getMockClients() {
-    final now = DateTime.now();
-    return [
-      Client(
-        id: '1',
-        name: 'Анна Петрова',
-        contacts: ClientContact(phone: '+7 999 123-45-67', email: 'anna@mail.ru'),
-        createdAt: now.subtract(const Duration(days: 90)),
-        updatedAt: now,
-        ordersCount: 8,
-        totalSpent: 125000,
-      ),
-      Client(
-        id: '2',
-        name: 'Мария Сидорова',
-        contacts: ClientContact(phone: '+7 999 765-43-21'),
-        createdAt: now.subtract(const Duration(days: 30)),
-        updatedAt: now,
-        ordersCount: 3,
-        totalSpent: 45000,
-      ),
-      Client(
-        id: '3',
-        name: 'Елена Козлова',
-        contacts: ClientContact(phone: '+7 999 111-22-33'),
-        createdAt: now.subtract(const Duration(days: 180)),
-        updatedAt: now,
-        ordersCount: 15,
-        totalSpent: 380000,
-      ),
-    ];
   }
 }

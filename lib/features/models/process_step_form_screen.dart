@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/process_step.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/widgets/styled_dropdown.dart';
 
 class ProcessStepFormScreen extends StatefulWidget {
@@ -31,6 +32,8 @@ class _ProcessStepFormScreenState extends State<ProcessStepFormScreen> {
 
   String _executorRole = 'tailor';
   bool _isLoading = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   bool get _isEditing => widget.step != null;
 
@@ -202,7 +205,7 @@ class _ProcessStepFormScreenState extends State<ProcessStepFormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final name = _nameController.text.trim();
       final estimatedTime = int.parse(_timeController.text);
       final rate = double.tryParse(_rateController.text);

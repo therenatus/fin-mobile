@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/date_range_picker_button.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 
 class WorklogsScreen extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -24,11 +25,22 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
   List<Employee> _employees = [];
   int _totalQuantity = 0;
   double _totalHours = 0;
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -40,7 +52,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
 
   Future<void> _loadEmployees() async {
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final employees = await api.getEmployees();
       if (mounted) {
         setState(() => _employees = employees);
@@ -53,7 +65,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
   Future<void> _loadWorkLogs() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final workLogs = await api.getAllWorklogs(
         employeeId: _selectedEmployeeId,
         dateFrom: _dateRange?.start.toIso8601String().split('T')[0],

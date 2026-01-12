@@ -53,7 +53,7 @@ class EmployeeApiService extends BaseApiService {
     required String password,
   }) async {
     return withNetworkErrorHandling(() async {
-      final url = '$baseUrl/employee/auth/login';
+      final url = '${BaseApiService.baseUrl}/employee/auth/login';
       log('LOGIN: Attempting employee login to $url');
 
       final response = await http.post(
@@ -91,7 +91,7 @@ class EmployeeApiService extends BaseApiService {
   Future<void> logout() async {
     try {
       await http.post(
-        Uri.parse('$baseUrl/employee/auth/logout'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/auth/logout'),
         headers: await getHeaders(),
       );
     } finally {
@@ -102,7 +102,7 @@ class EmployeeApiService extends BaseApiService {
   Future<EmployeeUser> getProfile() async {
     return withNetworkErrorHandling(() async {
       final response = await http.get(
-        Uri.parse('$baseUrl/employee/auth/me'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/auth/me'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -125,7 +125,7 @@ class EmployeeApiService extends BaseApiService {
       ];
 
       final response = await http.get(
-        Uri.parse('$baseUrl/employee/portal/assignments?${params.join('&')}'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/portal/assignments?${params.join('&')}'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -136,7 +136,7 @@ class EmployeeApiService extends BaseApiService {
   Future<Map<String, dynamic>> getAssignmentById(String id) async {
     return withNetworkErrorHandling(() async {
       final response = await http.get(
-        Uri.parse('$baseUrl/employee/portal/assignments/$id'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/portal/assignments/$id'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -158,7 +158,7 @@ class EmployeeApiService extends BaseApiService {
   Future<EmployeeWorkLog> createWorkLog(CreateWorkLogRequest request) async {
     return withNetworkErrorHandling(() async {
       final response = await http.post(
-        Uri.parse('$baseUrl/employee/portal/worklogs'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/portal/worklogs'),
         headers: await getHeaders(),
         body: jsonEncode(request.toJson()),
       ).timeout(const Duration(seconds: 15));
@@ -172,7 +172,7 @@ class EmployeeApiService extends BaseApiService {
   Future<Map<String, dynamic>?> getWorkLogByDate(String assignmentId, String date) async {
     return withNetworkErrorHandling(() async {
       final response = await http.get(
-        Uri.parse('$baseUrl/employee/portal/worklogs/by-date/$assignmentId/$date'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/portal/worklogs/by-date/$assignmentId/$date'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -202,7 +202,7 @@ class EmployeeApiService extends BaseApiService {
     DateTime? endDate,
   }) async {
     return withNetworkErrorHandling(() async {
-      var url = '$baseUrl/employee/portal/worklogs';
+      var url = '${BaseApiService.baseUrl}/employee/portal/worklogs';
       final params = <String>[];
       if (startDate != null) {
         params.add('startDate=${startDate.toIso8601String()}');
@@ -228,7 +228,7 @@ class EmployeeApiService extends BaseApiService {
   Future<List<EmployeePayroll>> getPayrolls() async {
     return withNetworkErrorHandling(() async {
       final response = await http.get(
-        Uri.parse('$baseUrl/employee/portal/payrolls'),
+        Uri.parse('${BaseApiService.baseUrl}/employee/portal/payrolls'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -240,7 +240,7 @@ class EmployeeApiService extends BaseApiService {
 
   Future<void> registerPushDevice(String playerId) async {
     await http.post(
-      Uri.parse('$baseUrl/employee/portal/push/register'),
+      Uri.parse('${BaseApiService.baseUrl}/employee/portal/push/register'),
       headers: await getHeaders(),
       body: jsonEncode({'playerId': playerId}),
     );
@@ -248,7 +248,7 @@ class EmployeeApiService extends BaseApiService {
 
   Future<void> unregisterPushDevice() async {
     await http.post(
-      Uri.parse('$baseUrl/employee/portal/push/unregister'),
+      Uri.parse('${BaseApiService.baseUrl}/employee/portal/push/unregister'),
       headers: await getHeaders(),
     );
   }

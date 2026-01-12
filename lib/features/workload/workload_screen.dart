@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../orders/order_detail_screen.dart';
 
@@ -21,11 +22,22 @@ class _WorkloadScreenState extends State<WorkloadScreen> {
   Map<String, dynamic>? _data;
   int _days = 14;
   String? _selectedEmployeeId;
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -35,7 +47,7 @@ class _WorkloadScreenState extends State<WorkloadScreen> {
     });
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       debugPrint('[WorkloadScreen] Loading data: days=$_days, employeeId=$_selectedEmployeeId');
       final data = await api.getWorkloadCalendar(
         days: _days,
@@ -472,7 +484,7 @@ class _WorkloadScreenState extends State<WorkloadScreen> {
     );
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final order = await api.getOrder(orderId);
 
       if (mounted) {

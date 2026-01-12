@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 
 class WorkLogFormScreen extends StatefulWidget {
   const WorkLogFormScreen({super.key});
@@ -21,6 +22,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
 
   bool _isLoading = false;
   bool _isLoadingData = true;
+  bool _initialized = false;
 
   List<Order> _orders = [];
   List<Employee> _employees = [];
@@ -31,10 +33,20 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
   ProcessStep? _selectedStep;
   DateTime _selectedDate = DateTime.now();
 
+  ApiService get _api => context.read<AppProvider>().api;
+
   @override
   void initState() {
     super.initState();
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   @override
@@ -47,7 +59,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoadingData = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final ordersResponse = await api.getOrders(limit: 100);
       final employees = await api.getEmployees();
 
@@ -80,7 +92,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
 
   Future<void> _loadProcessSteps(String modelId) async {
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final steps = await api.getProcessSteps(modelId);
       setState(() {
         _processSteps = steps..sort((a, b) => a.stepOrder.compareTo(b.stepOrder));
@@ -630,7 +642,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final quantity = int.tryParse(_quantityController.text) ?? 0;
       final hours = double.tryParse(_hoursController.text) ?? 0;
 

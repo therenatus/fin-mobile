@@ -50,7 +50,7 @@ class ClientApiService extends BaseApiService {
 
   Future<ClientAuthResponse> login({String? email, String? phone, required String password}) async {
     return withNetworkErrorHandling(() async {
-      final url = '$baseUrl/client/auth/login';
+      final url = '${BaseApiService.baseUrl}/client/auth/login';
       log('LOGIN: Attempting client login to $url');
 
       final response = await http.post(
@@ -94,7 +94,7 @@ class ClientApiService extends BaseApiService {
   }) async {
     return withNetworkErrorHandling(() async {
       final response = await http.post(
-        Uri.parse('$baseUrl/client/auth/register'),
+        Uri.parse('${BaseApiService.baseUrl}/client/auth/register'),
         headers: await getHeaders(auth: false),
         body: jsonEncode({
           if (email != null) 'email': email,
@@ -117,7 +117,7 @@ class ClientApiService extends BaseApiService {
   Future<void> logout() async {
     try {
       await http.post(
-        Uri.parse('$baseUrl/client/auth/logout'),
+        Uri.parse('${BaseApiService.baseUrl}/client/auth/logout'),
         headers: await getHeaders(),
       );
     } finally {
@@ -128,7 +128,7 @@ class ClientApiService extends BaseApiService {
   Future<ClientUser> getProfile() async {
     return withNetworkErrorHandling(() async {
       final response = await http.get(
-        Uri.parse('$baseUrl/client/auth/me'),
+        Uri.parse('${BaseApiService.baseUrl}/client/auth/me'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -141,7 +141,7 @@ class ClientApiService extends BaseApiService {
   Future<List<TenantLink>> getMyTenants() async {
     return withNetworkErrorHandling(() async {
       final response = await http.get(
-        Uri.parse('$baseUrl/client/portal/tenants'),
+        Uri.parse('${BaseApiService.baseUrl}/client/portal/tenants'),
         headers: await getHeaders(),
       ).timeout(const Duration(seconds: 15));
 
@@ -151,7 +151,7 @@ class ClientApiService extends BaseApiService {
 
   Future<TenantLink> linkToTenant(String tenantId, {String? name}) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/client/portal/tenants/link'),
+      Uri.parse('${BaseApiService.baseUrl}/client/portal/tenants/link'),
       headers: await getHeaders(),
       body: jsonEncode({
         'tenantId': tenantId,
@@ -164,7 +164,7 @@ class ClientApiService extends BaseApiService {
 
   Future<List<ClientOrderModel>> getTenantModels(String tenantId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/client/portal/tenants/$tenantId/models'),
+      Uri.parse('${BaseApiService.baseUrl}/client/portal/tenants/$tenantId/models'),
       headers: await getHeaders(),
     );
 
@@ -182,7 +182,7 @@ class ClientApiService extends BaseApiService {
       if (tenantId != null) params.add('tenantId=$tenantId');
       if (status != null) params.add('status=$status');
 
-      final url = '$baseUrl/client/portal/orders?${params.join('&')}';
+      final url = '${BaseApiService.baseUrl}/client/portal/orders?${params.join('&')}';
 
       final response = await http.get(
         Uri.parse(url),
@@ -195,7 +195,7 @@ class ClientApiService extends BaseApiService {
 
   Future<ClientOrder> getOrder(String orderId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/client/portal/orders/$orderId'),
+      Uri.parse('${BaseApiService.baseUrl}/client/portal/orders/$orderId'),
       headers: await getHeaders(),
     );
 
@@ -209,7 +209,7 @@ class ClientApiService extends BaseApiService {
     String? dueDate,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/client/portal/orders'),
+      Uri.parse('${BaseApiService.baseUrl}/client/portal/orders'),
       headers: await getHeaders(),
       body: jsonEncode({
         'tenantId': tenantId,
@@ -229,7 +229,7 @@ class ClientApiService extends BaseApiService {
     String? dueDate,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/client/portal/orders/$orderId'),
+      Uri.parse('${BaseApiService.baseUrl}/client/portal/orders/$orderId'),
       headers: await getHeaders(),
       body: jsonEncode({
         if (modelId != null) 'modelId': modelId,
@@ -243,7 +243,7 @@ class ClientApiService extends BaseApiService {
 
   Future<void> cancelOrder(String orderId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/client/portal/orders/$orderId'),
+      Uri.parse('${BaseApiService.baseUrl}/client/portal/orders/$orderId'),
       headers: await getHeaders(),
     );
 

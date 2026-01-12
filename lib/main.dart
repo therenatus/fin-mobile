@@ -117,15 +117,24 @@ class AtelieProApp extends StatefulWidget {
 class _AtelieProAppState extends State<AtelieProApp> {
   String? _appMode;
   bool _isCheckingMode = true;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAppMode();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _checkAppMode();
+    }
   }
 
   Future<void> _checkAppMode() async {
-    final storage = StorageService();
+    final storage = context.read<StorageService>();
     final mode = await storage.getAppMode();
     setState(() {
       _appMode = mode;

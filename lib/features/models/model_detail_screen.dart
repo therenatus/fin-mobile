@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/process_step.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import 'process_step_form_screen.dart';
 import 'model_form_screen.dart';
 
@@ -22,18 +23,29 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
   late OrderModel _model;
   List<ProcessStep> _processSteps = [];
   bool _isLoading = true;
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
     _model = widget.model;
-    _loadProcessSteps();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadProcessSteps();
+    }
   }
 
   Future<void> _loadProcessSteps() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final steps = await api.getProcessSteps(_model.id);
       setState(() {
         _processSteps = steps..sort((a, b) => a.stepOrder.compareTo(b.stepOrder));
@@ -343,7 +355,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
 
     // Update step orders on server
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       for (int i = 0; i < _processSteps.length; i++) {
         final step = _processSteps[i];
         if (step.stepOrder != i + 1) {
@@ -479,7 +491,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
     if (result == true) {
       // Reload model data
       try {
-        final api = ApiService(StorageService());
+        final api = _api;
         final updatedModel = await api.getModel(_model.id);
         setState(() {
           _model = updatedModel;
@@ -552,7 +564,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
 
   Future<void> _deleteStep(ProcessStep step) async {
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.deleteProcessStep(step.id);
       _loadProcessSteps();
       if (mounted) {

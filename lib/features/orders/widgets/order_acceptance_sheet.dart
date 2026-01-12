@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/providers/app_provider.dart';
 import '../../../core/models/models.dart';
 import '../../../core/services/api_service.dart';
-import '../../../core/services/storage_service.dart';
 import '../../../core/utils/toast.dart';
 
 class OrderAcceptanceSheet extends StatefulWidget {
@@ -28,6 +29,8 @@ class OrderAcceptanceSheet extends StatefulWidget {
 class _OrderAcceptanceSheetState extends State<OrderAcceptanceSheet> {
   bool _isSubmitting = false;
 
+  ApiService get _api => context.read<AppProvider>().api;
+
   /// Calculate total estimated hours for the order
   double get _totalEstimatedHours {
     if (widget.processSteps.isEmpty) return 0;
@@ -42,7 +45,7 @@ class _OrderAcceptanceSheetState extends State<OrderAcceptanceSheet> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
 
       // Update order status to in_progress
       await api.updateOrderStatus(widget.order.id, 'in_progress');

@@ -8,7 +8,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/providers/subscription_provider.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../subscription/subscription_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,6 +22,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isUploadingAvatar = false;
   final _picker = ImagePicker();
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -125,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() => _isUploadingAvatar = true);
 
-      final api = ApiService(StorageService());
+      final api = _api;
       final updatedUser = await api.uploadAvatar(File(pickedFile.path));
       provider.updateUser(updatedUser);
 
@@ -161,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       setState(() => _isUploadingAvatar = true);
 
-      final api = ApiService(StorageService());
+      final api = _api;
       final updatedUser = await api.deleteAvatar();
       provider.updateUser(updatedUser);
 
@@ -1022,6 +1023,8 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
   bool _obscureNew = true;
   bool _obscureConfirm = true;
 
+  ApiService get _api => context.read<AppProvider>().api;
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -1036,7 +1039,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.changePassword(
         _currentPasswordController.text,
         _newPasswordController.text,

@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/order.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/widgets/styled_dropdown.dart';
 import '../../core/widgets/image_picker_widget.dart';
 
@@ -28,6 +29,8 @@ class _ModelFormScreenState extends State<ModelFormScreen> {
   bool _isSubmitting = false;
   File? _selectedImage;
   bool _imageRemoved = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   List<String> _categories = [
     'Платье',
@@ -73,7 +76,7 @@ class _ModelFormScreenState extends State<ModelFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final price = double.tryParse(_priceController.text.trim()) ?? 0;
 
       OrderModel result;

@@ -6,7 +6,6 @@ import '../../core/models/models.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/providers/app_provider.dart';
 import 'employee_form_screen.dart';
 import 'employee_worklogs_screen.dart';
@@ -25,11 +24,17 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   bool? _activeFilter; // null = all, true = active, false = inactive
   bool _isLoading = true;
   List<Employee> _employees = [];
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
-  void initState() {
-    super.initState();
-    _loadEmployees();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadEmployees();
+    }
   }
 
   @override
@@ -41,8 +46,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   Future<void> _loadEmployees() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
-      final employees = await api.getEmployees();
+      final employees = await _api.getEmployees();
       setState(() {
         _employees = employees;
         _isLoading = false;
@@ -307,8 +311,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
-                final api = ApiService(StorageService());
-                await api.deleteEmployee(employee.id);
+                await _api.deleteEmployee(employee.id);
                 _loadEmployees();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

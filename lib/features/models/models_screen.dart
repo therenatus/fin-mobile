@@ -8,7 +8,6 @@ import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/models/order.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import 'model_form_screen.dart';
 import 'model_detail_screen.dart';
 
@@ -25,6 +24,9 @@ class _ModelsScreenState extends State<ModelsScreen> {
   String? _categoryFilter;
   bool _isLoading = true;
   List<OrderModel> _models = [];
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   final List<String> _categories = [
     'Платье',
@@ -39,7 +41,15 @@ class _ModelsScreenState extends State<ModelsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadModels();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadModels();
+    }
   }
 
   @override
@@ -51,7 +61,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
   Future<void> _loadModels() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final models = await api.getModels();
       setState(() {
         _models = models;
@@ -296,7 +306,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
-                final api = ApiService(StorageService());
+                final api = _api;
                 await api.deleteModel(model.id);
                 _loadModels();
                 if (mounted) {

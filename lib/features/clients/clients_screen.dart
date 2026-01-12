@@ -6,7 +6,6 @@ import '../../core/providers/app_provider.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../orders/create_order_screen.dart';
 import 'client_form_screen.dart';
 
@@ -248,19 +247,24 @@ class _ClientDetailsSheet extends StatefulWidget {
 }
 
 class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
+  ApiService get _api => context.read<AppProvider>().api;
+
   Client? _clientDetails;
   bool _isLoading = true;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadClientDetails();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadClientDetails();
+    }
   }
 
   Future<void> _loadClientDetails() async {
     try {
-      final api = ApiService(StorageService());
-      final client = await api.getClient(widget.client.id);
+      final client = await _api.getClient(widget.client.id);
       if (mounted) {
         setState(() {
           _clientDetails = client;
@@ -692,23 +696,28 @@ class _ModelAssignmentDialog extends StatefulWidget {
 }
 
 class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
+  ApiService get _api => context.read<AppProvider>().api;
+
   List<OrderModel> _allModels = [];
   Set<String> _selectedModelIds = {};
   bool _isLoading = true;
   bool _isSaving = false;
   String? _error;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _selectedModelIds = Set.from(widget.assignedModelIds);
-    _loadModels();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _selectedModelIds = Set.from(widget.assignedModelIds);
+      _loadModels();
+    }
   }
 
   Future<void> _loadModels() async {
     try {
-      final api = ApiService(StorageService());
-      final models = await api.getModels();
+      final models = await _api.getModels();
       if (mounted) {
         setState(() {
           _allModels = models;
@@ -728,8 +737,7 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
   Future<void> _saveAssignments() async {
     setState(() => _isSaving = true);
     try {
-      final api = ApiService(StorageService());
-      await api.setClientAssignedModels(widget.clientId, _selectedModelIds.toList());
+      await _api.setClientAssignedModels(widget.clientId, _selectedModelIds.toList());
       if (mounted) {
         Navigator.pop(context, true);
       }

@@ -7,7 +7,6 @@ import '../../core/models/models.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 
 class PayrollScreen extends StatefulWidget {
   const PayrollScreen({super.key});
@@ -22,11 +21,14 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   bool _isLoading = false;
   bool _isLoadingHistory = true;
+  bool _initialized = false;
 
   Payroll? _currentPayroll;
   List<Payroll> _payrollHistory = [];
   List<Employee> _employees = [];
   final Map<String, bool> _expandedCards = {};
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -35,7 +37,15 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final now = DateTime.now();
     _periodStart = DateTime(now.year, now.month, 1);
     _periodEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -48,7 +58,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   Future<void> _loadPayrollHistory() async {
     setState(() => _isLoadingHistory = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final payrolls = await api.getPayrolls();
       setState(() {
         _payrollHistory = payrolls..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -69,7 +79,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   Future<void> _loadEmployees() async {
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final employees = await api.getEmployees();
       setState(() {
         _employees = employees;
@@ -83,7 +93,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final payroll = await api.generatePayroll(
         periodStart: _periodStart,
         periodEnd: _periodEnd,
@@ -282,7 +292,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final description = 'Зарплата (${dateFormat.format(payroll.periodStart)} - ${dateFormat.format(payroll.periodEnd)})';
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.createTransaction(
         date: DateTime.now(),
         type: 'expense',

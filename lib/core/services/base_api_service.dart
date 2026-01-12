@@ -49,7 +49,28 @@ abstract class BaseApiService {
     return 'http://localhost:4000/api/v1';
   }
 
-  /// Callback for session expiration handling
+  /// Registry of session expiration callbacks by mode (manager, client, employee)
+  static final Map<String, VoidCallback> _sessionExpiredCallbacks = {};
+
+  /// Register a callback for session expiration
+  static void registerSessionExpiredCallback(String key, VoidCallback callback) {
+    _sessionExpiredCallbacks[key] = callback;
+  }
+
+  /// Unregister a session expiration callback
+  static void unregisterSessionExpiredCallback(String key) {
+    _sessionExpiredCallbacks.remove(key);
+  }
+
+  /// Notify all registered callbacks about session expiration
+  static void _notifySessionExpired() {
+    for (final callback in _sessionExpiredCallbacks.values) {
+      callback();
+    }
+  }
+
+  /// @deprecated Use registerSessionExpiredCallback instead
+  @Deprecated('Use registerSessionExpiredCallback instead')
   static VoidCallback? onSessionExpired;
 
   @protected
@@ -139,15 +160,15 @@ abstract class BaseApiService {
     }
   }
 
-  /// Wrap request with automatic retry after token refresh
+  /// Wrap request with automatic retry after token refresh (max 1 retry)
   @protected
-  Future<T> withRetry<T>(Future<T> Function() request) async {
+  Future<T> withRetry<T>(Future<T> Function() request, {bool isRetry = false}) async {
     try {
       return await request();
     } on BaseApiException catch (e) {
-      if (e.message == 'Retry' && e.statusCode == 401) {
-        // Retry request with refreshed tokens
-        return await request();
+      if (e.message == 'Retry' && e.statusCode == 401 && !isRetry) {
+        // Retry request with refreshed tokens (only once)
+        return await withRetry(request, isRetry: true);
       }
       rethrow;
     }
@@ -207,7 +228,7 @@ abstract class BaseApiService {
     if (response.statusCode == 401) {
       final refreshed = await refreshToken();
       if (!refreshed) {
-        onSessionExpired?.call();
+        _notifySessionExpired();
         throw createException('Сессия истекла. Войдите снова.', statusCode: 401);
       }
       throw createException('Retry', statusCode: 401);
@@ -252,7 +273,7 @@ abstract class BaseApiService {
     if (response.statusCode == 401) {
       final refreshed = await refreshToken();
       if (!refreshed) {
-        onSessionExpired?.call();
+        _notifySessionExpired();
         throw createException('Сессия истекла', statusCode: 401);
       }
       throw createException('Retry', statusCode: 401);
@@ -265,21 +286,21 @@ abstract class BaseApiService {
     );
   }
 
-  /// Handle list response with automatic retry on 401
+  /// Handle list response with automatic retry on 401 (max 1 retry)
   @protected
   Future<List<T>> getListWithRetry<T>(
     Future<http.Response> Function() request,
     T Function(Map<String, dynamic>) fromJson,
-    String key,
-  ) async {
+    String key, {
+    bool isRetry = false,
+  }) async {
     try {
       final response = await request();
       return await handleListResponse(response, fromJson, key);
     } on BaseApiException catch (e) {
-      if (e.message == 'Retry') {
-        // Token was refreshed, retry the request
-        final response = await request();
-        return await handleListResponse(response, fromJson, key);
+      if (e.message == 'Retry' && !isRetry) {
+        // Token was refreshed, retry the request (only once)
+        return await getListWithRetry(request, fromJson, key, isRetry: true);
       }
       rethrow;
     }

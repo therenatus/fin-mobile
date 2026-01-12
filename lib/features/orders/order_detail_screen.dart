@@ -7,7 +7,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import '../../core/utils/toast.dart';
 import 'widgets/order_acceptance_sheet.dart';
 
@@ -28,18 +27,29 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   List<WorkLog> _workLogs = [];
   bool _isLoading = true;
   bool _isUpdatingStatus = false;
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
     _order = widget.order;
-    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
 
       // Load process steps for this model
       if (_order.model != null) {
@@ -545,7 +555,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     setState(() => _isUpdatingStatus = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.updateOrderStatus(_order.id, newStatus.value);
 
       if (mounted) {
@@ -1043,6 +1053,8 @@ class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
   final _quantityController = TextEditingController();
   bool _isSaving = false;
 
+  ApiService get _api => context.read<AppProvider>().api;
+
   /// Max quantity this employee can log (remaining + their current log)
   int get _maxQuantity {
     final currentEmployeeLog = widget.workLog?.quantity ?? 0;
@@ -1242,7 +1254,7 @@ class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
     setState(() => _isSaving = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.createWorkLog(
         employeeId: widget.assignment.employeeId,
         orderId: widget.orderId,
@@ -1276,7 +1288,7 @@ class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
     setState(() => _isDeleting = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.deleteOrderAssignment(widget.orderId, widget.assignment.id);
       widget.onDataChanged();
     } catch (e) {
@@ -1312,6 +1324,8 @@ class _AddEmployeeForm extends StatefulWidget {
 class _AddEmployeeFormState extends State<_AddEmployeeForm> {
   Employee? _selectedEmployee;
   bool _isSaving = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   Widget build(BuildContext context) {
@@ -1567,7 +1581,7 @@ class _AddEmployeeFormState extends State<_AddEmployeeForm> {
     setState(() => _isSaving = true);
 
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       await api.createOrderAssignment(
         orderId: widget.orderId,
         stepName: widget.stepName,

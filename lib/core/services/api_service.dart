@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import 'storage_service.dart';
 import 'base_api_service.dart';
@@ -55,15 +54,11 @@ class ApiService extends BaseApiService {
 
   Future<AuthResponse> login(String email, String password) async {
     return withNetworkErrorHandling(() async {
-      final url = '$baseUrl/auth/login';
+      final url = '${BaseApiService.baseUrl}/auth/login';
       log('LOGIN: Attempting login to $url');
-      log('LOGIN: Email: $email');
 
       final headers = await getHeaders(auth: false);
-      log('LOGIN: Headers: $headers');
-
       final requestBody = jsonEncode({'email': email, 'password': password});
-      log('LOGIN: Request body: $requestBody');
 
       final response = await http.post(
         Uri.parse(url),
@@ -72,7 +67,6 @@ class ApiService extends BaseApiService {
       ).timeout(const Duration(seconds: 15));
 
       log('LOGIN: Response status: ${response.statusCode}');
-      log('LOGIN: Response body: ${response.body}');
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -98,7 +92,7 @@ class ApiService extends BaseApiService {
   Future<AuthResponse> register(String email, String password, String tenantName) async {
     return withNetworkErrorHandling(() async {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/signup'),
+        Uri.parse('${BaseApiService.baseUrl}/auth/signup'),
         headers: await getHeaders(auth: false),
         body: jsonEncode({
           'email': email,
@@ -118,7 +112,7 @@ class ApiService extends BaseApiService {
   Future<void> logout() async {
     try {
       await http.post(
-        Uri.parse('$baseUrl/auth/logout'),
+        Uri.parse('${BaseApiService.baseUrl}/auth/logout'),
         headers: await getHeaders(),
       );
     } finally {
@@ -127,13 +121,13 @@ class ApiService extends BaseApiService {
   }
 
   Future<Map<String, dynamic>> getProfile() async {
-    log('getProfile: calling $baseUrl/auth/me');
+    log('getProfile: calling ${BaseApiService.baseUrl}/auth/me');
     final response = await http.get(
-      Uri.parse('$baseUrl/auth/me'),
+      Uri.parse('${BaseApiService.baseUrl}/auth/me'),
       headers: await getHeaders(),
     );
 
-    log('getProfile: status=${response.statusCode}, body=${response.body}');
+    log('getProfile: status=${response.statusCode}');
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body['data'] ?? body;
@@ -146,7 +140,7 @@ class ApiService extends BaseApiService {
 
   Future<void> changePassword(String currentPassword, String newPassword) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/change-password'),
+      Uri.parse('${BaseApiService.baseUrl}/auth/change-password'),
       headers: await getHeaders(),
       body: jsonEncode({
         'currentPassword': currentPassword,
@@ -169,7 +163,7 @@ class ApiService extends BaseApiService {
 
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/auth/profile/avatar'),
+      Uri.parse('${BaseApiService.baseUrl}/auth/profile/avatar'),
     );
     request.headers['Authorization'] = 'Bearer $token';
 
@@ -184,10 +178,10 @@ class ApiService extends BaseApiService {
     );
     request.files.add(multipartFile);
 
-    log('uploadAvatar: sending to $baseUrl/auth/profile/avatar');
+    log('uploadAvatar: sending to ${BaseApiService.baseUrl}/auth/profile/avatar');
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
-    log('uploadAvatar: status=${response.statusCode}, body=${response.body}');
+    log('uploadAvatar: status=${response.statusCode}');
 
     final user = await handleResponse(response, User.fromJson);
     await storage.saveUser(user);
@@ -196,7 +190,7 @@ class ApiService extends BaseApiService {
 
   Future<User> deleteAvatar() async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/auth/profile/avatar'),
+      Uri.parse('${BaseApiService.baseUrl}/auth/profile/avatar'),
       headers: await getHeaders(),
     );
 
@@ -222,7 +216,7 @@ class ApiService extends BaseApiService {
     if (sortBy != null) queryParams['sortBy'] = sortBy;
     if (sortOrder != null) queryParams['sortOrder'] = sortOrder;
 
-    final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
+    final uri = Uri.parse('${BaseApiService.baseUrl}/orders').replace(queryParameters: queryParams);
     final response = await http.get(uri, headers: await getHeaders());
 
     return handleResponse(response, OrdersResponse.fromJson);
@@ -230,7 +224,7 @@ class ApiService extends BaseApiService {
 
   Future<Order> getOrder(String id) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/orders/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/orders/$id'),
       headers: await getHeaders(),
     );
 
@@ -244,7 +238,7 @@ class ApiService extends BaseApiService {
     String? dueDate,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/orders'),
+      Uri.parse('${BaseApiService.baseUrl}/orders'),
       headers: await getHeaders(),
       body: jsonEncode({
         'clientId': clientId,
@@ -259,7 +253,7 @@ class ApiService extends BaseApiService {
 
   Future<Order> updateOrderStatus(String id, String status) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/orders/$id/status'),
+      Uri.parse('${BaseApiService.baseUrl}/orders/$id/status'),
       headers: await getHeaders(),
       body: jsonEncode({'status': status}),
     );
@@ -275,7 +269,7 @@ class ApiService extends BaseApiService {
     if (email.isEmpty) return null;
 
     final response = await http.get(
-      Uri.parse('$baseUrl/clients/search-user?email=${Uri.encodeComponent(email)}'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/search-user?email=${Uri.encodeComponent(email)}'),
       headers: await getHeaders(),
     );
 
@@ -291,7 +285,7 @@ class ApiService extends BaseApiService {
   Future<List<Client>> getClients({int page = 1, int limit = 20}) async {
     return getListWithRetry(
       () async => http.get(
-        Uri.parse('$baseUrl/clients?page=$page&limit=$limit'),
+        Uri.parse('${BaseApiService.baseUrl}/clients?page=$page&limit=$limit'),
         headers: await getHeaders(),
       ),
       Client.fromJson,
@@ -301,7 +295,7 @@ class ApiService extends BaseApiService {
 
   Future<Client> getClient(String id) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/clients/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$id'),
       headers: await getHeaders(),
     );
 
@@ -314,7 +308,7 @@ class ApiService extends BaseApiService {
     String? phone,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/clients'),
+      Uri.parse('${BaseApiService.baseUrl}/clients'),
       headers: await getHeaders(),
       body: jsonEncode({
         'name': name,
@@ -334,7 +328,7 @@ class ApiService extends BaseApiService {
     String? notes,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/clients/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$id'),
       headers: await getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
@@ -352,7 +346,7 @@ class ApiService extends BaseApiService {
 
   Future<void> deleteClient(String id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/clients/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$id'),
       headers: await getHeaders(),
     );
 
@@ -370,7 +364,7 @@ class ApiService extends BaseApiService {
   /// Get models assigned to a specific client
   Future<List<OrderModel>> getClientAssignedModels(String clientId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/clients/$clientId/models'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$clientId/models'),
       headers: await getHeaders(),
     );
 
@@ -380,7 +374,7 @@ class ApiService extends BaseApiService {
   /// Add models to client (merges with existing assignments)
   Future<Client> assignModelsToClient(String clientId, List<String> modelIds) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/clients/$clientId/models'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$clientId/models'),
       headers: await getHeaders(),
       body: jsonEncode({'modelIds': modelIds}),
     );
@@ -391,7 +385,7 @@ class ApiService extends BaseApiService {
   /// Set assigned models for client (replaces all existing assignments)
   Future<Client> setClientAssignedModels(String clientId, List<String> modelIds) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/clients/$clientId/models'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$clientId/models'),
       headers: await getHeaders(),
       body: jsonEncode({'modelIds': modelIds}),
     );
@@ -402,7 +396,7 @@ class ApiService extends BaseApiService {
   /// Remove a single model from client's assignments
   Future<Client> unassignModelFromClient(String clientId, String modelId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/clients/$clientId/models/$modelId'),
+      Uri.parse('${BaseApiService.baseUrl}/clients/$clientId/models/$modelId'),
       headers: await getHeaders(),
     );
 
@@ -414,7 +408,7 @@ class ApiService extends BaseApiService {
   Future<List<OrderModel>> getModels({int page = 1, int limit = 50}) async {
     return getListWithRetry(
       () async => http.get(
-        Uri.parse('$baseUrl/models?page=$page&limit=$limit'),
+        Uri.parse('${BaseApiService.baseUrl}/models?page=$page&limit=$limit'),
         headers: await getHeaders(),
       ),
       OrderModel.fromJson,
@@ -424,7 +418,7 @@ class ApiService extends BaseApiService {
 
   Future<OrderModel> getModel(String id) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/models/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$id'),
       headers: await getHeaders(),
     );
 
@@ -438,7 +432,7 @@ class ApiService extends BaseApiService {
     String? description,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/models'),
+      Uri.parse('${BaseApiService.baseUrl}/models'),
       headers: await getHeaders(),
       body: jsonEncode({
         'name': name,
@@ -459,7 +453,7 @@ class ApiService extends BaseApiService {
     String? description,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/models/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$id'),
       headers: await getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
@@ -474,7 +468,7 @@ class ApiService extends BaseApiService {
 
   Future<void> deleteModel(String id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/models/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$id'),
       headers: await getHeaders(),
     );
 
@@ -491,7 +485,7 @@ class ApiService extends BaseApiService {
     final token = await getAccessToken();
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/models/$modelId/image'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/image'),
     );
     request.headers['Authorization'] = 'Bearer $token';
     request.files.add(await http.MultipartFile.fromPath('image', file.path));
@@ -504,7 +498,7 @@ class ApiService extends BaseApiService {
 
   Future<OrderModel> deleteModelImage(String modelId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/models/$modelId/image'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/image'),
       headers: await getHeaders(),
     );
 
@@ -515,7 +509,7 @@ class ApiService extends BaseApiService {
 
   Future<List<WorkLog>> getWorkLogs() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/payroll/worklogs'),
+      Uri.parse('${BaseApiService.baseUrl}/payroll/worklogs'),
       headers: await getHeaders(),
     );
 
@@ -531,7 +525,7 @@ class ApiService extends BaseApiService {
     required DateTime date,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/payroll/worklogs'),
+      Uri.parse('${BaseApiService.baseUrl}/payroll/worklogs'),
       headers: await getHeaders(),
       body: jsonEncode({
         'employeeId': employeeId,
@@ -550,7 +544,7 @@ class ApiService extends BaseApiService {
 
   Future<List<Payroll>> getPayrolls() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/payroll'),
+      Uri.parse('${BaseApiService.baseUrl}/payroll'),
       headers: await getHeaders(),
     );
 
@@ -562,7 +556,7 @@ class ApiService extends BaseApiService {
     required DateTime periodEnd,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/payroll/generate'),
+      Uri.parse('${BaseApiService.baseUrl}/payroll/generate'),
       headers: await getHeaders(),
       body: jsonEncode({
         'periodStart': periodStart.toIso8601String(),
@@ -577,7 +571,7 @@ class ApiService extends BaseApiService {
 
   Future<List<ProcessStep>> getProcessSteps(String modelId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/models/$modelId/steps'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/steps'),
       headers: await getHeaders(),
     );
 
@@ -594,7 +588,7 @@ class ApiService extends BaseApiService {
     String? rateType,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/models/$modelId/steps'),
+      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/steps'),
       headers: await getHeaders(),
       body: jsonEncode({
         'stepOrder': stepOrder,
@@ -619,7 +613,7 @@ class ApiService extends BaseApiService {
     String? rateType,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/models/steps/$stepId'),
+      Uri.parse('${BaseApiService.baseUrl}/models/steps/$stepId'),
       headers: await getHeaders(),
       body: jsonEncode({
         if (stepOrder != null) 'stepOrder': stepOrder,
@@ -636,7 +630,7 @@ class ApiService extends BaseApiService {
 
   Future<void> deleteProcessStep(String stepId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/models/steps/$stepId'),
+      Uri.parse('${BaseApiService.baseUrl}/models/steps/$stepId'),
       headers: await getHeaders(),
     );
 
@@ -653,7 +647,7 @@ class ApiService extends BaseApiService {
 
   Future<AnalyticsDashboard> getAnalyticsDashboard({String period = 'month'}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/analytics/dashboard?period=$period'),
+      Uri.parse('${BaseApiService.baseUrl}/analytics/dashboard?period=$period'),
       headers: await getHeaders(),
     );
 
@@ -675,7 +669,7 @@ class ApiService extends BaseApiService {
     };
     if (employeeId != null) queryParams['employeeId'] = employeeId;
 
-    final uri = Uri.parse('$baseUrl/analytics/workload/calendar')
+    final uri = Uri.parse('${BaseApiService.baseUrl}/analytics/workload/calendar')
         .replace(queryParameters: queryParams);
 
     final response = await http.get(
@@ -692,7 +686,7 @@ class ApiService extends BaseApiService {
       // Try to refresh token
       final refreshed = await refreshToken();
       if (!refreshed) {
-        onSessionExpired?.call();
+        BaseApiService.onSessionExpired?.call();
         throw ApiException('Сессия истекла', statusCode: 401);
       }
       // Retry request after token refresh
@@ -731,7 +725,7 @@ class ApiService extends BaseApiService {
     if (startDate != null) queryParams['startDate'] = startDate;
     if (endDate != null) queryParams['endDate'] = endDate;
 
-    final uri = Uri.parse('$baseUrl/finance/transactions')
+    final uri = Uri.parse('${BaseApiService.baseUrl}/finance/transactions')
         .replace(queryParameters: queryParams);
 
     final response = await http.get(
@@ -751,7 +745,7 @@ class ApiService extends BaseApiService {
     String? orderId,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/finance/transactions'),
+      Uri.parse('${BaseApiService.baseUrl}/finance/transactions'),
       headers: await getHeaders(),
       body: jsonEncode({
         'date': date.toIso8601String(),
@@ -768,7 +762,7 @@ class ApiService extends BaseApiService {
 
   Future<void> deleteTransaction(String id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/finance/transactions/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/finance/transactions/$id'),
       headers: await getHeaders(),
     );
 
@@ -789,7 +783,7 @@ class ApiService extends BaseApiService {
     if (startDate != null) queryParams['startDate'] = startDate;
     if (endDate != null) queryParams['endDate'] = endDate;
 
-    final uri = Uri.parse('$baseUrl/finance/report')
+    final uri = Uri.parse('${BaseApiService.baseUrl}/finance/report')
         .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
     final response = await http.get(
@@ -804,7 +798,7 @@ class ApiService extends BaseApiService {
 
   Future<List<EmployeeRole>> getEmployeeRoles() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/employee-roles'),
+      Uri.parse('${BaseApiService.baseUrl}/employee-roles'),
       headers: await getHeaders(),
     );
 
@@ -828,7 +822,7 @@ class ApiService extends BaseApiService {
     if (sortOrder != null) params.add('sortOrder=$sortOrder');
 
     final response = await http.get(
-      Uri.parse('$baseUrl/employees?${params.join('&')}'),
+      Uri.parse('${BaseApiService.baseUrl}/employees?${params.join('&')}'),
       headers: await getHeaders(),
     );
 
@@ -845,8 +839,8 @@ class ApiService extends BaseApiService {
     if (dateTo != null) params.add('dateTo=$dateTo');
 
     final url = params.isNotEmpty
-        ? '$baseUrl/employees/$employeeId/worklogs?${params.join('&')}'
-        : '$baseUrl/employees/$employeeId/worklogs';
+        ? '${BaseApiService.baseUrl}/employees/$employeeId/worklogs?${params.join('&')}'
+        : '${BaseApiService.baseUrl}/employees/$employeeId/worklogs';
 
     final response = await http.get(
       Uri.parse(url),
@@ -882,8 +876,8 @@ class ApiService extends BaseApiService {
     if (step != null) params.add('step=$step');
 
     final url = params.isNotEmpty
-        ? '$baseUrl/worklogs?${params.join('&')}'
-        : '$baseUrl/worklogs';
+        ? '${BaseApiService.baseUrl}/worklogs?${params.join('&')}'
+        : '${BaseApiService.baseUrl}/worklogs';
 
     final response = await http.get(
       Uri.parse(url),
@@ -917,8 +911,8 @@ class ApiService extends BaseApiService {
     if (dateTo != null) params.add('dateTo=$dateTo');
 
     final url = params.isNotEmpty
-        ? '$baseUrl/worklogs/summary?${params.join('&')}'
-        : '$baseUrl/worklogs/summary';
+        ? '${BaseApiService.baseUrl}/worklogs/summary?${params.join('&')}'
+        : '${BaseApiService.baseUrl}/worklogs/summary';
 
     final response = await http.get(
       Uri.parse(url),
@@ -939,7 +933,7 @@ class ApiService extends BaseApiService {
 
   Future<Employee> getEmployee(String id) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/employees/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/employees/$id'),
       headers: await getHeaders(),
     );
 
@@ -953,7 +947,7 @@ class ApiService extends BaseApiService {
     String? email,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/employees'),
+      Uri.parse('${BaseApiService.baseUrl}/employees'),
       headers: await getHeaders(),
       body: jsonEncode({
         'name': name,
@@ -974,7 +968,7 @@ class ApiService extends BaseApiService {
     String? email,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/employees/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/employees/$id'),
       headers: await getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
@@ -989,7 +983,7 @@ class ApiService extends BaseApiService {
 
   Future<void> deleteEmployee(String id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/employees/$id'),
+      Uri.parse('${BaseApiService.baseUrl}/employees/$id'),
       headers: await getHeaders(),
     );
 
@@ -1006,7 +1000,7 @@ class ApiService extends BaseApiService {
 
   Future<List<OrderAssignment>> getOrderAssignments(String orderId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/orders/$orderId/assignments'),
+      Uri.parse('${BaseApiService.baseUrl}/orders/$orderId/assignments'),
       headers: await getHeaders(),
     );
 
@@ -1019,7 +1013,7 @@ class ApiService extends BaseApiService {
     required String employeeId,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/orders/$orderId/assignments'),
+      Uri.parse('${BaseApiService.baseUrl}/orders/$orderId/assignments'),
       headers: await getHeaders(),
       body: jsonEncode({
         'stepName': stepName,
@@ -1032,7 +1026,7 @@ class ApiService extends BaseApiService {
 
   Future<void> deleteOrderAssignment(String orderId, String assignmentId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/orders/$orderId/assignments/$assignmentId'),
+      Uri.parse('${BaseApiService.baseUrl}/orders/$orderId/assignments/$assignmentId'),
       headers: await getHeaders(),
     );
 
@@ -1051,7 +1045,7 @@ class ApiService extends BaseApiService {
   Future<void> registerPushDevice(String playerId) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/notifications/devices/register'),
+        Uri.parse('${BaseApiService.baseUrl}/notifications/devices/register'),
         headers: await getHeaders(),
         body: jsonEncode({'playerId': playerId}),
       );
@@ -1070,7 +1064,7 @@ class ApiService extends BaseApiService {
   Future<void> unregisterPushDevice() async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/notifications/devices/unregister'),
+        Uri.parse('${BaseApiService.baseUrl}/notifications/devices/unregister'),
         headers: await getHeaders(),
       );
 
@@ -1089,7 +1083,7 @@ class ApiService extends BaseApiService {
   /// Get orders forecast for specified days
   Future<Forecast> getOrdersForecast({int days = 7}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/ml/forecast/orders?days=$days'),
+      Uri.parse('${BaseApiService.baseUrl}/ml/forecast/orders?days=$days'),
       headers: await getHeaders(),
     );
 
@@ -1099,7 +1093,7 @@ class ApiService extends BaseApiService {
   /// Get revenue forecast for specified days
   Future<Forecast> getRevenueForecast({int days = 7}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/ml/forecast/revenue?days=$days'),
+      Uri.parse('${BaseApiService.baseUrl}/ml/forecast/revenue?days=$days'),
       headers: await getHeaders(),
     );
 
@@ -1109,7 +1103,7 @@ class ApiService extends BaseApiService {
   /// Get AI-generated business insights
   Future<BusinessInsights> getBusinessInsights() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/ml/insights'),
+      Uri.parse('${BaseApiService.baseUrl}/ml/insights'),
       headers: await getHeaders(),
     );
 
@@ -1123,7 +1117,7 @@ class ApiService extends BaseApiService {
     String? periodEnd,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/ml/report'),
+      Uri.parse('${BaseApiService.baseUrl}/ml/report'),
       headers: await getHeaders(),
       body: jsonEncode({
         'type': type,
@@ -1140,7 +1134,7 @@ class ApiService extends BaseApiService {
     final queryParams = <String, String>{'limit': limit.toString()};
     if (type != null) queryParams['type'] = type;
 
-    final uri = Uri.parse('$baseUrl/ml/reports/history')
+    final uri = Uri.parse('${BaseApiService.baseUrl}/ml/reports/history')
         .replace(queryParameters: queryParams);
 
     final response = await http.get(
@@ -1154,7 +1148,7 @@ class ApiService extends BaseApiService {
   /// Get ML usage info and limits
   Future<MlUsageInfo> getMlUsageInfo() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/ml/usage'),
+      Uri.parse('${BaseApiService.baseUrl}/ml/usage'),
       headers: await getHeaders(),
     );
 
@@ -1166,7 +1160,7 @@ class ApiService extends BaseApiService {
   /// Get all available subscription plans
   Future<List<SubscriptionPlan>> getSubscriptionPlans() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/billing/plans'),
+      Uri.parse('${BaseApiService.baseUrl}/billing/plans'),
       headers: await getHeaders(auth: false),
     );
 
@@ -1176,7 +1170,7 @@ class ApiService extends BaseApiService {
   /// Get current resource usage and limits
   Future<ResourceUsage> getResourceUsage() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/billing/usage'),
+      Uri.parse('${BaseApiService.baseUrl}/billing/usage'),
       headers: await getHeaders(),
     );
 
@@ -1186,7 +1180,7 @@ class ApiService extends BaseApiService {
   /// Get current subscription
   Future<Subscription?> getCurrentSubscription() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/billing/subscription'),
+      Uri.parse('${BaseApiService.baseUrl}/billing/subscription'),
       headers: await getHeaders(),
     );
 
@@ -1203,7 +1197,7 @@ class ApiService extends BaseApiService {
     required String purchaseToken,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/billing/verify/google-play'),
+      Uri.parse('${BaseApiService.baseUrl}/billing/verify/google-play'),
       headers: await getHeaders(),
       body: jsonEncode({
         'productId': productId,
@@ -1219,7 +1213,7 @@ class ApiService extends BaseApiService {
     required String receiptData,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/billing/verify/app-store'),
+      Uri.parse('${BaseApiService.baseUrl}/billing/verify/app-store'),
       headers: await getHeaders(),
       body: jsonEncode({
         'receiptData': receiptData,

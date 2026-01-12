@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/storage_service.dart';
 import 'worklog_form_screen.dart';
 
 class WorkLogScreen extends StatefulWidget {
@@ -17,17 +18,28 @@ class WorkLogScreen extends StatefulWidget {
 class _WorkLogScreenState extends State<WorkLogScreen> {
   bool _isLoading = true;
   List<WorkLog> _workLogs = [];
+  bool _initialized = false;
+
+  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
-    _loadWorkLogs();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadWorkLogs();
+    }
   }
 
   Future<void> _loadWorkLogs() async {
     setState(() => _isLoading = true);
     try {
-      final api = ApiService(StorageService());
+      final api = _api;
       final logs = await api.getWorkLogs();
       setState(() {
         _workLogs = logs..sort((a, b) => b.date.compareTo(a.date));
