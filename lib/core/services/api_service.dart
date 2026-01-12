@@ -51,15 +51,26 @@ Future<T> _withNetworkErrorHandling<T>(Future<T> Function() request) async {
 }
 
 class ApiService {
-  // Статический IP сервера
-  static const String _serverIp = '10.225.124.142';
+  // API URL from build-time configuration
+  // Usage: flutter build apk --dart-define=API_URL=https://api.yourdomain.com/api/v1
+  static const String _apiUrl = String.fromEnvironment('API_URL', defaultValue: '');
 
   static String get baseUrl {
-    if (kIsWeb) return 'http://localhost:4000/api/v1';
-    // Для эмулятора Android используем 10.0.2.2, для реального устройства - реальный IP
-    if (Platform.isAndroid) return 'http://$_serverIp:4000/api/v1';
-    // Для iOS
-    return 'http://$_serverIp:4000/api/v1';
+    // If API_URL is configured via dart-define, use it
+    if (_apiUrl.isNotEmpty) {
+      return _apiUrl;
+    }
+
+    // Fallback for development
+    if (kIsWeb) {
+      return 'http://localhost:4000/api/v1';
+    }
+    if (Platform.isAndroid) {
+      // 10.0.2.2 is the special alias to host machine from Android emulator
+      return 'http://10.0.2.2:4000/api/v1';
+    }
+    // iOS Simulator uses localhost
+    return 'http://localhost:4000/api/v1';
   }
 
   /// Callback для обработки истечения сессии

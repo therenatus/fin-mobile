@@ -49,12 +49,26 @@ Future<T> _withNetworkErrorHandling<T>(Future<T> Function() request) async {
 }
 
 class EmployeeApiService {
-  static const String _baseUrl = 'http://localhost:4000/api/v1';
+  // API URL from build-time configuration
+  // Usage: flutter build apk --dart-define=API_URL=https://api.yourdomain.com/api/v1
+  static const String _apiUrl = String.fromEnvironment('API_URL', defaultValue: '');
 
   static String get baseUrl {
-    if (kIsWeb) return _baseUrl;
-    if (Platform.isAndroid) return 'http://10.225.124.142:4000/api/v1';
-    return 'http://10.225.124.142:4000/api/v1';
+    // If API_URL is configured via dart-define, use it
+    if (_apiUrl.isNotEmpty) {
+      return _apiUrl;
+    }
+
+    // Fallback for development
+    if (kIsWeb) {
+      return 'http://localhost:4000/api/v1';
+    }
+    if (Platform.isAndroid) {
+      // 10.0.2.2 is the special alias to host machine from Android emulator
+      return 'http://10.0.2.2:4000/api/v1';
+    }
+    // iOS Simulator uses localhost
+    return 'http://localhost:4000/api/v1';
   }
 
   /// Callback for session expiration
