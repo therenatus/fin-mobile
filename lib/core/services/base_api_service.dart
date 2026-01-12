@@ -305,4 +305,73 @@ abstract class BaseApiService {
       rethrow;
     }
   }
+
+  // ==================== LOGIN HELPER ====================
+
+  /// Common login flow for all API services.
+  ///
+  /// Handles: network errors, response parsing, error extraction, token saving.
+  ///
+  /// [endpoint] - API endpoint (e.g., '/auth/login')
+  /// [body] - Request body as Map
+  /// [fromJson] - Function to parse the auth response
+  /// [onSuccess] - Callback to save user data after successful login
+  /// [invalidCredentialsMessage] - Message for 401 errors (invalid credentials)
+  @protected
+  Future<T> performLogin<T>({
+    required String endpoint,
+    required Map<String, dynamic> body,
+    required T Function(Map<String, dynamic>) fromJson,
+    required Future<void> Function(T response) onSuccess,
+    String invalidCredentialsMessage = 'Неверный email или пароль',
+  }) async {
+    return withNetworkErrorHandling(() async {
+      final url = '$baseUrl$endpoint';
+      log('LOGIN: Attempting login to $url');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: await getHeaders(auth: false),
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 15));
+
+      log('LOGIN: Response status: ${response.statusCode}');
+
+      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = responseBody['data'] ?? responseBody;
+        final authResponse = fromJson(data as Map<String, dynamic>);
+        await onSuccess(authResponse);
+        return authResponse;
+      }
+
+      // For login, 401 means invalid credentials, not expired session
+      final errorMessage = responseBody['error']?['message'] ??
+          responseBody['message'] ??
+          (response.statusCode == 401
+              ? invalidCredentialsMessage
+              : 'Произошла ошибка');
+      throw createException(errorMessage, statusCode: response.statusCode);
+    });
+  }
+
+  /// Common logout flow for all API services.
+  ///
+  /// [endpoint] - API endpoint (e.g., '/auth/logout')
+  /// [onComplete] - Callback to clear user data (called in finally)
+  @protected
+  Future<void> performLogout({
+    required String endpoint,
+    required Future<void> Function() onComplete,
+  }) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: await getHeaders(),
+      );
+    } finally {
+      await onComplete();
+    }
+  }
 }

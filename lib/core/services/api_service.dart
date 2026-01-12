@@ -53,40 +53,16 @@ class ApiService extends BaseApiService {
   // ==================== AUTH ====================
 
   Future<AuthResponse> login(String email, String password) async {
-    return withNetworkErrorHandling(() async {
-      final url = '${BaseApiService.baseUrl}/auth/login';
-      log('LOGIN: Attempting login to $url');
-
-      final headers = await getHeaders(auth: false);
-      final requestBody = jsonEncode({'email': email, 'password': password});
-
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: requestBody,
-      ).timeout(const Duration(seconds: 15));
-
-      log('LOGIN: Response status: ${response.statusCode}');
-
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = body['data'] ?? body;
-        final authResponse = AuthResponse.fromJson(data as Map<String, dynamic>);
-        await storage.saveTokens(authResponse.accessToken, authResponse.refreshToken);
-        await storage.saveUser(authResponse.user);
-        log('LOGIN: Success! User: ${authResponse.user.email}');
-        return authResponse;
-      }
-
-      // For login, 401 means invalid credentials, not expired session
-      final errorMessage = body['error']?['message'] ??
-          body['message'] ??
-          (response.statusCode == 401
-              ? 'Неверный email или пароль'
-              : 'Произошла ошибка');
-      throw ApiException(errorMessage, statusCode: response.statusCode);
-    });
+    return performLogin(
+      endpoint: '/auth/login',
+      body: {'email': email, 'password': password},
+      fromJson: AuthResponse.fromJson,
+      onSuccess: (response) async {
+        await storage.saveTokens(response.accessToken, response.refreshToken);
+        await storage.saveUser(response.user);
+        log('LOGIN: Success! User: ${response.user.email}');
+      },
+    );
   }
 
   Future<AuthResponse> register(String email, String password, String tenantName) async {
@@ -110,14 +86,10 @@ class ApiService extends BaseApiService {
   }
 
   Future<void> logout() async {
-    try {
-      await http.post(
-        Uri.parse('${BaseApiService.baseUrl}/auth/logout'),
-        headers: await getHeaders(),
-      );
-    } finally {
-      await storage.clearAll();
-    }
+    return performLogout(
+      endpoint: '/auth/logout',
+      onComplete: () => storage.clearAll(),
+    );
   }
 
   Future<Map<String, dynamic>> getProfile() async {

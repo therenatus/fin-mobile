@@ -49,41 +49,20 @@ class ClientApiService extends BaseApiService {
   // ==================== AUTH ====================
 
   Future<ClientAuthResponse> login({String? email, String? phone, required String password}) async {
-    return withNetworkErrorHandling(() async {
-      final url = '${BaseApiService.baseUrl}/client/auth/login';
-      log('LOGIN: Attempting client login to $url');
-
-      final response = await http.post(
-        Uri.parse(url),
-        headers: await getHeaders(auth: false),
-        body: jsonEncode({
-          if (email != null) 'email': email,
-          if (phone != null) 'phone': phone,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 15));
-
-      log('LOGIN: Response status: ${response.statusCode}');
-
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = body['data'] ?? body;
-        final authResponse = ClientAuthResponse.fromJson(data as Map<String, dynamic>);
-        await storage.saveClientTokens(
-            authResponse.accessToken, authResponse.refreshToken);
-        await storage.saveClientUser(authResponse.user);
-        return authResponse;
-      }
-
-      // For login, 401 means invalid credentials, not expired session
-      final errorMessage = body['error']?['message'] ??
-          body['message'] ??
-          (response.statusCode == 401
-              ? 'Неверный email/телефон или пароль'
-              : 'Произошла ошибка');
-      throw ClientApiException(errorMessage, statusCode: response.statusCode);
-    });
+    return performLogin(
+      endpoint: '/client/auth/login',
+      body: {
+        if (email != null) 'email': email,
+        if (phone != null) 'phone': phone,
+        'password': password,
+      },
+      fromJson: ClientAuthResponse.fromJson,
+      onSuccess: (response) async {
+        await storage.saveClientTokens(response.accessToken, response.refreshToken);
+        await storage.saveClientUser(response.user);
+      },
+      invalidCredentialsMessage: 'Неверный email/телефон или пароль',
+    );
   }
 
   Future<ClientAuthResponse> register({
@@ -115,14 +94,10 @@ class ClientApiService extends BaseApiService {
   }
 
   Future<void> logout() async {
-    try {
-      await http.post(
-        Uri.parse('${BaseApiService.baseUrl}/client/auth/logout'),
-        headers: await getHeaders(),
-      );
-    } finally {
-      await storage.clearClientTokens();
-    }
+    return performLogout(
+      endpoint: '/client/auth/logout',
+      onComplete: () => storage.clearClientTokens(),
+    );
   }
 
   Future<ClientUser> getProfile() async {

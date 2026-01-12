@@ -52,51 +52,22 @@ class EmployeeApiService extends BaseApiService {
     required String email,
     required String password,
   }) async {
-    return withNetworkErrorHandling(() async {
-      final url = '${BaseApiService.baseUrl}/employee/auth/login';
-      log('LOGIN: Attempting employee login to $url');
-
-      final response = await http.post(
-        Uri.parse(url),
-        headers: await getHeaders(auth: false),
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 15));
-
-      log('LOGIN: Response status: ${response.statusCode}');
-
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = body['data'] ?? body;
-        final authResponse = EmployeeAuthResponse.fromJson(data as Map<String, dynamic>);
-        await storage.saveEmployeeTokens(
-            authResponse.accessToken, authResponse.refreshToken);
-        await storage.saveEmployeeUser(authResponse.user);
-        return authResponse;
-      }
-
-      // For login, 401 means invalid credentials, not expired session
-      final errorMessage = body['error']?['message'] ??
-          body['message'] ??
-          (response.statusCode == 401
-              ? 'Неверный email или пароль'
-              : 'Произошла ошибка');
-      throw EmployeeApiException(errorMessage, statusCode: response.statusCode);
-    });
+    return performLogin(
+      endpoint: '/employee/auth/login',
+      body: {'email': email, 'password': password},
+      fromJson: EmployeeAuthResponse.fromJson,
+      onSuccess: (response) async {
+        await storage.saveEmployeeTokens(response.accessToken, response.refreshToken);
+        await storage.saveEmployeeUser(response.user);
+      },
+    );
   }
 
   Future<void> logout() async {
-    try {
-      await http.post(
-        Uri.parse('${BaseApiService.baseUrl}/employee/auth/logout'),
-        headers: await getHeaders(),
-      );
-    } finally {
-      await storage.clearEmployeeTokens();
-    }
+    return performLogout(
+      endpoint: '/employee/auth/logout',
+      onComplete: () => storage.clearEmployeeTokens(),
+    );
   }
 
   Future<EmployeeUser> getProfile() async {

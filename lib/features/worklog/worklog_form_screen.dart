@@ -63,8 +63,8 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
       final ordersResponse = await api.getOrders(limit: 100);
       final employees = await api.getEmployees();
 
-      print('DEBUG WorkLogForm: Orders loaded: ${ordersResponse.orders.length}');
-      print('DEBUG WorkLogForm: Employees loaded: ${employees.length}');
+      debugPrint('[WorkLogForm] Orders loaded: ${ordersResponse.orders.length}');
+      debugPrint('[WorkLogForm] Employees loaded: ${employees.length}');
 
       setState(() {
         // Filter only in_progress orders
@@ -75,9 +75,9 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
         _isLoadingData = false;
       });
 
-      print('DEBUG WorkLogForm: In-progress orders: ${_orders.length}');
+      debugPrint('[WorkLogForm] In-progress orders: ${_orders.length}');
     } catch (e) {
-      print('DEBUG WorkLogForm: Error loading data: $e');
+      debugPrint('[WorkLogForm] Error loading data: $e');
       setState(() => _isLoadingData = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
