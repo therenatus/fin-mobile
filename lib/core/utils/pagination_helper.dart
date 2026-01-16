@@ -1,6 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-/// Metadata from paginated API responses
+/// Lightweight pagination metadata for internal state management.
+///
+/// This is separate from `models/pagination_meta.dart` which is used
+/// for parsing API responses. This class is for internal state tracking
+/// in the pagination helper.
 class PaginationMeta {
   final int page;
   final int totalPages;
@@ -12,6 +16,7 @@ class PaginationMeta {
     required this.hasNextPage,
   });
 
+  /// Create from page and totalPages (e.g., from OrdersResponse.meta)
   factory PaginationMeta.fromTotalPages(int page, int totalPages) {
     return PaginationMeta(
       page: page,
@@ -20,11 +25,22 @@ class PaginationMeta {
     );
   }
 
+  /// Create from page and hasNextPage flag (e.g., from ClientOrdersResponse.meta)
   factory PaginationMeta.fromHasNextPage(int page, bool hasNextPage) {
     return PaginationMeta(
       page: page,
       totalPages: hasNextPage ? page + 1 : page,
       hasNextPage: hasNextPage,
+    );
+  }
+
+  /// Create from a models/pagination_meta.dart PaginationMeta
+  factory PaginationMeta.fromApiMeta(dynamic apiMeta) {
+    // Works with models/pagination_meta.dart which has page, totalPages, hasNextPage
+    return PaginationMeta(
+      page: apiMeta.page as int,
+      totalPages: apiMeta.totalPages as int,
+      hasNextPage: apiMeta.hasNextPage as bool,
     );
   }
 }
@@ -42,14 +58,26 @@ class PaginationMeta {
 ///
 ///   Future<void> refreshOrders() async {
 ///     await _ordersPagination.refresh(
-///       fetcher: (page) => _api.getOrders(page: page),
+///       fetcher: (page, limit) async {
+///         final response = await _api.getOrders(page: page, limit: limit);
+///         return PaginatedResult(
+///           items: response.orders,
+///           meta: PaginationMeta.fromTotalPages(response.meta.page, response.meta.totalPages),
+///         );
+///       },
 ///       onUpdate: notifyListeners,
 ///     );
 ///   }
 ///
 ///   Future<void> loadMoreOrders() async {
 ///     await _ordersPagination.loadMore(
-///       fetcher: (page) => _api.getOrders(page: page),
+///       fetcher: (page, limit) async {
+///         final response = await _api.getOrders(page: page, limit: limit);
+///         return PaginatedResult(
+///           items: response.orders,
+///           meta: PaginationMeta.fromTotalPages(response.meta.page, response.meta.totalPages),
+///         );
+///       },
 ///       onUpdate: notifyListeners,
 ///     );
 ///   }
@@ -76,7 +104,6 @@ class PaginationState<T> {
   bool get hasMore => _hasMore;
   int get limit => _limit;
 
-  /// Result from a paginated fetch operation
   void _log(String message) {
     debugPrint('[$_logPrefix] $message');
   }

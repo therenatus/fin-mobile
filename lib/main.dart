@@ -119,6 +119,8 @@ class _AtelieProAppState extends State<AtelieProApp> {
 
   Future<void> _checkAppMode() async {
     final storage = context.read<StorageService>();
+    // Migrate tokens to secure storage if needed (one-time)
+    await storage.migrateToSecureStorage();
     final mode = await storage.getAppMode();
     setState(() {
       _appMode = mode;

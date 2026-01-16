@@ -1,132 +1,286 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
-import '../models/client_user.dart';
 import '../models/employee_user.dart';
+import 'secure_storage_service.dart';
+
+/// Generic token handler for any user mode.
+/// Consolidates duplicated token management logic.
+class TokenHandler<T> {
+  final SecureStorageService _secure;
+  final String _accessKey;
+  final String _refreshKey;
+  final String _userKey;
+  final T Function(Map<String, dynamic>) _fromJson;
+  final Map<String, dynamic> Function(T) _toJson;
+
+  TokenHandler({
+    required SecureStorageService secure,
+    required String accessKey,
+    required String refreshKey,
+    required String userKey,
+    required T Function(Map<String, dynamic>) fromJson,
+    required Map<String, dynamic> Function(T) toJson,
+  })  : _secure = secure,
+        _accessKey = accessKey,
+        _refreshKey = refreshKey,
+        _userKey = userKey,
+        _fromJson = fromJson,
+        _toJson = toJson;
+
+  /// Save access and refresh tokens
+  Future<void> saveTokens(String accessToken, String refreshToken) async {
+    await Future.wait([
+      _secure.write(_accessKey, accessToken),
+      _secure.write(_refreshKey, refreshToken),
+    ]);
+  }
+
+  /// Get access token
+  Future<String?> getAccessToken() => _secure.read(_accessKey);
+
+  /// Get refresh token
+  Future<String?> getRefreshToken() => _secure.read(_refreshKey);
+
+  /// Clear all tokens and user data
+  Future<void> clearTokens() async {
+    await Future.wait([
+      _secure.delete(_accessKey),
+      _secure.delete(_refreshKey),
+      _secure.delete(_userKey),
+    ]);
+  }
+
+  /// Check if tokens exist
+  Future<bool> hasTokens() async {
+    final token = await getAccessToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  /// Save user data
+  Future<void> saveUser(T user) async {
+    await _secure.write(_userKey, jsonEncode(_toJson(user)));
+  }
+
+  /// Get user data
+  Future<T?> getUser() async {
+    final userJson = await _secure.read(_userKey);
+    if (userJson == null) return null;
+    try {
+      return _fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Clear user data only
+  Future<void> clearUser() async {
+    await _secure.delete(_userKey);
+  }
+}
 
 class StorageService {
-  // Manager tokens
-  static const String _accessTokenKey = 'access_token';
-  static const String _refreshTokenKey = 'refresh_token';
-  static const String _userKey = 'user';
-  // Client tokens
-  static const String _clientAccessTokenKey = 'client_access_token';
-  static const String _clientRefreshTokenKey = 'client_refresh_token';
-  static const String _clientUserKey = 'client_user';
-  // Employee tokens
-  static const String _employeeAccessTokenKey = 'employee_access_token';
-  static const String _employeeRefreshTokenKey = 'employee_refresh_token';
-  static const String _employeeUserKey = 'employee_user';
-  // Settings
+  // Keys for SharedPreferences (non-sensitive data)
   static const String _themeKey = 'theme_mode';
-  static const String _appModeKey = 'app_mode'; // 'manager', 'client', or 'employee'
+  static const String _appModeKey = 'app_mode';
+  static const String _migrationKey = 'secure_storage_migrated_v1';
+
+  // Legacy keys for migration
+  static const String _legacyAccessTokenKey = 'access_token';
+  static const String _legacyRefreshTokenKey = 'refresh_token';
+  static const String _legacyUserKey = 'user';
+  static const String _legacyClientAccessTokenKey = 'client_access_token';
+  static const String _legacyClientRefreshTokenKey = 'client_refresh_token';
+  static const String _legacyClientUserKey = 'client_user';
+  static const String _legacyEmployeeAccessTokenKey = 'employee_access_token';
+  static const String _legacyEmployeeRefreshTokenKey = 'employee_refresh_token';
+  static const String _legacyEmployeeUserKey = 'employee_user';
 
   SharedPreferences? _prefs;
+  final SecureStorageService _secure;
+
+  /// Token handlers for each mode
+  late final TokenHandler<User> managerTokens;
+  late final TokenHandler<ClientUser> clientTokens;
+  late final TokenHandler<EmployeeUser> employeeTokens;
+
+  StorageService() : _secure = SecureStorageService() {
+    _initTokenHandlers();
+  }
+
+  /// Constructor for testing with mock secure storage
+  StorageService.withSecureStorage(this._secure) {
+    _initTokenHandlers();
+  }
+
+  void _initTokenHandlers() {
+    managerTokens = TokenHandler<User>(
+      secure: _secure,
+      accessKey: 'manager_access_token',
+      refreshKey: 'manager_refresh_token',
+      userKey: 'manager_user',
+      fromJson: User.fromJson,
+      toJson: (user) => user.toJson(),
+    );
+
+    clientTokens = TokenHandler<ClientUser>(
+      secure: _secure,
+      accessKey: 'client_access_token',
+      refreshKey: 'client_refresh_token',
+      userKey: 'client_user',
+      fromJson: ClientUser.fromJson,
+      toJson: (user) => user.toJson(),
+    );
+
+    employeeTokens = TokenHandler<EmployeeUser>(
+      secure: _secure,
+      accessKey: 'employee_access_token',
+      refreshKey: 'employee_refresh_token',
+      userKey: 'employee_user',
+      fromJson: EmployeeUser.fromJson,
+      toJson: (user) => user.toJson(),
+    );
+  }
 
   Future<SharedPreferences> get prefs async {
     _prefs ??= await SharedPreferences.getInstance();
     return _prefs!;
   }
 
-  // ==================== TOKENS ====================
+  // ==================== MIGRATION ====================
 
-  Future<void> saveTokens(String accessToken, String refreshToken) async {
+  /// Migrate tokens from SharedPreferences to SecureStorage (one-time)
+  Future<void> migrateToSecureStorage() async {
     final p = await prefs;
-    await p.setString(_accessTokenKey, accessToken);
-    await p.setString(_refreshTokenKey, refreshToken);
-  }
+    final migrated = p.getBool(_migrationKey) ?? false;
+    if (migrated) return;
 
-  Future<String?> getAccessToken() async {
-    final p = await prefs;
-    return p.getString(_accessTokenKey);
-  }
+    debugPrint('[StorageService] Migrating tokens to secure storage...');
 
-  Future<String?> getRefreshToken() async {
-    final p = await prefs;
-    return p.getString(_refreshTokenKey);
-  }
-
-  Future<void> clearTokens() async {
-    final p = await prefs;
-    await p.remove(_accessTokenKey);
-    await p.remove(_refreshTokenKey);
-  }
-
-  Future<bool> hasTokens() async {
-    final token = await getAccessToken();
-    return token != null && token.isNotEmpty;
-  }
-
-  // ==================== USER ====================
-
-  Future<void> saveUser(User user) async {
-    final p = await prefs;
-    await p.setString(_userKey, jsonEncode(user.toJson()));
-  }
-
-  Future<User?> getUser() async {
-    final p = await prefs;
-    final userJson = p.getString(_userKey);
-    if (userJson == null) return null;
     try {
-      return User.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+      // Migrate manager tokens
+      final managerAccess = p.getString(_legacyAccessTokenKey);
+      final managerRefresh = p.getString(_legacyRefreshTokenKey);
+      final managerUser = p.getString(_legacyUserKey);
+
+      if (managerAccess != null && managerRefresh != null) {
+        await managerTokens.saveTokens(managerAccess, managerRefresh);
+        if (managerUser != null) {
+          try {
+            final user = User.fromJson(jsonDecode(managerUser) as Map<String, dynamic>);
+            await managerTokens.saveUser(user);
+          } catch (_) {}
+        }
+        // Clear legacy data
+        await p.remove(_legacyAccessTokenKey);
+        await p.remove(_legacyRefreshTokenKey);
+        await p.remove(_legacyUserKey);
+      }
+
+      // Migrate client tokens
+      final clientAccess = p.getString(_legacyClientAccessTokenKey);
+      final clientRefresh = p.getString(_legacyClientRefreshTokenKey);
+      final clientUser = p.getString(_legacyClientUserKey);
+
+      if (clientAccess != null && clientRefresh != null) {
+        await clientTokens.saveTokens(clientAccess, clientRefresh);
+        if (clientUser != null) {
+          try {
+            final user = ClientUser.fromJson(jsonDecode(clientUser) as Map<String, dynamic>);
+            await clientTokens.saveUser(user);
+          } catch (_) {}
+        }
+        // Clear legacy data
+        await p.remove(_legacyClientAccessTokenKey);
+        await p.remove(_legacyClientRefreshTokenKey);
+        await p.remove(_legacyClientUserKey);
+      }
+
+      // Migrate employee tokens
+      final employeeAccess = p.getString(_legacyEmployeeAccessTokenKey);
+      final employeeRefresh = p.getString(_legacyEmployeeRefreshTokenKey);
+      final employeeUser = p.getString(_legacyEmployeeUserKey);
+
+      if (employeeAccess != null && employeeRefresh != null) {
+        await employeeTokens.saveTokens(employeeAccess, employeeRefresh);
+        if (employeeUser != null) {
+          try {
+            final user = EmployeeUser.fromJson(jsonDecode(employeeUser) as Map<String, dynamic>);
+            await employeeTokens.saveUser(user);
+          } catch (_) {}
+        }
+        // Clear legacy data
+        await p.remove(_legacyEmployeeAccessTokenKey);
+        await p.remove(_legacyEmployeeRefreshTokenKey);
+        await p.remove(_legacyEmployeeUserKey);
+      }
+
+      await p.setBool(_migrationKey, true);
+      debugPrint('[StorageService] Migration completed');
     } catch (e) {
-      return null;
+      debugPrint('[StorageService] Migration error: $e');
     }
   }
 
-  Future<void> clearUser() async {
-    final p = await prefs;
-    await p.remove(_userKey);
-  }
+  // ==================== MANAGER TOKENS (backwards compatible) ====================
+
+  Future<void> saveTokens(String accessToken, String refreshToken) =>
+      managerTokens.saveTokens(accessToken, refreshToken);
+
+  Future<String?> getAccessToken() => managerTokens.getAccessToken();
+
+  Future<String?> getRefreshToken() => managerTokens.getRefreshToken();
+
+  Future<void> clearTokens() => managerTokens.clearTokens();
+
+  Future<bool> hasTokens() => managerTokens.hasTokens();
+
+  // ==================== MANAGER USER ====================
+
+  Future<void> saveUser(User user) => managerTokens.saveUser(user);
+
+  Future<User?> getUser() => managerTokens.getUser();
+
+  Future<void> clearUser() => managerTokens.clearUser();
 
   // ==================== CLIENT TOKENS ====================
 
-  Future<void> saveClientTokens(String accessToken, String refreshToken) async {
-    final p = await prefs;
-    await p.setString(_clientAccessTokenKey, accessToken);
-    await p.setString(_clientRefreshTokenKey, refreshToken);
-  }
+  Future<void> saveClientTokens(String accessToken, String refreshToken) =>
+      clientTokens.saveTokens(accessToken, refreshToken);
 
-  Future<String?> getClientAccessToken() async {
-    final p = await prefs;
-    return p.getString(_clientAccessTokenKey);
-  }
+  Future<String?> getClientAccessToken() => clientTokens.getAccessToken();
 
-  Future<String?> getClientRefreshToken() async {
-    final p = await prefs;
-    return p.getString(_clientRefreshTokenKey);
-  }
+  Future<String?> getClientRefreshToken() => clientTokens.getRefreshToken();
 
-  Future<void> clearClientTokens() async {
-    final p = await prefs;
-    await p.remove(_clientAccessTokenKey);
-    await p.remove(_clientRefreshTokenKey);
-    await p.remove(_clientUserKey);
-  }
+  Future<void> clearClientTokens() => clientTokens.clearTokens();
 
-  Future<bool> hasClientTokens() async {
-    final token = await getClientAccessToken();
-    return token != null && token.isNotEmpty;
-  }
+  Future<bool> hasClientTokens() => clientTokens.hasTokens();
 
   // ==================== CLIENT USER ====================
 
-  Future<void> saveClientUser(ClientUser user) async {
-    final p = await prefs;
-    await p.setString(_clientUserKey, jsonEncode(user.toJson()));
-  }
+  Future<void> saveClientUser(ClientUser user) => clientTokens.saveUser(user);
 
-  Future<ClientUser?> getClientUser() async {
-    final p = await prefs;
-    final userJson = p.getString(_clientUserKey);
-    if (userJson == null) return null;
-    try {
-      return ClientUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
-    } catch (e) {
-      return null;
-    }
-  }
+  Future<ClientUser?> getClientUser() => clientTokens.getUser();
+
+  // ==================== EMPLOYEE TOKENS ====================
+
+  Future<void> saveEmployeeTokens(String accessToken, String refreshToken) =>
+      employeeTokens.saveTokens(accessToken, refreshToken);
+
+  Future<String?> getEmployeeAccessToken() => employeeTokens.getAccessToken();
+
+  Future<String?> getEmployeeRefreshToken() => employeeTokens.getRefreshToken();
+
+  Future<void> clearEmployeeTokens() => employeeTokens.clearTokens();
+
+  Future<bool> hasEmployeeTokens() => employeeTokens.hasTokens();
+
+  // ==================== EMPLOYEE USER ====================
+
+  Future<void> saveEmployeeUser(EmployeeUser user) => employeeTokens.saveUser(user);
+
+  Future<EmployeeUser?> getEmployeeUser() => employeeTokens.getUser();
 
   // ==================== APP MODE ====================
 
@@ -162,66 +316,18 @@ class StorageService {
   Future<void> clearAll() async {
     final p = await prefs;
     await p.clear();
+    await _secure.deleteAll();
   }
 
   Future<void> clearManagerData() async {
-    await clearTokens();
-    await clearUser();
+    await managerTokens.clearTokens();
   }
 
   Future<void> clearClientData() async {
-    await clearClientTokens();
-  }
-
-  // ==================== EMPLOYEE TOKENS ====================
-
-  Future<void> saveEmployeeTokens(String accessToken, String refreshToken) async {
-    final p = await prefs;
-    await p.setString(_employeeAccessTokenKey, accessToken);
-    await p.setString(_employeeRefreshTokenKey, refreshToken);
-  }
-
-  Future<String?> getEmployeeAccessToken() async {
-    final p = await prefs;
-    return p.getString(_employeeAccessTokenKey);
-  }
-
-  Future<String?> getEmployeeRefreshToken() async {
-    final p = await prefs;
-    return p.getString(_employeeRefreshTokenKey);
-  }
-
-  Future<void> clearEmployeeTokens() async {
-    final p = await prefs;
-    await p.remove(_employeeAccessTokenKey);
-    await p.remove(_employeeRefreshTokenKey);
-    await p.remove(_employeeUserKey);
-  }
-
-  Future<bool> hasEmployeeTokens() async {
-    final token = await getEmployeeAccessToken();
-    return token != null && token.isNotEmpty;
-  }
-
-  // ==================== EMPLOYEE USER ====================
-
-  Future<void> saveEmployeeUser(EmployeeUser user) async {
-    final p = await prefs;
-    await p.setString(_employeeUserKey, jsonEncode(user.toJson()));
-  }
-
-  Future<EmployeeUser?> getEmployeeUser() async {
-    final p = await prefs;
-    final userJson = p.getString(_employeeUserKey);
-    if (userJson == null) return null;
-    try {
-      return EmployeeUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
-    } catch (e) {
-      return null;
-    }
+    await clientTokens.clearTokens();
   }
 
   Future<void> clearEmployeeData() async {
-    await clearEmployeeTokens();
+    await employeeTokens.clearTokens();
   }
 }

@@ -63,7 +63,8 @@ abstract class BaseApiService {
   }
 
   /// Notify all registered callbacks about session expiration
-  static void _notifySessionExpired() {
+  @protected
+  static void notifySessionExpired() {
     for (final callback in _sessionExpiredCallbacks.values) {
       callback();
     }
@@ -228,7 +229,7 @@ abstract class BaseApiService {
     if (response.statusCode == 401) {
       final refreshed = await refreshToken();
       if (!refreshed) {
-        _notifySessionExpired();
+        notifySessionExpired();
         throw createException('Сессия истекла. Войдите снова.', statusCode: 401);
       }
       throw createException('Retry', statusCode: 401);
@@ -273,7 +274,7 @@ abstract class BaseApiService {
     if (response.statusCode == 401) {
       final refreshed = await refreshToken();
       if (!refreshed) {
-        _notifySessionExpired();
+        notifySessionExpired();
         throw createException('Сессия истекла', statusCode: 401);
       }
       throw createException('Retry', statusCode: 401);

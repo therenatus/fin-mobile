@@ -3,12 +3,15 @@ import '../models/employee_user.dart';
 import '../services/base_api_service.dart';
 import '../services/employee_api_service.dart';
 import '../services/storage_service.dart';
+import 'mixins/authentication_mixin.dart';
+import 'mixins/pagination_mixin.dart';
 
 void _log(String message) {
   debugPrint('[EmployeeProvider] $message');
 }
 
-class EmployeeProvider extends ChangeNotifier {
+class EmployeeProvider extends ChangeNotifier
+    with AuthenticationMixin, PaginationMixin {
   final StorageService _storage;
   final EmployeeApiService _api;
 
@@ -16,16 +19,14 @@ class EmployeeProvider extends ChangeNotifier {
   List<EmployeeAssignment> _assignments = [];
   List<EmployeeWorkLog> _workLogs = [];
   List<EmployeePayroll> _payrolls = [];
-  bool _isLoading = false;
-  String? _error;
 
-  // Pagination state for assignments
-  int _assignmentsPage = 1;
-  bool _isLoadingMoreAssignments = false;
-  bool _hasMoreAssignments = true;
+  // Pagination state using mixin
+  late final PaginationState<EmployeeAssignment> _assignmentsPagination;
 
   EmployeeProvider(this._storage) : _api = EmployeeApiService(_storage) {
-    // Set up session expiration callback
+    _assignmentsPagination = createPaginationController<EmployeeAssignment>(
+      logPrefix: 'EmployeeAssignments',
+    );
     BaseApiService.registerSessionExpiredCallback('employee', _handleSessionExpired);
   }
 
@@ -35,19 +36,24 @@ class EmployeeProvider extends ChangeNotifier {
     _assignments = [];
     _workLogs = [];
     _payrolls = [];
+    clearAllPagination();
     _storage.clearEmployeeData();
     notifyListeners();
   }
+
+  // ==================== Getters ====================
 
   EmployeeUser? get user => _user;
   List<EmployeeAssignment> get assignments => _assignments;
   List<EmployeeWorkLog> get workLogs => _workLogs;
   List<EmployeePayroll> get payrolls => _payrolls;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
   bool get isAuthenticated => _user != null;
-  bool get isLoadingMoreAssignments => _isLoadingMoreAssignments;
-  bool get hasMoreAssignments => _hasMoreAssignments;
+
+  // Pagination getters
+  bool get isLoadingMoreAssignments => _assignmentsPagination.isLoadingMore;
+  bool get hasMoreAssignments => _assignmentsPagination.hasMore;
+
+  // ==================== Initialization ====================
 
   Future<void> init() async {
     final savedUser = await _storage.getEmployeeUser();
@@ -58,33 +64,21 @@ class EmployeeProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> login({required String email, required String password}) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  // ==================== Authentication ====================
 
-    try {
-      _log('Attempting login...');
-      final response = await _api.login(
+  Future<bool> login({required String email, required String password}) async {
+    return performAuthenticatedAction(
+      action: () => _api.login(
         email: email,
         password: password,
-      );
-      _log('Login successful');
-      _user = response.user;
-      await refreshData();
-      return true;
-    } on EmployeeApiException catch (e) {
-      _log('API error: ${e.message}, code: ${e.statusCode}');
-      _error = e.message;
-      return false;
-    } catch (e) {
-      _log('Unexpected error: $e');
-      _error = 'Не удалось подключиться к серверу';
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+      ),
+      onSuccess: (response) async {
+        _user = response.user;
+        await refreshData();
+      },
+      log: _log,
+      actionName: 'login',
+    );
   }
 
   Future<void> logout() async {
@@ -95,10 +89,13 @@ class EmployeeProvider extends ChangeNotifier {
       _assignments = [];
       _workLogs = [];
       _payrolls = [];
+      clearAllPagination();
       await _storage.clearEmployeeData();
       notifyListeners();
     }
   }
+
+  // ==================== Data Refresh ====================
 
   Future<void> refreshData() async {
     if (_user == null) return;
@@ -115,44 +112,49 @@ class EmployeeProvider extends ChangeNotifier {
   }
 
   Future<void> refreshAssignments({bool includeCompleted = false}) async {
-    _assignmentsPage = 1;
-    _hasMoreAssignments = true;
-
-    try {
-      final response = await _api.getAssignments(
-        page: 1,
-        limit: 20,
-        includeCompleted: includeCompleted,
-      );
-      _assignments = response.assignments;
-      _hasMoreAssignments = response.meta.hasNextPage;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error refreshing assignments: $e');
-    }
+    await _assignmentsPagination.refresh(
+      fetcher: (page, limit) async {
+        final response = await _api.getAssignments(
+          page: page,
+          limit: limit,
+          includeCompleted: includeCompleted,
+        );
+        return PaginatedResult(
+          items: response.assignments,
+          meta: PaginationMeta.fromHasNextPage(
+            response.meta.page,
+            response.meta.hasNextPage,
+          ),
+        );
+      },
+      onUpdate: () {
+        _assignments = _assignmentsPagination.items;
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> loadMoreAssignments({bool includeCompleted = false}) async {
-    if (_isLoadingMoreAssignments || !_hasMoreAssignments) return;
-
-    _isLoadingMoreAssignments = true;
-    notifyListeners();
-
-    try {
-      final response = await _api.getAssignments(
-        page: _assignmentsPage + 1,
-        limit: 20,
-        includeCompleted: includeCompleted,
-      );
-      _assignmentsPage++;
-      _assignments.addAll(response.assignments);
-      _hasMoreAssignments = response.meta.hasNextPage;
-    } catch (e) {
-      debugPrint('Error loading more assignments: $e');
-    } finally {
-      _isLoadingMoreAssignments = false;
-      notifyListeners();
-    }
+    await _assignmentsPagination.loadMore(
+      fetcher: (page, limit) async {
+        final response = await _api.getAssignments(
+          page: page,
+          limit: limit,
+          includeCompleted: includeCompleted,
+        );
+        return PaginatedResult(
+          items: response.assignments,
+          meta: PaginationMeta.fromHasNextPage(
+            response.meta.page,
+            response.meta.hasNextPage,
+          ),
+        );
+      },
+      onUpdate: () {
+        _assignments = _assignmentsPagination.items;
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> refreshWorkLogs({DateTime? startDate, DateTime? endDate}) async {
@@ -176,6 +178,8 @@ class EmployeeProvider extends ChangeNotifier {
     }
   }
 
+  // ==================== WorkLog Operations ====================
+
   Future<EmployeeWorkLog> createWorkLog(CreateWorkLogRequest request) async {
     final workLog = await _api.createWorkLog(request);
     await refreshAssignments();
@@ -183,8 +187,6 @@ class EmployeeProvider extends ChangeNotifier {
     return workLog;
   }
 
-  /// Get work log for specific assignment and date
-  /// Returns null if no record exists for that date
   Future<Map<String, dynamic>?> getWorkLogByDate(String assignmentId, DateTime date) async {
     final dateStr = date.toIso8601String().split('T')[0];
     return _api.getWorkLogByDate(assignmentId, dateStr);
@@ -193,6 +195,8 @@ class EmployeeProvider extends ChangeNotifier {
   Future<Map<String, dynamic>> getAssignmentDetails(String id) async {
     return _api.getAssignmentById(id);
   }
+
+  // ==================== Push Notifications ====================
 
   Future<void> registerPushDevice(String playerId) async {
     try {
@@ -210,7 +214,8 @@ class EmployeeProvider extends ChangeNotifier {
     }
   }
 
-  /// Get role display label
+  // ==================== Utilities ====================
+
   String getRoleLabel(String roleCode) {
     switch (roleCode) {
       case 'tailor':
