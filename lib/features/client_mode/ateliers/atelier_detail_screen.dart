@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +20,7 @@ class AtelierDetailScreen extends StatefulWidget {
 
 class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   // Local filter/sort state
   String _searchQuery = '';
@@ -35,8 +38,18 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        _searchQuery = value;
+      });
+    });
   }
 
   List<ClientOrder> _getFilteredOrders(List<ClientOrder> allOrders) {
@@ -138,6 +151,7 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
                             ? IconButton(
                                 icon: const Icon(Icons.clear),
                                 onPressed: () {
+                                  _searchDebounce?.cancel();
                                   _searchController.clear();
                                   setState(() => _searchQuery = '');
                                 },
@@ -154,7 +168,7 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
                           vertical: AppSpacing.sm,
                         ),
                       ),
-                      onChanged: (value) => setState(() => _searchQuery = value),
+                      onChanged: _onSearchChanged,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     // Status filter chips

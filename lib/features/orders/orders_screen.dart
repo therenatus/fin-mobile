@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
@@ -22,6 +23,7 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   String _searchQuery = '';
   DateTimeRange? _dueDateRange;
   DateTimeRange? _createdDateRange;
@@ -49,9 +51,19 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        _searchQuery = value.toLowerCase();
+      });
+    });
   }
 
   @override
@@ -86,12 +98,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 child: AppSearchBar(
                   controller: _searchController,
                   hint: 'Поиск заказов...',
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value.toLowerCase();
-                    });
-                  },
+                  onChanged: _onSearchChanged,
                   onClear: () {
+                    _searchDebounce?.cancel();
                     setState(() {
                       _searchQuery = '';
                     });

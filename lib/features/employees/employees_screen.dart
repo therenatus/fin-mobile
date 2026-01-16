@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +21,7 @@ class EmployeesScreen extends StatefulWidget {
 
 class _EmployeesScreenState extends State<EmployeesScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   String _searchQuery = '';
   String? _roleFilter;
   bool? _activeFilter; // null = all, true = active, false = inactive
@@ -39,8 +42,18 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        _searchQuery = value.toLowerCase();
+      });
+    });
   }
 
   Future<void> _loadEmployees() async {
@@ -115,12 +128,9 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                 child: AppSearchBar(
                   controller: _searchController,
                   hint: 'Поиск сотрудников...',
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value.toLowerCase();
-                    });
-                  },
+                  onChanged: _onSearchChanged,
                   onClear: () {
+                    _searchDebounce?.cancel();
                     setState(() {
                       _searchQuery = '';
                     });

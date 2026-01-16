@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,6 +22,7 @@ class ModelsScreen extends StatefulWidget {
 
 class _ModelsScreenState extends State<ModelsScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   String _searchQuery = '';
   String? _categoryFilter;
   bool _isLoading = true;
@@ -54,8 +57,18 @@ class _ModelsScreenState extends State<ModelsScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        _searchQuery = value.toLowerCase();
+      });
+    });
   }
 
   Future<void> _loadModels() async {
@@ -176,12 +189,9 @@ class _ModelsScreenState extends State<ModelsScreen> {
             child: AppSearchBar(
               controller: _searchController,
               hint: 'Поиск моделей...',
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
+              onChanged: _onSearchChanged,
               onClear: () {
+                _searchDebounce?.cancel();
                 setState(() {
                   _searchQuery = '';
                 });

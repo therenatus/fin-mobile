@@ -280,18 +280,32 @@ class AppProvider with ChangeNotifier {
     _clientsError = null;
     notifyListeners();
 
-    // Refresh user profile from server
+    // Load all data in parallel
+    await Future.wait([
+      _loadProfile(),
+      _loadAnalytics(),
+      _loadOrders(),
+      _loadClients(),
+      _loadFinanceReport(),
+      _loadEmployeeRoles(),
+    ], eagerError: false);
+
+    _isLoadingData = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadProfile() async {
     try {
       final profileData = await _api.getProfile();
       _log('Profile data: $profileData');
       _user = User.fromJson(profileData);
       _storage.saveUser(_user!);
-      notifyListeners();
     } catch (e) {
       _log('Failed to refresh user profile: $e');
     }
+  }
 
-    // Load analytics dashboard
+  Future<void> _loadAnalytics() async {
     try {
       _analyticsDashboard = await _api.getAnalyticsDashboard(period: _analyticsPeriod);
       _dashboardStats = _analyticsDashboard?.summary;
@@ -301,8 +315,9 @@ class AppProvider with ChangeNotifier {
       _analyticsDashboard = null;
       _dashboardError = e.toString();
     }
+  }
 
-    // Load recent orders
+  Future<void> _loadOrders() async {
     try {
       final ordersResponse = await _api.getOrders(page: 1, limit: 5);
       _recentOrders = ordersResponse.orders;
@@ -311,8 +326,9 @@ class AppProvider with ChangeNotifier {
       _recentOrders = [];
       _ordersError = e.toString();
     }
+  }
 
-    // Load clients
+  Future<void> _loadClients() async {
     try {
       _clients = await _api.getClients(page: 1, limit: 10);
     } catch (e) {
@@ -320,8 +336,9 @@ class AppProvider with ChangeNotifier {
       _clients = [];
       _clientsError = e.toString();
     }
+  }
 
-    // Load finance report for current month
+  Future<void> _loadFinanceReport() async {
     try {
       final now = DateTime.now();
       final startOfMonth = DateTime(now.year, now.month, 1);
@@ -330,20 +347,20 @@ class AppProvider with ChangeNotifier {
         endDate: now.toIso8601String().split('T')[0],
       );
     } catch (e) {
+      _log('Failed to load finance report: $e');
       _financeReport = null;
     }
+  }
 
-    // Load employee roles
+  Future<void> _loadEmployeeRoles() async {
     if (_employeeRoles.isEmpty) {
       try {
         _employeeRoles = await _api.getEmployeeRoles();
       } catch (e) {
+        _log('Failed to load employee roles: $e');
         _employeeRoles = [];
       }
     }
-
-    _isLoadingData = false;
-    notifyListeners();
   }
 
   Future<void> refreshDashboard() async {

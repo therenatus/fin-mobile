@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,13 +22,24 @@ class ClientsScreen extends StatefulWidget {
 
 class _ClientsScreenState extends State<ClientsScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   String _searchQuery = '';
   String _sortBy = 'name'; // name, orders, spent
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        _searchQuery = value.toLowerCase();
+      });
+    });
   }
 
   @override
@@ -69,12 +82,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
             child: AppSearchBar(
               controller: _searchController,
               hint: 'Поиск заказчиков...',
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
+              onChanged: _onSearchChanged,
               onClear: () {
+                _searchDebounce?.cancel();
                 setState(() {
                   _searchQuery = '';
                 });
