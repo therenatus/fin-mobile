@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'storage_service.dart';
+import 'http_logger.dart';
 
 /// Base exception class for all API services
 class BaseApiException implements Exception {
@@ -26,6 +27,9 @@ class BaseApiException implements Exception {
 /// Abstract base class for all API services
 /// Provides common functionality for network requests, auth, and error handling
 abstract class BaseApiService {
+  /// Mutex for token refresh - prevents race condition when multiple
+  /// requests receive 401 simultaneously
+  Completer<bool>? _refreshCompleter;
   // API URL from build-time configuration
   // Usage: flutter build apk --dart-define=API_URL=https://api.yourdomain.com/api/v1
   static const String _apiUrl =
@@ -115,6 +119,123 @@ abstract class BaseApiService {
     debugPrint('$logPrefix $message');
   }
 
+  // ==================== LOGGED HTTP METHODS ====================
+
+  /// Perform GET request with automatic logging
+  @protected
+  Future<http.Response> loggedGet(Uri url, {Map<String, String>? headers}) async {
+    HttpLogger.logRequest(method: 'GET', url: url, headers: headers);
+    final stopwatch = Stopwatch()..start();
+    try {
+      final response = await http.get(url, headers: headers);
+      stopwatch.stop();
+      HttpLogger.logResponse(
+        method: 'GET',
+        url: url,
+        statusCode: response.statusCode,
+        duration: stopwatch.elapsed,
+        body: response.body,
+      );
+      return response;
+    } catch (e) {
+      stopwatch.stop();
+      HttpLogger.logError(method: 'GET', url: url, error: e, duration: stopwatch.elapsed);
+      rethrow;
+    }
+  }
+
+  /// Perform POST request with automatic logging
+  @protected
+  Future<http.Response> loggedPost(Uri url, {Map<String, String>? headers, dynamic body}) async {
+    HttpLogger.logRequest(method: 'POST', url: url, headers: headers, body: body);
+    final stopwatch = Stopwatch()..start();
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      stopwatch.stop();
+      HttpLogger.logResponse(
+        method: 'POST',
+        url: url,
+        statusCode: response.statusCode,
+        duration: stopwatch.elapsed,
+        body: response.body,
+      );
+      return response;
+    } catch (e) {
+      stopwatch.stop();
+      HttpLogger.logError(method: 'POST', url: url, error: e, duration: stopwatch.elapsed);
+      rethrow;
+    }
+  }
+
+  /// Perform PUT request with automatic logging
+  @protected
+  Future<http.Response> loggedPut(Uri url, {Map<String, String>? headers, dynamic body}) async {
+    HttpLogger.logRequest(method: 'PUT', url: url, headers: headers, body: body);
+    final stopwatch = Stopwatch()..start();
+    try {
+      final response = await http.put(url, headers: headers, body: body);
+      stopwatch.stop();
+      HttpLogger.logResponse(
+        method: 'PUT',
+        url: url,
+        statusCode: response.statusCode,
+        duration: stopwatch.elapsed,
+        body: response.body,
+      );
+      return response;
+    } catch (e) {
+      stopwatch.stop();
+      HttpLogger.logError(method: 'PUT', url: url, error: e, duration: stopwatch.elapsed);
+      rethrow;
+    }
+  }
+
+  /// Perform PATCH request with automatic logging
+  @protected
+  Future<http.Response> loggedPatch(Uri url, {Map<String, String>? headers, dynamic body}) async {
+    HttpLogger.logRequest(method: 'PATCH', url: url, headers: headers, body: body);
+    final stopwatch = Stopwatch()..start();
+    try {
+      final response = await http.patch(url, headers: headers, body: body);
+      stopwatch.stop();
+      HttpLogger.logResponse(
+        method: 'PATCH',
+        url: url,
+        statusCode: response.statusCode,
+        duration: stopwatch.elapsed,
+        body: response.body,
+      );
+      return response;
+    } catch (e) {
+      stopwatch.stop();
+      HttpLogger.logError(method: 'PATCH', url: url, error: e, duration: stopwatch.elapsed);
+      rethrow;
+    }
+  }
+
+  /// Perform DELETE request with automatic logging
+  @protected
+  Future<http.Response> loggedDelete(Uri url, {Map<String, String>? headers}) async {
+    HttpLogger.logRequest(method: 'DELETE', url: url, headers: headers);
+    final stopwatch = Stopwatch()..start();
+    try {
+      final response = await http.delete(url, headers: headers);
+      stopwatch.stop();
+      HttpLogger.logResponse(
+        method: 'DELETE',
+        url: url,
+        statusCode: response.statusCode,
+        duration: stopwatch.elapsed,
+        body: response.body,
+      );
+      return response;
+    } catch (e) {
+      stopwatch.stop();
+      HttpLogger.logError(method: 'DELETE', url: url, error: e, duration: stopwatch.elapsed);
+      rethrow;
+    }
+  }
+
   /// Get headers for HTTP requests
   @protected
   Future<Map<String, String>> getHeaders({bool auth = true}) async {
@@ -176,11 +297,23 @@ abstract class BaseApiService {
   }
 
   /// Refresh access token using refresh token
+  /// Uses a Completer as mutex to prevent race conditions when multiple
+  /// requests trigger refresh simultaneously
   @protected
   Future<bool> refreshToken() async {
+    // If refresh is already in progress, wait for its result
+    if (_refreshCompleter != null) {
+      return _refreshCompleter!.future;
+    }
+
+    _refreshCompleter = Completer<bool>();
+
     try {
       final token = await getRefreshToken();
-      if (token == null) return false;
+      if (token == null) {
+        _refreshCompleter!.complete(false);
+        return false;
+      }
 
       final response = await http.post(
         Uri.parse('$baseUrl$authRefreshEndpoint'),
@@ -197,14 +330,19 @@ abstract class BaseApiService {
           data['accessToken'] as String,
           data['refreshToken'] as String,
         );
+        _refreshCompleter!.complete(true);
         return true;
       }
 
       await clearTokens();
+      _refreshCompleter!.complete(false);
       return false;
     } catch (e) {
       await clearTokens();
+      _refreshCompleter!.complete(false);
       return false;
+    } finally {
+      _refreshCompleter = null;
     }
   }
 
