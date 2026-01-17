@@ -12,6 +12,11 @@ import 'api/ml_api.dart';
 import 'api/billing_api.dart';
 import 'api/notifications_api.dart';
 import 'api/assignments_api.dart';
+import 'api/materials_api.dart';
+import 'api/suppliers_api.dart';
+import 'api/purchases_api.dart';
+import 'api/bom_api.dart';
+import 'api/costing_api.dart';
 
 /// Exception class for ApiService
 class ApiException extends BaseApiException {
@@ -38,6 +43,11 @@ class ApiException extends BaseApiException {
 /// - BillingApiMixin: subscriptions and purchases
 /// - NotificationsApiMixin: push notifications
 /// - AssignmentsApiMixin: order assignments
+/// - MaterialsApiMixin: materials and stock management
+/// - SuppliersApiMixin: suppliers management
+/// - PurchasesApiMixin: purchases management
+/// - BomApiMixin: bill of materials
+/// - CostingApiMixin: costing, pricing and profitability
 class ApiService extends BaseApiService
     with
         AuthApiMixin,
@@ -51,7 +61,12 @@ class ApiService extends BaseApiService
         MlApiMixin,
         BillingApiMixin,
         NotificationsApiMixin,
-        AssignmentsApiMixin {
+        AssignmentsApiMixin,
+        MaterialsApiMixin,
+        SuppliersApiMixin,
+        PurchasesApiMixin,
+        BomApiMixin,
+        CostingApiMixin {
   ApiService(StorageService storage) : super(storage);
 
   @override

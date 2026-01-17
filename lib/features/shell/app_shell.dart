@@ -19,6 +19,7 @@ import '../employees/employees_screen.dart';
 import '../payroll/payroll_screen.dart';
 import '../worklogs/worklogs_screen.dart';
 import '../subscription/subscription_screen.dart';
+import '../materials/materials_screen.dart';
 
 class AppShell extends StatefulWidget {
   final int initialIndex;
@@ -260,6 +261,17 @@ class _AppShellState extends State<AppShell> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const ModelsScreen()),
+                    );
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Склад материалов',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MaterialsScreen()),
                     );
                   },
                 ),

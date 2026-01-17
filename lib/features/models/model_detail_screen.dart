@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
+import '../../core/providers/bom_provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/process_step.dart';
+import '../../core/models/bom.dart';
 import '../../core/services/api_service.dart';
 import 'process_step_form_screen.dart';
 import 'model_form_screen.dart';
+import '../bom/bom_detail_screen.dart';
 
 class ModelDetailScreen extends StatefulWidget {
   final OrderModel model;
@@ -22,10 +25,13 @@ class ModelDetailScreen extends StatefulWidget {
 class _ModelDetailScreenState extends State<ModelDetailScreen> {
   late OrderModel _model;
   List<ProcessStep> _processSteps = [];
+  Bom? _bom;
   bool _isLoading = true;
+  bool _isBomLoading = true;
   bool _initialized = false;
 
   ApiService get _api => context.read<AppProvider>().api;
+  BomProvider get _bomProvider => context.read<BomProvider>();
 
   @override
   void initState() {
@@ -38,7 +44,27 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadProcessSteps();
+      _loadData();
+    }
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadProcessSteps(),
+      _loadBom(),
+    ]);
+  }
+
+  Future<void> _loadBom() async {
+    setState(() => _isBomLoading = true);
+    try {
+      final bom = await _bomProvider.loadModelBom(_model.id);
+      setState(() {
+        _bom = bom;
+        _isBomLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isBomLoading = false);
     }
   }
 
@@ -81,7 +107,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadProcessSteps,
+        onRefresh: _loadData,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
@@ -97,6 +123,8 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _buildModelInfo(),
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildBomSection(),
                   const SizedBox(height: AppSpacing.lg),
                   _buildProcessStepsSection(),
                 ]),
@@ -223,6 +251,254 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildBomSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.calculate_outlined, size: 20, color: context.textSecondaryColor),
+            const SizedBox(width: 8),
+            Text(
+              'Спецификация (BOM)',
+              style: AppTypography.h4.copyWith(
+                color: context.textPrimaryColor,
+              ),
+            ),
+            const Spacer(),
+            if (_bom != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                ),
+                child: Text(
+                  'v${_bom!.version}',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (_isBomLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (_bom == null)
+          _buildNoBomCard()
+        else
+          _buildBomCard(),
+      ],
+    );
+  }
+
+  Widget _buildNoBomCard() {
+    return Card(
+      elevation: 0,
+      color: context.surfaceVariantColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: InkWell(
+        onTap: _openBomScreen,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Icon(
+                  Icons.add_circle_outline,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Создать спецификацию',
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.textPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Добавьте материалы и операции для расчёта себестоимости',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: context.textSecondaryColor,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBomCard() {
+    return Card(
+      elevation: 0,
+      color: AppColors.primary.withOpacity(0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+      ),
+      child: InkWell(
+        onTap: _openBomScreen,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            children: [
+              // Cost summary row
+              Row(
+                children: [
+                  Expanded(
+                    child: _BomCostColumn(
+                      label: 'Материалы',
+                      value: _bom!.formattedMaterialCost,
+                      icon: Icons.inventory_2_outlined,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 50,
+                    color: context.borderColor,
+                  ),
+                  Expanded(
+                    child: _BomCostColumn(
+                      label: 'Работа',
+                      value: _bom!.formattedLaborCost,
+                      icon: Icons.engineering_outlined,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 50,
+                    color: context.borderColor,
+                  ),
+                  Expanded(
+                    child: _BomCostColumn(
+                      label: 'Итого',
+                      value: _bom!.formattedTotalCost,
+                      icon: Icons.summarize_outlined,
+                      isPrimary: true,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              // Items/operations summary
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.surfaceColor,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 14,
+                          color: context.textSecondaryColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_bom!.items.length} материалов',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: context.textSecondaryColor,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Icon(
+                          Icons.build_outlined,
+                          size: 14,
+                          color: context.textSecondaryColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_bom!.operations.length} операций',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: context.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Подробнее',
+                        style: AppTypography.labelMedium.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openBomScreen() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BomDetailScreen(
+          model: _model,
+          initialBom: _bom,
+        ),
+      ),
+    );
+    if (result == true || result == null) {
+      // Refresh BOM after returning
+      _loadBom();
+    }
   }
 
   Widget _buildProcessStepsSection() {
@@ -769,6 +1045,48 @@ class _FullScreenImageView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BomCostColumn extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final bool isPrimary;
+
+  const _BomCostColumn({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.isPrimary = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: isPrimary ? AppColors.primary : context.textSecondaryColor,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: AppTypography.labelSmall.copyWith(
+            color: context.textSecondaryColor,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: AppTypography.bodyLarge.copyWith(
+            fontWeight: FontWeight.w700,
+            color: isPrimary ? AppColors.primary : context.textPrimaryColor,
+          ),
+        ),
+      ],
     );
   }
 }

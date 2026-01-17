@@ -8,5 +8,6 @@
 export 'app_provider.dart';
 export 'client_provider.dart';
 export 'employee_provider.dart';
+export 'materials_provider.dart';
 export 'subscription_provider.dart';
 export 'theme_provider.dart';

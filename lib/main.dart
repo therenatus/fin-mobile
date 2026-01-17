@@ -11,8 +11,10 @@ import 'core/theme/app_theme.dart';
 import 'core/providers/app_provider.dart';
 import 'core/providers/client_provider.dart';
 import 'core/providers/employee_provider.dart';
+import 'core/providers/materials_provider.dart';
 import 'core/providers/subscription_provider.dart';
 import 'core/providers/theme_provider.dart';
+import 'core/providers/bom_provider.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/local_notification_service.dart';
@@ -93,6 +95,24 @@ void _runApp(StorageService storageService) {
           ),
           update: (context, appProvider, previous) =>
               previous ?? SubscriptionProvider(appProvider.api),
+        ),
+
+        // Materials provider
+        ChangeNotifierProxyProvider<AppProvider, MaterialsProvider>(
+          create: (context) => MaterialsProvider(
+            context.read<AppProvider>().api,
+          ),
+          update: (context, appProvider, previous) =>
+              previous ?? MaterialsProvider(appProvider.api),
+        ),
+
+        // BOM provider
+        ChangeNotifierProxyProvider<AppProvider, BomProvider>(
+          create: (context) => BomProvider(
+            context.read<AppProvider>().api,
+          ),
+          update: (context, appProvider, previous) =>
+              previous ?? BomProvider(appProvider.api),
         ),
       ],
       child: const AtelieProApp(),

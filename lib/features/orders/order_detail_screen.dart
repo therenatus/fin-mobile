@@ -9,6 +9,7 @@ import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
 import '../../core/utils/toast.dart';
 import 'widgets/order_acceptance_sheet.dart';
+import 'widgets/order_cost_card.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Order order;
@@ -106,6 +107,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         const SizedBox(height: AppSpacing.lg),
                         _buildOrderDetailsSection(),
                         const SizedBox(height: AppSpacing.lg),
+                        // Cost card - show for in_progress and completed orders
+                        if (_order.status == OrderStatus.inProgress ||
+                            _order.status == OrderStatus.completed) ...[
+                          _buildCostSection(),
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
                         if (_order.status == OrderStatus.inProgress) ...[
                           _buildProgressSection(),
                           const SizedBox(height: AppSpacing.lg),
@@ -198,6 +205,28 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCostSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.calculate_outlined, size: 18, color: context.textSecondaryColor),
+            const SizedBox(width: 8),
+            Text(
+              'Себестоимость',
+              style: AppTypography.labelLarge.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        OrderCostCard(orderId: _order.id),
+      ],
     );
   }
 

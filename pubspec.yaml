@@ -37,6 +37,9 @@ dependencies:
   image_picker: ^1.0.7
   cached_network_image: ^3.3.1
 
+  # Barcode scanning
+  mobile_scanner: ^5.0.0
+
   # Charts
   fl_chart: ^0.69.0
 
