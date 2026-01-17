@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/widgets.dart';
@@ -69,7 +70,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка загрузки: $e'),
+            content: Text(context.l10n.loadingError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -83,7 +84,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       backgroundColor: context.backgroundColor,
       drawer: const AppDrawer(currentRoute: 'employees'),
       appBar: AppBar(
-        title: const Text('Сотрудники'),
+        title: Text(context.l10n.employees),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: Builder(
@@ -101,14 +102,14 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                   isLabelVisible: _roleFilter != null,
                   child: const Icon(Icons.filter_list),
                 ),
-                tooltip: 'Фильтр по роли',
+                tooltip: context.l10n.filterByRole,
                 onSelected: (value) {
                   setState(() => _roleFilter = value);
                 },
-                itemBuilder: (context) => [
-                  _buildFilterOption(null, 'Все роли'),
+                itemBuilder: (ctx) => [
+                  _buildFilterOption(ctx, null, context.l10n.allRoles),
                   const PopupMenuDivider(),
-                  ...roles.map((role) => _buildFilterOption(role.code, role.label)),
+                  ...roles.map((role) => _buildFilterOption(ctx, role.code, role.label)),
                 ],
               );
             },
@@ -127,7 +128,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                 ),
                 child: AppSearchBar(
                   controller: _searchController,
-                  hint: 'Поиск сотрудников...',
+                  hint: context.l10n.searchEmployees,
                   onChanged: _onSearchChanged,
                   onClear: () {
                     _searchDebounce?.cancel();
@@ -147,10 +148,10 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: SegmentedButton<bool?>(
-                    segments: const [
-                      ButtonSegment(value: null, label: Text('Все')),
-                      ButtonSegment(value: true, label: Text('Активные')),
-                      ButtonSegment(value: false, label: Text('Неактивные')),
+                    segments: [
+                      ButtonSegment(value: null, label: Text(context.l10n.all)),
+                      ButtonSegment(value: true, label: Text(context.l10n.activeEmployees)),
+                      ButtonSegment(value: false, label: Text(context.l10n.inactiveEmployees)),
                     ],
                     selected: {_activeFilter},
                     onSelectionChanged: (selected) {
@@ -175,12 +176,12 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.person_add),
-        label: const Text('Добавить'),
+        label: Text(context.l10n.add),
       ),
     );
   }
 
-  PopupMenuItem<String?> _buildFilterOption(String? value, String label) {
+  PopupMenuItem<String?> _buildFilterOption(BuildContext context, String? value, String label) {
     return PopupMenuItem(
       value: value,
       child: Row(
@@ -238,13 +239,13 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       return EmptyState(
         icon: Icons.people_alt_outlined,
         title: hasFilters
-            ? 'Ничего не найдено'
-            : 'Нет сотрудников',
+            ? context.l10n.noResults
+            : context.l10n.noEmployees,
         subtitle: hasFilters
-            ? 'Попробуйте изменить параметры поиска'
-            : 'Добавьте первого сотрудника',
+            ? context.l10n.tryDifferentFilters
+            : context.l10n.addFirstEmployee,
         actionLabel: !hasFilters
-            ? 'Добавить сотрудника'
+            ? context.l10n.addEmployee
             : null,
         onAction: !hasFilters
             ? () => _openEmployeeForm()
@@ -308,17 +309,17 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   void _confirmDelete(Employee employee) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Удалить сотрудника?'),
-        content: Text('Вы уверены, что хотите удалить "${employee.name}"?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.deleteEmployeeTitle),
+        content: Text(context.l10n.deleteEmployeeMessage(employee.name)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(dialogContext); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
                 await _api.deleteEmployee(employee.id);
@@ -326,7 +327,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Сотрудник удалён'),
+                      content: Text(context.l10n.employeeDeleted),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
@@ -339,7 +340,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Ошибка: $e'),
+                      content: Text('${context.l10n.error}: $e'),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -347,7 +348,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               }
             },
             child: Text(
-              'Удалить',
+              context.l10n.delete,
               style: TextStyle(color: AppColors.error),
             ),
           ),
@@ -552,17 +553,17 @@ class _EmployeeDetailsSheet extends StatelessWidget {
                 children: [
                   if (employee.phone != null || employee.email != null) ...[
                     _DetailSection(
-                      title: 'Контакты',
+                      title: context.l10n.contacts,
                       icon: Icons.contact_phone_outlined,
                       children: [
                         if (employee.phone != null)
                           _DetailRow(
-                            label: 'Телефон',
+                            label: context.l10n.phone,
                             value: employee.phone!,
                           ),
                         if (employee.email != null)
                           _DetailRow(
-                            label: 'Email',
+                            label: context.l10n.email,
                             value: employee.email!,
                           ),
                       ],
@@ -576,7 +577,7 @@ class _EmployeeDetailsSheet extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: onViewHistory,
                       icon: const Icon(Icons.history),
-                      label: const Text('История работы'),
+                      label: Text(context.l10n.workHistory),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -595,7 +596,7 @@ class _EmployeeDetailsSheet extends StatelessWidget {
                           },
                           icon: Icon(Icons.delete_outline, color: AppColors.error),
                           label: Text(
-                            'Удалить',
+                            context.l10n.delete,
                             style: TextStyle(color: AppColors.error),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -612,7 +613,7 @@ class _EmployeeDetailsSheet extends StatelessWidget {
                             onEdit();
                           },
                           icon: const Icon(Icons.edit_outlined),
-                          label: const Text('Изменить'),
+                          label: Text(context.l10n.editAction),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),

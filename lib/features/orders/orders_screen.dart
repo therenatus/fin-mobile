@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/widgets/widgets.dart';
@@ -71,7 +72,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Заказы'),
+        title: Text(context.l10n.orders),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -85,7 +86,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               child: const Icon(Icons.filter_list),
             ),
             onPressed: _showFiltersDialog,
-            tooltip: 'Фильтры',
+            tooltip: context.l10n.filters,
           ),
         ],
         bottom: PreferredSize(
@@ -97,7 +98,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: AppSearchBar(
                   controller: _searchController,
-                  hint: 'Поиск заказов...',
+                  hint: context.l10n.searchOrders,
                   onChanged: _onSearchChanged,
                   onClear: () {
                     _searchDebounce?.cancel();
@@ -116,12 +117,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 labelColor: AppColors.primary,
                 unselectedLabelColor: context.textSecondaryColor,
                 indicatorColor: AppColors.primary,
-                tabs: const [
-                  Tab(text: 'Все'),
-                  Tab(text: 'Ожидают'),
-                  Tab(text: 'В работе'),
-                  Tab(text: 'Готово'),
-                  Tab(text: 'Отменены'),
+                tabs: [
+                  Tab(text: context.l10n.all),
+                  Tab(text: context.l10n.tabPending),
+                  Tab(text: context.l10n.statusInProgress),
+                  Tab(text: context.l10n.tabCompleted),
+                  Tab(text: context.l10n.tabCancelled),
                 ],
               ),
             ],
@@ -144,7 +145,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Новый заказ'),
+        label: Text(context.l10n.newOrder),
       ),
     );
   }
@@ -240,14 +241,14 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     final emptyWidget = EmptyState(
       icon: Icons.receipt_long_outlined,
       title: _searchQuery.isNotEmpty
-        ? 'Ничего не найдено'
+        ? context.l10n.noResults
         : statusFilter == null
-          ? 'Нет заказов'
-          : 'Нет заказов с этим статусом',
+          ? context.l10n.noOrders
+          : context.l10n.noOrdersWithStatus,
       subtitle: _searchQuery.isNotEmpty
-        ? 'Попробуйте изменить поисковый запрос'
-        : 'Создайте первый заказ',
-      actionLabel: _searchQuery.isEmpty ? 'Создать заказ' : null,
+        ? context.l10n.tryDifferentSearch
+        : context.l10n.createFirstOrder,
+      actionLabel: _searchQuery.isEmpty ? context.l10n.createOrder : null,
       onAction: _searchQuery.isEmpty ? () => _openCreateOrder() : null,
     );
 
@@ -360,12 +361,12 @@ class _FiltersSheetState extends State<_FiltersSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Фильтры',
+                  context.l10n.filters,
                   style: AppTypography.h4.copyWith(color: context.textPrimaryColor),
                 ),
                 TextButton(
                   onPressed: widget.onReset,
-                  child: const Text('Сбросить'),
+                  child: Text(context.l10n.reset),
                 ),
               ],
             ),
@@ -382,7 +383,7 @@ class _FiltersSheetState extends State<_FiltersSheet> {
                 children: [
                   // Due date filter
                   Text(
-                    'Срок сдачи',
+                    context.l10n.dueDateLabel,
                     style: AppTypography.labelLarge.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -391,14 +392,14 @@ class _FiltersSheetState extends State<_FiltersSheet> {
                   DateRangePickerButton(
                     dateRange: _dueDateRange,
                     onChanged: (range) => setState(() => _dueDateRange = range),
-                    placeholder: 'Все даты',
+                    placeholder: context.l10n.allDates,
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
 
                   // Created date filter
                   Text(
-                    'Дата создания',
+                    context.l10n.createdDateLabel,
                     style: AppTypography.labelLarge.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -407,14 +408,14 @@ class _FiltersSheetState extends State<_FiltersSheet> {
                   DateRangePickerButton(
                     dateRange: _createdDateRange,
                     onChanged: (range) => setState(() => _createdDateRange = range),
-                    placeholder: 'Все даты',
+                    placeholder: context.l10n.allDates,
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
 
                   // Sort
                   Text(
-                    'Сортировка',
+                    context.l10n.sortLabel,
                     style: AppTypography.labelLarge.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -424,17 +425,17 @@ class _FiltersSheetState extends State<_FiltersSheet> {
                     spacing: AppSpacing.sm,
                     children: [
                       ChoiceChip(
-                        label: const Text('По дате создания'),
+                        label: Text(context.l10n.sortByCreatedDate),
                         selected: _sortBy == 'createdAt',
                         onSelected: (_) => setState(() => _sortBy = 'createdAt'),
                       ),
                       ChoiceChip(
-                        label: const Text('По сроку'),
+                        label: Text(context.l10n.sortByDueDate),
                         selected: _sortBy == 'dueDate',
                         onSelected: (_) => setState(() => _sortBy = 'dueDate'),
                       ),
                       ChoiceChip(
-                        label: const Text('По кол-ву'),
+                        label: Text(context.l10n.sortByQuantity),
                         selected: _sortBy == 'quantity',
                         onSelected: (_) => setState(() => _sortBy = 'quantity'),
                       ),
@@ -445,12 +446,12 @@ class _FiltersSheetState extends State<_FiltersSheet> {
                     spacing: AppSpacing.sm,
                     children: [
                       ChoiceChip(
-                        label: const Text('По убыванию'),
+                        label: Text(context.l10n.sortDescending),
                         selected: !_sortAsc,
                         onSelected: (_) => setState(() => _sortAsc = false),
                       ),
                       ChoiceChip(
-                        label: const Text('По возрастанию'),
+                        label: Text(context.l10n.sortAscending),
                         selected: _sortAsc,
                         onSelected: (_) => setState(() => _sortAsc = true),
                       ),
@@ -469,7 +470,7 @@ class _FiltersSheetState extends State<_FiltersSheet> {
                         _sortBy,
                         _sortAsc,
                       ),
-                      child: const Text('Применить'),
+                      child: Text(context.l10n.apply),
                     ),
                   ),
                 ],

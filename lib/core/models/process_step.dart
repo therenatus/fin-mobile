@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'process_step.g.dart';
+
+@JsonSerializable()
 class ProcessStep {
   final String id;
   final String modelId;
@@ -23,35 +28,10 @@ class ProcessStep {
     required this.updatedAt,
   });
 
-  factory ProcessStep.fromJson(Map<String, dynamic> json) {
-    return ProcessStep(
-      id: json['id'] as String,
-      modelId: json['modelId'] as String,
-      stepOrder: json['stepOrder'] as int,
-      name: json['name'] as String,
-      estimatedTime: json['estimatedTime'] as int,
-      executorRole: json['executorRole'] as String,
-      rate: json['rate'] != null ? (json['rate'] as num).toDouble() : null,
-      rateType: json['rateType'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
-  }
+  factory ProcessStep.fromJson(Map<String, dynamic> json) =>
+      _$ProcessStepFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'modelId': modelId,
-      'stepOrder': stepOrder,
-      'name': name,
-      'estimatedTime': estimatedTime,
-      'executorRole': executorRole,
-      if (rate != null) 'rate': rate,
-      if (rateType != null) 'rateType': rateType,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$ProcessStepToJson(this);
 
   String get rateTypeLabel {
     switch (rateType) {

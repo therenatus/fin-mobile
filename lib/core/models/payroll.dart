@@ -1,8 +1,15 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'work_log.dart';
 import 'employee.dart';
+import 'json_converters.dart';
 
+part 'payroll.g.dart';
+
+@JsonSerializable()
 class EmployeePayrollDetail {
+  @JsonKey(defaultValue: 0.0)
   final double totalPayout;
+  @JsonKey(defaultValue: [])
   final List<WorkLog> workLogs;
   final Employee? employee;
 
@@ -12,36 +19,27 @@ class EmployeePayrollDetail {
     this.employee,
   });
 
-  factory EmployeePayrollDetail.fromJson(Map<String, dynamic> json) {
-    return EmployeePayrollDetail(
-      totalPayout: (json['totalPayout'] as num?)?.toDouble() ?? 0.0,
-      workLogs: (json['workLogs'] as List<dynamic>?)
-              ?.map((e) => WorkLog.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      employee: json['employee'] != null
-          ? Employee.fromJson(json['employee'] as Map<String, dynamic>)
-          : null,
-    );
-  }
+  factory EmployeePayrollDetail.fromJson(Map<String, dynamic> json) =>
+      _$EmployeePayrollDetailFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'totalPayout': totalPayout,
-      'workLogs': workLogs.map((e) => e.toJson()).toList(),
-      if (employee != null) 'employee': employee!.toJson(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$EmployeePayrollDetailToJson(this);
 }
 
+@JsonSerializable()
 class Payroll {
+  @JsonKey(readValue: readId, defaultValue: '')
   final String id;
+  @JsonKey(defaultValue: '')
   final String tenantId;
   final DateTime periodStart;
   final DateTime periodEnd;
+  @JsonKey(defaultValue: 0.0)
   final double totalPayout;
+  @JsonKey(fromJson: _detailsFromJson, toJson: _detailsToJson)
   final Map<String, EmployeePayrollDetail> details;
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime updatedAt;
 
   Payroll({
@@ -55,44 +53,30 @@ class Payroll {
     required this.updatedAt,
   });
 
-  factory Payroll.fromJson(Map<String, dynamic> json) {
-    final detailsJson = json['details'] as Map<String, dynamic>? ?? {};
-    final details = <String, EmployeePayrollDetail>{};
+  factory Payroll.fromJson(Map<String, dynamic> json) =>
+      _$PayrollFromJson(json);
 
-    detailsJson.forEach((key, value) {
+  Map<String, dynamic> toJson() => _$PayrollToJson(this);
+
+  static Map<String, EmployeePayrollDetail> _detailsFromJson(
+      Map<String, dynamic>? json) {
+    if (json == null) return {};
+    final details = <String, EmployeePayrollDetail>{};
+    json.forEach((key, value) {
       if (value is Map<String, dynamic>) {
         details[key] = EmployeePayrollDetail.fromJson(value);
       }
     });
-
-    return Payroll(
-      id: json['id'] as String? ?? json['_id'] as String? ?? '',
-      tenantId: json['tenantId'] as String? ?? '',
-      periodStart: DateTime.parse(json['periodStart'] as String),
-      periodEnd: DateTime.parse(json['periodEnd'] as String),
-      totalPayout: (json['totalPayout'] as num?)?.toDouble() ?? 0.0,
-      details: details,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : DateTime.now(),
-    );
+    return details;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'tenantId': tenantId,
-      'periodStart': periodStart.toIso8601String(),
-      'periodEnd': periodEnd.toIso8601String(),
-      'totalPayout': totalPayout,
-      'details': details.map((key, value) => MapEntry(key, value.toJson())),
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-    };
+  static Map<String, dynamic> _detailsToJson(
+      Map<String, EmployeePayrollDetail> details) {
+    return details.map((key, value) => MapEntry(key, value.toJson()));
   }
+
+  static DateTime _dateTimeFromJson(String? json) =>
+      json != null ? DateTime.parse(json) : DateTime.now();
 
   String get formattedPeriod {
     final startMonth = _monthName(periodStart.month);

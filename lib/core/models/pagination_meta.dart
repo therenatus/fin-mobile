@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'pagination_meta.g.dart';
+
+@JsonSerializable()
 class PaginationMeta {
   final int page;
   final int perPage;
@@ -11,14 +16,10 @@ class PaginationMeta {
     required this.totalPages,
   });
 
-  factory PaginationMeta.fromJson(Map<String, dynamic> json) {
-    return PaginationMeta(
-      page: json['page'] as int,
-      perPage: json['perPage'] as int,
-      total: json['total'] as int,
-      totalPages: json['totalPages'] as int,
-    );
-  }
+  factory PaginationMeta.fromJson(Map<String, dynamic> json) =>
+      _$PaginationMetaFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PaginationMetaToJson(this);
 
   bool get hasNextPage => page < totalPages;
   bool get hasPreviousPage => page > 1;

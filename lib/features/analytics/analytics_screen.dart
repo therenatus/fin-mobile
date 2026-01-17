@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/models/analytics.dart';
@@ -29,7 +30,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         return Scaffold(
           backgroundColor: context.backgroundColor,
           appBar: AppBar(
-            title: const Text('Аналитика'),
+            title: Text(context.l10n.analytics),
             backgroundColor: context.surfaceColor,
             surfaceTintColor: Colors.transparent,
             leading: IconButton(
@@ -43,7 +44,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _getPeriodLabel(selectedPeriod),
+                      _getPeriodLabel(context, selectedPeriod),
                       style: AppTypography.labelMedium.copyWith(
                         color: AppColors.primary,
                       ),
@@ -54,11 +55,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 onSelected: (value) {
                   provider.setAnalyticsPeriod(value);
                 },
-                itemBuilder: (context) => [
-                  _buildPeriodOption(selectedPeriod, 'week', 'Неделя'),
-                  _buildPeriodOption(selectedPeriod, 'month', 'Месяц'),
-                  _buildPeriodOption(selectedPeriod, 'quarter', 'Квартал'),
-                  _buildPeriodOption(selectedPeriod, 'year', 'Год'),
+                itemBuilder: (ctx) => [
+                  _buildPeriodOption(ctx, selectedPeriod, 'week', context.l10n.periodWeek),
+                  _buildPeriodOption(ctx, selectedPeriod, 'month', context.l10n.periodMonth),
+                  _buildPeriodOption(ctx, selectedPeriod, 'quarter', context.l10n.periodQuarter),
+                  _buildPeriodOption(ctx, selectedPeriod, 'year', context.l10n.periodYear),
                 ],
               ),
             ],
@@ -94,7 +95,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  PopupMenuItem<String> _buildPeriodOption(String selectedPeriod, String value, String label) {
+  PopupMenuItem<String> _buildPeriodOption(BuildContext context, String selectedPeriod, String value, String label) {
     return PopupMenuItem(
       value: value,
       child: Row(
@@ -117,18 +118,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  String _getPeriodLabel(String period) {
+  String _getPeriodLabel(BuildContext context, String period) {
     switch (period) {
       case 'week':
-        return 'Неделя';
+        return context.l10n.periodWeek;
       case 'month':
-        return 'Месяц';
+        return context.l10n.periodMonth;
       case 'quarter':
-        return 'Квартал';
+        return context.l10n.periodQuarter;
       case 'year':
-        return 'Год';
+        return context.l10n.periodYear;
       default:
-        return 'Месяц';
+        return context.l10n.periodMonth;
     }
   }
 
@@ -136,12 +137,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Обзор'),
+        SectionHeader(title: context.l10n.overview),
         Row(
           children: [
             Expanded(
               child: _SummaryCard(
-                title: 'Выручка',
+                title: context.l10n.revenue,
                 value: '${_formatCurrency(stats?.monthlyRevenue ?? 125000)}',
                 change: '+12.5%',
                 isPositive: true,
@@ -152,7 +153,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _SummaryCard(
-                title: 'Заказов',
+                title: context.l10n.ordersCountLabel,
                 value: '${stats?.totalOrders ?? 24}',
                 change: '+8.3%',
                 isPositive: true,
@@ -167,7 +168,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _SummaryCard(
-                title: 'Средний чек',
+                title: context.l10n.averageCheck,
                 value: '${_formatCurrency(stats?.avgOrderValue ?? 15200)}',
                 change: '+5.2%',
                 isPositive: true,
@@ -178,7 +179,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _SummaryCard(
-                title: 'Новых заказчиков',
+                title: context.l10n.newClients,
                 value: '${stats?.newClients ?? 8}',
                 change: '-2.1%',
                 isPositive: false,
@@ -198,7 +199,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Выручка'),
+          SectionHeader(title: context.l10n.revenue),
           Container(
             height: 250,
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -209,7 +210,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
             child: Center(
               child: Text(
-                'Нет данных о выручке',
+                context.l10n.noRevenueData,
                 style: AppTypography.bodyMedium.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -237,7 +238,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Выручка'),
+        SectionHeader(title: context.l10n.revenue),
         Container(
           height: 250,
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -353,7 +354,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Заказы по статусу'),
+        SectionHeader(title: context.l10n.ordersByStatus),
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
@@ -366,7 +367,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Text(
-                      'Нет данных о заказах',
+                      context.l10n.noOrdersData,
                       style: AppTypography.bodyMedium.copyWith(
                         color: context.textSecondaryColor,
                       ),
@@ -424,25 +425,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         children: [
                           _LegendItem(
                             color: AppColors.info,
-                            label: 'В работе',
+                            label: context.l10n.statusInWork,
                             value: getPercentage(inProgress),
                           ),
                           const SizedBox(height: 8),
                           _LegendItem(
                             color: AppColors.success,
-                            label: 'Выполнено',
+                            label: context.l10n.statusDone,
                             value: getPercentage(completed),
                           ),
                           const SizedBox(height: 8),
                           _LegendItem(
                             color: AppColors.warning,
-                            label: 'Ожидают',
+                            label: context.l10n.statusWaiting,
                             value: getPercentage(pending),
                           ),
                           const SizedBox(height: 8),
                           _LegendItem(
                             color: AppColors.error,
-                            label: 'Отменено',
+                            label: context.l10n.statusCancelledShort,
                             value: getPercentage(cancelled),
                           ),
                         ],
@@ -459,7 +460,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Топ заказчики'),
+        SectionHeader(title: context.l10n.topCustomers),
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
@@ -472,7 +473,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Text(
-                    'Нет данных о заказчиках',
+                    context.l10n.noCustomersData,
                     style: AppTypography.bodyMedium.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -488,7 +489,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       _TopClientItem(
                         rank: index + 1,
                         name: client.name,
-                        orders: client.ordersCount,
+                        ordersLabel: context.l10n.ordersCountShort(client.ordersCount),
                         spent: client.totalSpent,
                       ),
                       if (index < topClients.length - 1)
@@ -638,13 +639,13 @@ class _LegendItem extends StatelessWidget {
 class _TopClientItem extends StatelessWidget {
   final int rank;
   final String name;
-  final int orders;
+  final String ordersLabel;
   final double spent;
 
   const _TopClientItem({
     required this.rank,
     required this.name,
-    required this.orders,
+    required this.ordersLabel,
     required this.spent,
   });
 
@@ -683,7 +684,7 @@ class _TopClientItem extends StatelessWidget {
                 ),
               ),
               Text(
-                '$orders заказов',
+                ordersLabel,
                 style: AppTypography.labelSmall.copyWith(
                   color: context.textSecondaryColor,
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 
@@ -83,31 +84,31 @@ class _AppShellState extends State<AppShell> {
     ProfileScreen(onMenuPressed: _openDrawer),
   ];
 
-  final List<NavigationDestination> _destinations = const [
+  List<NavigationDestination> _getDestinations(BuildContext context) => [
     NavigationDestination(
-      icon: Icon(Icons.home_outlined),
-      selectedIcon: Icon(Icons.home),
-      label: 'Главная',
+      icon: const Icon(Icons.home_outlined),
+      selectedIcon: const Icon(Icons.home),
+      label: context.l10n.home,
     ),
     NavigationDestination(
-      icon: Icon(Icons.people_outline),
-      selectedIcon: Icon(Icons.people),
-      label: 'Заказчики',
+      icon: const Icon(Icons.people_outline),
+      selectedIcon: const Icon(Icons.people),
+      label: context.l10n.customers,
     ),
     NavigationDestination(
-      icon: Icon(Icons.receipt_long_outlined),
-      selectedIcon: Icon(Icons.receipt_long),
-      label: 'Заказы',
+      icon: const Icon(Icons.receipt_long_outlined),
+      selectedIcon: const Icon(Icons.receipt_long),
+      label: context.l10n.orders,
     ),
     NavigationDestination(
-      icon: Icon(Icons.analytics_outlined),
-      selectedIcon: Icon(Icons.analytics),
-      label: 'Аналитика',
+      icon: const Icon(Icons.analytics_outlined),
+      selectedIcon: const Icon(Icons.analytics),
+      label: context.l10n.analytics,
     ),
     NavigationDestination(
-      icon: Icon(Icons.person_outline),
-      selectedIcon: Icon(Icons.person),
-      label: 'Профиль',
+      icon: const Icon(Icons.person_outline),
+      selectedIcon: const Icon(Icons.person),
+      label: context.l10n.profile,
     ),
   ];
 
@@ -126,7 +127,7 @@ class _AppShellState extends State<AppShell> {
             _currentIndex = index;
           });
         },
-        destinations: _destinations,
+        destinations: _getDestinations(context),
         backgroundColor: context.surfaceColor,
         indicatorColor: AppColors.primary.withOpacity(0.1),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -182,7 +183,7 @@ class _AppShellState extends State<AppShell> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  user?.tenant?.name ?? 'Моё ателье',
+                  user?.tenant?.name ?? context.l10n.myAtelierHint,
                   style: AppTypography.h3.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -206,31 +207,31 @@ class _AppShellState extends State<AppShell> {
               children: [
                 _DrawerItem(
                   icon: Icons.dashboard_outlined,
-                  label: 'Дашборд',
+                  label: context.l10n.dashboard,
                   isSelected: _currentIndex == 0,
                   onTap: () => _navigateTo(0),
                 ),
                 _DrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  label: 'Заказы',
+                  label: context.l10n.orders,
                   isSelected: _currentIndex == 2,
                   onTap: () => _navigateTo(2),
                 ),
                 _DrawerItem(
                   icon: Icons.people_outline,
-                  label: 'Заказчики',
+                  label: context.l10n.customers,
                   isSelected: _currentIndex == 1,
                   onTap: () => _navigateTo(1),
                 ),
                 _DrawerItem(
                   icon: Icons.analytics_outlined,
-                  label: 'Аналитика',
+                  label: context.l10n.analytics,
                   isSelected: _currentIndex == 3,
                   onTap: () => _navigateTo(3),
                 ),
                 _DrawerItem(
                   icon: Icons.auto_graph_outlined,
-                  label: 'Прогнозы',
+                  label: context.l10n.forecast,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -242,7 +243,7 @@ class _AppShellState extends State<AppShell> {
                 const Divider(height: 32),
                 _DrawerItem(
                   icon: Icons.calendar_month_outlined,
-                  label: 'Загрузка',
+                  label: context.l10n.workload,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -253,7 +254,7 @@ class _AppShellState extends State<AppShell> {
                 ),
                 _DrawerItem(
                   icon: Icons.checkroom_outlined,
-                  label: 'Модели',
+                  label: context.l10n.models,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -264,7 +265,7 @@ class _AppShellState extends State<AppShell> {
                 ),
                 _DrawerItem(
                   icon: Icons.people_alt_outlined,
-                  label: 'Сотрудники',
+                  label: context.l10n.employees,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -275,7 +276,7 @@ class _AppShellState extends State<AppShell> {
                 ),
                 _DrawerItem(
                   icon: Icons.calculate_outlined,
-                  label: 'Зарплата',
+                  label: context.l10n.payroll,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -286,7 +287,7 @@ class _AppShellState extends State<AppShell> {
                 ),
                 _DrawerItem(
                   icon: Icons.assignment_outlined,
-                  label: 'Записи работы',
+                  label: context.l10n.workRecords,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -297,7 +298,7 @@ class _AppShellState extends State<AppShell> {
                 ),
                 _DrawerItem(
                   icon: Icons.attach_money_outlined,
-                  label: 'Финансы',
+                  label: context.l10n.finance,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -309,7 +310,7 @@ class _AppShellState extends State<AppShell> {
                 const Divider(height: 32),
                 _DrawerItem(
                   icon: Icons.card_membership_outlined,
-                  label: 'Подписка',
+                  label: context.l10n.subscription,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -320,12 +321,12 @@ class _AppShellState extends State<AppShell> {
                 ),
                 _DrawerItem(
                   icon: Icons.settings_outlined,
-                  label: 'Настройки',
+                  label: context.l10n.settings,
                   onTap: () => _navigateTo(4),
                 ),
                 _DrawerItem(
                   icon: Icons.help_outline,
-                  label: 'Помощь',
+                  label: context.l10n.help,
                   onTap: () {
                     Navigator.pop(context);
                     _showComingSoon();
@@ -352,7 +353,7 @@ class _AppShellState extends State<AppShell> {
                 ),
               ),
               title: Text(
-                'Выйти',
+                context.l10n.logout,
                 style: AppTypography.bodyLarge.copyWith(
                   color: AppColors.error,
                   fontWeight: FontWeight.w500,
@@ -379,7 +380,7 @@ class _AppShellState extends State<AppShell> {
   void _showComingSoon() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Скоро будет доступно'),
+        content: Text(context.l10n.comingSoon),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),

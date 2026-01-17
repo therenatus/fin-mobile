@@ -1,11 +1,17 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'pagination_meta.dart';
 
+part 'client_user.g.dart';
+
+@JsonSerializable()
 class ClientUser {
   final String id;
   final String? email;
   final String? phone;
   final String name;
+  @JsonKey(defaultValue: false)
   final bool isVerified;
+  @JsonKey(defaultValue: [])
   final List<TenantLink> tenants;
 
   ClientUser({
@@ -17,29 +23,13 @@ class ClientUser {
     this.tenants = const [],
   });
 
-  factory ClientUser.fromJson(Map<String, dynamic> json) {
-    return ClientUser(
-      id: json['id'] as String,
-      email: json['email'] as String?,
-      phone: json['phone'] as String?,
-      name: json['name'] as String,
-      isVerified: json['isVerified'] as bool? ?? false,
-      tenants: (json['tenants'] as List<dynamic>?)
-              ?.map((e) => TenantLink.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-    );
-  }
+  factory ClientUser.fromJson(Map<String, dynamic> json) =>
+      _$ClientUserFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'phone': phone,
-        'name': name,
-        'isVerified': isVerified,
-      };
+  Map<String, dynamic> toJson() => _$ClientUserToJson(this);
 }
 
+@JsonSerializable()
 class TenantLink {
   final String clientId;
   final String tenantId;
@@ -53,16 +43,13 @@ class TenantLink {
     this.tenantDomain,
   });
 
-  factory TenantLink.fromJson(Map<String, dynamic> json) {
-    return TenantLink(
-      clientId: json['clientId'] as String,
-      tenantId: json['tenantId'] as String,
-      tenantName: json['tenantName'] as String,
-      tenantDomain: json['tenantDomain'] as String?,
-    );
-  }
+  factory TenantLink.fromJson(Map<String, dynamic> json) =>
+      _$TenantLinkFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TenantLinkToJson(this);
 }
 
+@JsonSerializable()
 class ClientAuthResponse {
   final String accessToken;
   final String refreshToken;
@@ -74,15 +61,13 @@ class ClientAuthResponse {
     required this.user,
   });
 
-  factory ClientAuthResponse.fromJson(Map<String, dynamic> json) {
-    return ClientAuthResponse(
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String,
-      user: ClientUser.fromJson(json['user'] as Map<String, dynamic>),
-    );
-  }
+  factory ClientAuthResponse.fromJson(Map<String, dynamic> json) =>
+      _$ClientAuthResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ClientAuthResponseToJson(this);
 }
 
+@JsonSerializable()
 class ClientOrder {
   final String id;
   final String tenantId;
@@ -104,20 +89,10 @@ class ClientOrder {
     required this.createdAt,
   });
 
-  factory ClientOrder.fromJson(Map<String, dynamic> json) {
-    return ClientOrder(
-      id: json['id'] as String,
-      tenantId: json['tenantId'] as String,
-      tenantName: json['tenantName'] as String,
-      model: ClientOrderModel.fromJson(json['model'] as Map<String, dynamic>),
-      quantity: json['quantity'] as int,
-      status: json['status'] as String,
-      dueDate: json['dueDate'] != null
-          ? DateTime.parse(json['dueDate'] as String)
-          : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
+  factory ClientOrder.fromJson(Map<String, dynamic> json) =>
+      _$ClientOrderFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ClientOrderToJson(this);
 
   String get statusLabel {
     switch (status) {
@@ -137,6 +112,7 @@ class ClientOrder {
   double get totalCost => (model.basePrice ?? 0) * quantity;
 }
 
+@JsonSerializable()
 class ClientOrderModel {
   final String id;
   final String name;
@@ -152,29 +128,21 @@ class ClientOrderModel {
     this.basePrice,
   });
 
-  factory ClientOrderModel.fromJson(Map<String, dynamic> json) {
-    return ClientOrderModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      category: json['category'] as String?,
-      imageUrl: json['imageUrl'] as String?,
-      basePrice: (json['basePrice'] as num?)?.toDouble(),
-    );
-  }
+  factory ClientOrderModel.fromJson(Map<String, dynamic> json) =>
+      _$ClientOrderModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ClientOrderModelToJson(this);
 }
 
+@JsonSerializable()
 class ClientOrdersResponse {
   final List<ClientOrder> orders;
   final PaginationMeta meta;
 
   ClientOrdersResponse({required this.orders, required this.meta});
 
-  factory ClientOrdersResponse.fromJson(Map<String, dynamic> json) {
-    return ClientOrdersResponse(
-      orders: (json['orders'] as List<dynamic>)
-          .map((e) => ClientOrder.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      meta: PaginationMeta.fromJson(json['meta'] as Map<String, dynamic>),
-    );
-  }
+  factory ClientOrdersResponse.fromJson(Map<String, dynamic> json) =>
+      _$ClientOrdersResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ClientOrdersResponseToJson(this);
 }

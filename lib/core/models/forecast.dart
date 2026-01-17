@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'forecast.g.dart';
+
+@JsonSerializable()
 class ConfidenceInterval {
   final double low;
   final double high;
@@ -7,19 +12,13 @@ class ConfidenceInterval {
     required this.high,
   });
 
-  factory ConfidenceInterval.fromJson(Map<String, dynamic> json) {
-    return ConfidenceInterval(
-      low: (json['low'] as num).toDouble(),
-      high: (json['high'] as num).toDouble(),
-    );
-  }
+  factory ConfidenceInterval.fromJson(Map<String, dynamic> json) =>
+      _$ConfidenceIntervalFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-        'low': low,
-        'high': high,
-      };
+  Map<String, dynamic> toJson() => _$ConfidenceIntervalToJson(this);
 }
 
+@JsonSerializable()
 class Forecast {
   final String type;
   final DateTime periodStart;
@@ -28,6 +27,7 @@ class Forecast {
   final ConfidenceInterval confidenceInterval;
   final String trend;
   final double trendPercentage;
+  @JsonKey(defaultValue: [])
   final List<String> insights;
 
   Forecast({
@@ -41,40 +41,17 @@ class Forecast {
     required this.insights,
   });
 
-  factory Forecast.fromJson(Map<String, dynamic> json) {
-    return Forecast(
-      type: json['type'] as String,
-      periodStart: DateTime.parse(json['periodStart'] as String),
-      periodEnd: DateTime.parse(json['periodEnd'] as String),
-      predictedValue: (json['predictedValue'] as num).toDouble(),
-      confidenceInterval: ConfidenceInterval.fromJson(
-        json['confidenceInterval'] as Map<String, dynamic>,
-      ),
-      trend: json['trend'] as String,
-      trendPercentage: (json['trendPercentage'] as num).toDouble(),
-      insights: (json['insights'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
-    );
-  }
+  factory Forecast.fromJson(Map<String, dynamic> json) =>
+      _$ForecastFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-        'type': type,
-        'periodStart': periodStart.toIso8601String(),
-        'periodEnd': periodEnd.toIso8601String(),
-        'predictedValue': predictedValue,
-        'confidenceInterval': confidenceInterval.toJson(),
-        'trend': trend,
-        'trendPercentage': trendPercentage,
-        'insights': insights,
-      };
+  Map<String, dynamic> toJson() => _$ForecastToJson(this);
 
   bool get isUpTrend => trend == 'up';
   bool get isDownTrend => trend == 'down';
   bool get isStable => trend == 'stable';
 }
 
+@JsonSerializable()
 class MlReport {
   final String id;
   final String type;
@@ -92,29 +69,10 @@ class MlReport {
     required this.createdAt,
   });
 
-  factory MlReport.fromJson(Map<String, dynamic> json) {
-    return MlReport(
-      id: json['id'] as String,
-      type: json['type'] as String,
-      content: json['content'] as String,
-      periodStart: json['periodStart'] != null
-          ? DateTime.parse(json['periodStart'] as String)
-          : null,
-      periodEnd: json['periodEnd'] != null
-          ? DateTime.parse(json['periodEnd'] as String)
-          : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
+  factory MlReport.fromJson(Map<String, dynamic> json) =>
+      _$MlReportFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type,
-        'content': content,
-        'periodStart': periodStart?.toIso8601String(),
-        'periodEnd': periodEnd?.toIso8601String(),
-        'createdAt': createdAt.toIso8601String(),
-      };
+  Map<String, dynamic> toJson() => _$MlReportToJson(this);
 
   String get typeLabel {
     switch (type) {
@@ -134,6 +92,7 @@ class MlReport {
   }
 }
 
+@JsonSerializable()
 class BusinessInsights {
   final List<String> insights;
   final InsightMetrics metrics;
@@ -143,20 +102,18 @@ class BusinessInsights {
     required this.metrics,
   });
 
-  factory BusinessInsights.fromJson(Map<String, dynamic> json) {
-    return BusinessInsights(
-      insights: (json['insights'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-      metrics: InsightMetrics.fromJson(json['metrics'] as Map<String, dynamic>),
-    );
-  }
+  factory BusinessInsights.fromJson(Map<String, dynamic> json) =>
+      _$BusinessInsightsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BusinessInsightsToJson(this);
 }
 
+@JsonSerializable()
 class InsightMetrics {
   final int recentOrders;
   final int overdueOrders;
   final double revenueChange;
+  @JsonKey(defaultValue: '')
   final String topCategory;
 
   InsightMetrics({
@@ -166,16 +123,13 @@ class InsightMetrics {
     required this.topCategory,
   });
 
-  factory InsightMetrics.fromJson(Map<String, dynamic> json) {
-    return InsightMetrics(
-      recentOrders: json['recentOrders'] as int,
-      overdueOrders: json['overdueOrders'] as int,
-      revenueChange: (json['revenueChange'] as num).toDouble(),
-      topCategory: json['topCategory'] as String? ?? '',
-    );
-  }
+  factory InsightMetrics.fromJson(Map<String, dynamic> json) =>
+      _$InsightMetricsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$InsightMetricsToJson(this);
 }
 
+@JsonSerializable()
 class MlLimits {
   final int forecastLimit;
   final int reportLimit;
@@ -187,13 +141,10 @@ class MlLimits {
     required this.insightLimit,
   });
 
-  factory MlLimits.fromJson(Map<String, dynamic> json) {
-    return MlLimits(
-      forecastLimit: json['forecastLimit'] as int,
-      reportLimit: json['reportLimit'] as int,
-      insightLimit: json['insightLimit'] as int,
-    );
-  }
+  factory MlLimits.fromJson(Map<String, dynamic> json) =>
+      _$MlLimitsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MlLimitsToJson(this);
 
   bool get forecastDisabled => forecastLimit == -1;
   bool get reportDisabled => reportLimit == -1;
@@ -204,6 +155,7 @@ class MlLimits {
   bool get insightUnlimited => insightLimit == 0;
 }
 
+@JsonSerializable()
 class MlUsageInfo {
   final int forecastCount;
   final int reportCount;
@@ -223,17 +175,10 @@ class MlUsageInfo {
     required this.insightRemaining,
   });
 
-  factory MlUsageInfo.fromJson(Map<String, dynamic> json) {
-    return MlUsageInfo(
-      forecastCount: json['forecastCount'] as int,
-      reportCount: json['reportCount'] as int,
-      insightCount: json['insightCount'] as int,
-      limits: MlLimits.fromJson(json['limits'] as Map<String, dynamic>),
-      forecastRemaining: json['forecastRemaining'] as int,
-      reportRemaining: json['reportRemaining'] as int,
-      insightRemaining: json['insightRemaining'] as int,
-    );
-  }
+  factory MlUsageInfo.fromJson(Map<String, dynamic> json) =>
+      _$MlUsageInfoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MlUsageInfoToJson(this);
 
   String get forecastUsageText {
     if (limits.forecastDisabled) return 'Недоступно';

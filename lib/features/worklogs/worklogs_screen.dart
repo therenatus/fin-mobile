@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
@@ -90,7 +91,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка загрузки: $e'),
+            content: Text(context.l10n.loadingError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -103,7 +104,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Записи работы'),
+        title: Text(context.l10n.workRecords),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -136,7 +137,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
                     setState(() => _dateRange = range);
                     _loadWorkLogs();
                   },
-                  placeholder: 'Все даты',
+                  placeholder: context.l10n.allDates,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 // Summary
@@ -145,7 +146,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
                     Expanded(
                       child: _SummaryCard(
                         icon: Icons.check_circle_outline,
-                        label: 'Всего шт',
+                        label: context.l10n.totalPieces,
                         value: _totalQuantity.toString(),
                         color: AppColors.success,
                       ),
@@ -154,7 +155,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
                     Expanded(
                       child: _SummaryCard(
                         icon: Icons.timer_outlined,
-                        label: 'Всего часов',
+                        label: context.l10n.totalHours,
                         value: _totalHours.toStringAsFixed(1),
                         color: AppColors.primary,
                       ),
@@ -163,7 +164,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
                     Expanded(
                       child: _SummaryCard(
                         icon: Icons.list_alt,
-                        label: 'Записей',
+                        label: context.l10n.recordsCount,
                         value: _workLogs.length.toString(),
                         color: AppColors.info,
                       ),
@@ -199,7 +200,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Нет записей',
+            context.l10n.noRecords,
             style: AppTypography.h4.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -207,8 +208,8 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
           const SizedBox(height: AppSpacing.sm),
           Text(
             _dateRange != null || _selectedEmployeeId != null
-                ? 'Попробуйте изменить фильтры'
-                : 'Сотрудники ещё не записывали работу',
+                ? context.l10n.tryChangeFilters
+                : context.l10n.employeesNotRecordedWork,
             style: AppTypography.bodyMedium.copyWith(
               color: context.textTertiaryColor,
             ),
@@ -318,7 +319,7 @@ class _EmployeeDropdown extends StatelessWidget {
           isExpanded: true,
           value: selectedEmployeeId,
           hint: Text(
-            'Все сотрудники',
+            context.l10n.allEmployees,
             style: AppTypography.bodyMedium.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -327,7 +328,7 @@ class _EmployeeDropdown extends StatelessWidget {
             DropdownMenuItem<String?>(
               value: null,
               child: Text(
-                'Все сотрудники',
+                context.l10n.allEmployees,
                 style: AppTypography.bodyMedium,
               ),
             ),
@@ -396,8 +397,8 @@ class _WorkLogCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final employee = log['employee'] as Map<String, dynamic>?;
     final order = log['order'] as Map<String, dynamic>?;
-    final employeeName = employee?['name'] ?? 'Неизвестно';
-    final modelName = order?['modelName'] ?? 'Неизвестно';
+    final employeeName = employee?['name'] ?? context.l10n.unknown;
+    final modelName = order?['modelName'] ?? context.l10n.unknown;
     final clientName = order?['clientName'] ?? '';
     final step = log['step'] ?? '';
     final quantity = log['quantity'] ?? 0;

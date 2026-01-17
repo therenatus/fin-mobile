@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/widgets/widgets.dart';
@@ -31,15 +32,17 @@ class _ModelsScreenState extends State<ModelsScreen> {
 
   ApiService get _api => context.read<AppProvider>().api;
 
-  final List<String> _categories = [
-    'Платье',
-    'Костюм',
-    'Брюки',
-    'Рубашка',
-    'Юбка',
-    'Пальто',
-    'Другое',
-  ];
+  List<String> _getLocalizedCategories(BuildContext context) {
+    return [
+      context.l10n.categoryDress,
+      context.l10n.categorySuit,
+      context.l10n.categoryPants,
+      context.l10n.categoryShirt,
+      context.l10n.categorySkirt,
+      context.l10n.categoryCoat,
+      context.l10n.categoryOther,
+    ];
+  }
 
   @override
   void initState() {
@@ -85,7 +88,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка загрузки: $e'),
+            content: Text(context.l10n.loadingError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -99,7 +102,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
       backgroundColor: context.backgroundColor,
       drawer: const AppDrawer(currentRoute: 'models'),
       appBar: AppBar(
-        title: const Text('Модели'),
+        title: Text(context.l10n.models),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: Builder(
@@ -114,13 +117,13 @@ class _ModelsScreenState extends State<ModelsScreen> {
               isLabelVisible: _categoryFilter != null,
               child: const Icon(Icons.filter_list),
             ),
-            tooltip: 'Фильтр по категории',
+            tooltip: context.l10n.filterByCategory,
             onSelected: (value) {
               setState(() {
                 _categoryFilter = value;
               });
             },
-            itemBuilder: (context) => [
+            itemBuilder: (ctx) => [
               PopupMenuItem(
                 value: null,
                 child: Row(
@@ -130,15 +133,15 @@ class _ModelsScreenState extends State<ModelsScreen> {
                       size: 18,
                       color: _categoryFilter == null
                           ? AppColors.primary
-                          : context.textSecondaryColor,
+                          : ctx.textSecondaryColor,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Все категории',
+                      context.l10n.allCategories,
                       style: TextStyle(
                         color: _categoryFilter == null
                             ? AppColors.primary
-                            : context.textPrimaryColor,
+                            : ctx.textPrimaryColor,
                         fontWeight: _categoryFilter == null
                             ? FontWeight.w600
                             : FontWeight.normal,
@@ -148,7 +151,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
                 ),
               ),
               const PopupMenuDivider(),
-              ..._categories.map((cat) => PopupMenuItem(
+              ..._getLocalizedCategories(context).map((cat) => PopupMenuItem(
                     value: cat,
                     child: Row(
                       children: [
@@ -157,7 +160,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
                           size: 18,
                           color: _categoryFilter == cat
                               ? AppColors.primary
-                              : context.textSecondaryColor,
+                              : ctx.textSecondaryColor,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -165,7 +168,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
                           style: TextStyle(
                             color: _categoryFilter == cat
                                 ? AppColors.primary
-                                : context.textPrimaryColor,
+                                : ctx.textPrimaryColor,
                             fontWeight: _categoryFilter == cat
                                 ? FontWeight.w600
                                 : FontWeight.normal,
@@ -188,7 +191,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
             ),
             child: AppSearchBar(
               controller: _searchController,
-              hint: 'Поиск моделей...',
+              hint: context.l10n.searchModels,
               onChanged: _onSearchChanged,
               onClear: () {
                 _searchDebounce?.cancel();
@@ -209,7 +212,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Новая модель'),
+        label: Text(context.l10n.newModel),
       ),
     );
   }
@@ -240,13 +243,13 @@ class _ModelsScreenState extends State<ModelsScreen> {
       return EmptyState(
         icon: Icons.checkroom_outlined,
         title: _searchQuery.isNotEmpty || _categoryFilter != null
-            ? 'Ничего не найдено'
-            : 'Нет моделей',
+            ? context.l10n.nothingFound
+            : context.l10n.noModels,
         subtitle: _searchQuery.isNotEmpty || _categoryFilter != null
-            ? 'Попробуйте изменить параметры поиска'
-            : 'Добавьте первую модель одежды',
+            ? context.l10n.tryChangeSearchParams
+            : context.l10n.addFirstModel,
         actionLabel: _searchQuery.isEmpty && _categoryFilter == null
-            ? 'Добавить модель'
+            ? context.l10n.addModel
             : null,
         onAction: _searchQuery.isEmpty && _categoryFilter == null
             ? () => _openModelForm()
@@ -301,19 +304,20 @@ class _ModelsScreenState extends State<ModelsScreen> {
   }
 
   void _confirmDelete(OrderModel model) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Удалить модель?'),
-        content: Text('Вы уверены, что хотите удалить "${model.name}"?'),
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteModelTitle),
+        content: Text(l10n.deleteModelMessage(model.name)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(ctx); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
                 final api = _api;
@@ -322,7 +326,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Модель удалена'),
+                      content: Text(l10n.modelDeleted),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
@@ -343,7 +347,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
               }
             },
             child: Text(
-              'Удалить',
+              l10n.delete,
               style: TextStyle(color: AppColors.error),
             ),
           ),
@@ -598,7 +602,7 @@ class _ModelDetailsSheet extends StatelessWidget {
                             size: 18, color: context.textSecondaryColor),
                         const SizedBox(width: 8),
                         Text(
-                          'Описание',
+                          context.l10n.description,
                           style: AppTypography.labelLarge.copyWith(
                             color: context.textSecondaryColor,
                           ),
@@ -634,7 +638,7 @@ class _ModelDetailsSheet extends StatelessWidget {
                           },
                           icon: Icon(Icons.delete_outline, color: AppColors.error),
                           label: Text(
-                            'Удалить',
+                            context.l10n.delete,
                             style: TextStyle(color: AppColors.error),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -651,7 +655,7 @@ class _ModelDetailsSheet extends StatelessWidget {
                             onEdit();
                           },
                           icon: const Icon(Icons.edit_outlined),
-                          label: const Text('Изменить'),
+                          label: Text(context.l10n.changeAction),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),

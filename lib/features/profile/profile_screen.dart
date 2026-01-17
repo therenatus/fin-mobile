@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/providers/subscription_provider.dart';
@@ -69,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: const Icon(Icons.camera_alt, color: AppColors.primary),
                 ),
-                title: const Text('Камера'),
+                title: Text(context.l10n.camera),
                 onTap: () {
                   Navigator.pop(context);
                   _pickAndUploadAvatar(provider, ImageSource.camera);
@@ -84,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: const Icon(Icons.photo_library, color: AppColors.secondary),
                 ),
-                title: const Text('Галерея'),
+                title: Text(context.l10n.gallery),
                 onTap: () {
                   Navigator.pop(context);
                   _pickAndUploadAvatar(provider, ImageSource.gallery);
@@ -100,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: const Icon(Icons.delete_outline, color: AppColors.error),
                   ),
-                  title: const Text('Удалить'),
+                  title: Text(context.l10n.delete),
                   onTap: () {
                     Navigator.pop(context);
                     _deleteAvatar(provider);
@@ -133,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Аватар обновлён'),
+            content: Text(context.l10n.avatarUpdated),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -169,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Аватар удалён'),
+            content: Text(context.l10n.avatarDeleted),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -199,7 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Профиль'),
+        title: Text(context.l10n.profile),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -222,24 +223,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Account section
                 _buildSection(
                   context,
-                  title: 'Аккаунт',
+                  title: context.l10n.account,
                   children: [
                     _SettingsItem(
                       icon: Icons.person_outline,
-                      title: 'Личные данные',
-                      subtitle: 'Имя, email, телефон',
+                      title: context.l10n.personalData,
+                      subtitle: context.l10n.nameEmailPhone,
                       onTap: () => _showComingSoon(context),
                     ),
                     _SettingsItem(
                       icon: Icons.store_outlined,
-                      title: 'Данные ателье',
-                      subtitle: user?.tenant?.name ?? 'Название, адрес, реквизиты',
+                      title: context.l10n.atelierData,
+                      subtitle: user?.tenant?.name ?? context.l10n.myAtelierHint,
                       onTap: () => _showComingSoon(context),
                     ),
                     _SettingsItem(
                       icon: Icons.lock_outline,
-                      title: 'Сменить пароль',
-                      subtitle: 'Изменить текущий пароль',
+                      title: context.l10n.changePassword,
+                      subtitle: context.l10n.changeCurrentPassword,
                       onTap: () => _showChangePasswordDialog(context),
                     ),
                   ],
@@ -249,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Appearance section
                 _buildSection(
                   context,
-                  title: 'Внешний вид',
+                  title: context.l10n.appearance,
                   children: [
                     _ThemeSelector(
                       currentTheme: provider.themeMode,
@@ -265,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     final usage = subProvider.usage;
                     return _buildSection(
                       context,
-                      title: 'Подписка',
+                      title: context.l10n.subscription,
                       children: [
                         _SubscriptionCardNew(
                           planName: usage?.planName ?? 'Free',
@@ -293,24 +294,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Other section
                 _buildSection(
                   context,
-                  title: 'Другое',
+                  title: context.l10n.other,
                   children: [
                     _SettingsItem(
                       icon: Icons.notifications_outlined,
-                      title: 'Уведомления',
-                      subtitle: 'Push, email, SMS',
+                      title: context.l10n.notifications,
+                      subtitle: context.l10n.pushEmailSms,
                       onTap: () => _showComingSoon(context),
                     ),
                     _SettingsItem(
                       icon: Icons.help_outline,
-                      title: 'Помощь и поддержка',
-                      subtitle: 'FAQ, связаться с нами',
+                      title: context.l10n.helpSupport,
+                      subtitle: context.l10n.faqContactUs,
                       onTap: () => _showComingSoon(context),
                     ),
                     _SettingsItem(
                       icon: Icons.info_outline,
-                      title: 'О приложении',
-                      subtitle: 'Версия 1.0.0',
+                      title: context.l10n.aboutApp,
+                      subtitle: context.l10n.version('1.0.0'),
                       onTap: () => _showAboutDialog(context),
                     ),
                   ],
@@ -324,7 +325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: () => _confirmLogout(context, provider),
                     icon: const Icon(Icons.logout, color: AppColors.error),
                     label: Text(
-                      'Выйти из аккаунта',
+                      context.l10n.logoutAccount,
                       style: TextStyle(color: AppColors.error),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -520,7 +521,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Скоро будет доступно'),
+        content: Text(context.l10n.comingSoon),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -539,7 +540,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Container(
@@ -551,7 +552,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: const Icon(Icons.content_cut, color: AppColors.primary),
             ),
             const SizedBox(width: 12),
-            const Text('AteliePro'),
+            Text(context.l10n.appTitle),
           ],
         ),
         content: Column(
@@ -559,22 +560,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Версия 1.0.0',
+              context.l10n.version('1.0.0'),
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textSecondaryColor,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Приложение для управления ателье. Управляйте заказами, заказчиками и аналитикой в одном месте.',
+              context.l10n.aboutAppDescription,
               style: AppTypography.bodyMedium,
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Закрыть'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.close),
           ),
         ],
       ),
@@ -584,21 +585,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _confirmLogout(BuildContext context, AppProvider provider) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Выход'),
-        content: const Text('Вы уверены, что хотите выйти из аккаунта?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.logoutTitle),
+        content: Text(context.l10n.logoutConfirmation),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               provider.logout();
             },
             child: Text(
-              'Выйти',
+              context.l10n.logoutButton,
               style: TextStyle(color: AppColors.error),
             ),
           ),

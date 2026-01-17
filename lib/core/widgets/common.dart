@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 
 class EmptyState extends StatelessWidget {
@@ -158,14 +159,14 @@ class SectionHeader extends StatelessWidget {
 
 class AppSearchBar extends StatelessWidget {
   final TextEditingController? controller;
-  final String hint;
+  final String? hint;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
 
   const AppSearchBar({
     super.key,
     this.controller,
-    this.hint = 'Поиск...',
+    this.hint,
     this.onChanged,
     this.onClear,
   });
@@ -181,7 +182,7 @@ class AppSearchBar extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: hint,
+          hintText: hint ?? context.l10n.searchHint,
           prefixIcon: Icon(Icons.search, color: context.textTertiaryColor),
           suffixIcon: controller?.text.isNotEmpty == true
               ? IconButton(

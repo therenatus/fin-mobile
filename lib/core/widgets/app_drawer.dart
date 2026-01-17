@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../providers/app_provider.dart';
 import '../../features/shell/app_shell.dart';
@@ -62,7 +63,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  user?.tenant?.name ?? 'Моё ателье',
+                  user?.tenant?.name ?? context.l10n.myAtelierHint,
                   style: AppTypography.h3.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -87,69 +88,69 @@ class AppDrawer extends StatelessWidget {
                 // AppShell tabs (index 0-4)
                 _DrawerItem(
                   icon: Icons.dashboard_outlined,
-                  label: 'Дашборд',
+                  label: context.l10n.dashboard,
                   isSelected: currentRoute == 'home',
                   onTap: () => _navigateToShell(context, 0, 'home'),
                 ),
                 _DrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  label: 'Заказы',
+                  label: context.l10n.orders,
                   isSelected: currentRoute == 'orders',
                   onTap: () => _navigateToShell(context, 2, 'orders'),
                 ),
                 _DrawerItem(
                   icon: Icons.people_outline,
-                  label: 'Заказчики',
+                  label: context.l10n.customers,
                   isSelected: currentRoute == 'clients',
                   onTap: () => _navigateToShell(context, 1, 'clients'),
                 ),
                 _DrawerItem(
                   icon: Icons.analytics_outlined,
-                  label: 'Аналитика',
+                  label: context.l10n.analytics,
                   isSelected: currentRoute == 'analytics',
                   onTap: () => _navigateToShell(context, 3, 'analytics'),
                 ),
                 _DrawerItem(
                   icon: Icons.auto_graph_outlined,
-                  label: 'Прогнозы',
+                  label: context.l10n.forecast,
                   isSelected: currentRoute == 'forecasts',
                   onTap: () => _navigateToPushed(context, const ForecastsScreen(), 'forecasts'),
                 ),
                 const Divider(height: 32),
                 _DrawerItem(
                   icon: Icons.calendar_month_outlined,
-                  label: 'Загрузка',
+                  label: context.l10n.workload,
                   isSelected: currentRoute == 'workload',
                   onTap: () => _navigateToPushed(context, const WorkloadScreen(), 'workload'),
                 ),
                 _DrawerItem(
                   icon: Icons.checkroom_outlined,
-                  label: 'Модели',
+                  label: context.l10n.models,
                   isSelected: currentRoute == 'models',
                   onTap: () => _navigateToPushed(context, const ModelsScreen(), 'models'),
                 ),
                 _DrawerItem(
                   icon: Icons.people_alt_outlined,
-                  label: 'Сотрудники',
+                  label: context.l10n.employees,
                   isSelected: currentRoute == 'employees',
                   onTap: () => _navigateToPushed(context, const EmployeesScreen(), 'employees'),
                 ),
                 _DrawerItem(
                   icon: Icons.calculate_outlined,
-                  label: 'Зарплата',
+                  label: context.l10n.payroll,
                   isSelected: currentRoute == 'payroll',
                   onTap: () => _navigateToPushed(context, const PayrollScreen(), 'payroll'),
                 ),
                 _DrawerItem(
                   icon: Icons.attach_money_outlined,
-                  label: 'Финансы',
+                  label: context.l10n.finance,
                   isSelected: currentRoute == 'finance',
                   onTap: () => _navigateToPushed(context, const FinanceScreen(), 'finance'),
                 ),
                 const Divider(height: 32),
                 _DrawerItem(
                   icon: Icons.settings_outlined,
-                  label: 'Настройки',
+                  label: context.l10n.settings,
                   isSelected: currentRoute == 'profile',
                   onTap: () => _navigateToShell(context, 4, 'profile'),
                 ),
@@ -174,7 +175,7 @@ class AppDrawer extends StatelessWidget {
                 ),
               ),
               title: Text(
-                'Выйти',
+                context.l10n.logout,
                 style: AppTypography.bodyLarge.copyWith(
                   color: AppColors.error,
                   fontWeight: FontWeight.w500,

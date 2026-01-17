@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/subscription.dart';
 import '../../core/providers/subscription_provider.dart';
@@ -128,7 +129,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Текущий план',
+                          context.l10n.currentPlan,
                           style: AppTypography.bodySmall.copyWith(
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
@@ -149,7 +150,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _buildStatusChip(usage?.statusText ?? 'Бесплатный план'),
+                  _buildStatusChip(usage?.statusText ?? context.l10n.freePlan),
                   if (usage?.expiresAt != null) ...[
                     const SizedBox(width: 8),
                     _buildStatusChip(
@@ -223,14 +224,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Что-то пошло не так',
+              context.l10n.somethingWentWrong,
               style: AppTypography.h4.copyWith(
                 color: context.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              provider.error ?? 'Произошла ошибка',
+              provider.error ?? context.l10n.errorHappened,
               textAlign: TextAlign.center,
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textSecondaryColor,
@@ -243,7 +244,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 provider.init();
               },
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Повторить'),
+              label: Text(context.l10n.retry),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -270,7 +271,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Использование ресурсов',
+              context.l10n.resourceUsage,
               style: AppTypography.h4.copyWith(
                 color: context.textPrimaryColor,
               ),
@@ -283,7 +284,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             Expanded(
               child: _buildUsageCard(
                 icon: Icons.people_alt_rounded,
-                label: 'Заказчики',
+                label: context.l10n.customersLabel,
                 current: usage.currentClients,
                 limit: usage.limits.clientLimit,
                 isNearLimit: usage.isNearClientLimit,
@@ -295,7 +296,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             Expanded(
               child: _buildUsageCard(
                 icon: Icons.badge_rounded,
-                label: 'Сотрудники',
+                label: context.l10n.employeesLabel,
                 current: usage.currentEmployees,
                 limit: usage.limits.employeeLimit,
                 isNearLimit: usage.isNearEmployeeLimit,
@@ -422,7 +423,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           if (isUnlimited) ...[
             const SizedBox(height: 8),
             Text(
-              'Безлимит',
+              context.l10n.unlimited,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.success,
                 fontWeight: FontWeight.w500,
@@ -447,7 +448,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Доступные планы',
+              context.l10n.availablePlans,
               style: AppTypography.h4.copyWith(
                 color: context.textPrimaryColor,
               ),
@@ -488,7 +489,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Загрузка планов...',
+            context.l10n.loadingPlans,
             style: AppTypography.bodyMedium.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -587,7 +588,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'Активен',
+                                  context.l10n.activePlan,
                                   style: AppTypography.bodySmall.copyWith(
                                     color: AppColors.success,
                                     fontWeight: FontWeight.w600,
@@ -626,7 +627,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       child: _buildLimitItem(
                         Icons.people_outline_rounded,
                         plan.clientLimitText,
-                        'заказчиков',
+                        context.l10n.ofCustomers,
                       ),
                     ),
                     Container(
@@ -638,7 +639,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       child: _buildLimitItem(
                         Icons.badge_outlined,
                         plan.employeeLimitText,
-                        'сотрудников',
+                        context.l10n.ofEmployees,
                       ),
                     ),
                   ],
@@ -707,7 +708,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           ),
                         )
                       : Text(
-                          isCurrentPlan ? 'Текущий план' : 'Выбрать план',
+                          isCurrentPlan ? context.l10n.currentPlanButton : context.l10n.selectPlan,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                           ),
@@ -742,7 +743,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   const Icon(Icons.star_rounded, color: Colors.white, size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    'Популярный',
+                    context.l10n.popular,
                     style: AppTypography.bodySmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -790,7 +791,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           color: context.textSecondaryColor,
         ),
         label: Text(
-          'Восстановить покупки',
+          context.l10n.restorePurchases,
           style: TextStyle(color: context.textSecondaryColor),
         ),
         style: TextButton.styleFrom(

@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'json_converters.dart';
+
+part 'transaction.g.dart';
+
 enum TransactionType {
   income('income', 'Доход'),
   expense('expense', 'Расход');
@@ -14,9 +19,11 @@ enum TransactionType {
   }
 }
 
+@JsonSerializable()
 class Transaction {
   final String id;
   final DateTime date;
+  @TransactionTypeConverter()
   final TransactionType type;
   final String category;
   final double amount;
@@ -35,36 +42,23 @@ class Transaction {
     required this.createdAt,
   });
 
-  factory Transaction.fromJson(Map<String, dynamic> json) {
-    return Transaction(
-      id: json['id'] as String,
-      date: DateTime.parse(json['date'] as String),
-      type: TransactionType.fromString(json['type'] as String),
-      category: json['category'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      description: json['description'] as String?,
-      orderId: json['orderId'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
+  factory Transaction.fromJson(Map<String, dynamic> json) =>
+      _$TransactionFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'date': date.toIso8601String(),
-      'type': type.value,
-      'category': category,
-      'amount': amount,
-      if (description != null) 'description': description,
-      if (orderId != null) 'orderId': orderId,
-    };
-  }
+  Map<String, dynamic> toJson() => _$TransactionToJson(this);
 }
 
+@JsonSerializable()
 class FinanceReport {
+  @JsonKey(defaultValue: 0.0)
   final double totalIncome;
+  @JsonKey(defaultValue: 0.0)
   final double totalExpense;
+  @JsonKey(defaultValue: 0.0)
   final double profit;
+  @JsonKey(defaultValue: [])
   final List<CategorySummary> incomeByCategory;
+  @JsonKey(defaultValue: [])
   final List<CategorySummary> expenseByCategory;
 
   FinanceReport({
@@ -75,26 +69,17 @@ class FinanceReport {
     required this.expenseByCategory,
   });
 
-  factory FinanceReport.fromJson(Map<String, dynamic> json) {
-    return FinanceReport(
-      totalIncome: (json['totalIncome'] as num?)?.toDouble() ?? 0,
-      totalExpense: (json['totalExpense'] as num?)?.toDouble() ?? 0,
-      profit: (json['profit'] as num?)?.toDouble() ?? 0,
-      incomeByCategory: (json['incomeByCategory'] as List<dynamic>?)
-              ?.map((e) => CategorySummary.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      expenseByCategory: (json['expenseByCategory'] as List<dynamic>?)
-              ?.map((e) => CategorySummary.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-    );
-  }
+  factory FinanceReport.fromJson(Map<String, dynamic> json) =>
+      _$FinanceReportFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FinanceReportToJson(this);
 }
 
+@JsonSerializable()
 class CategorySummary {
   final String category;
   final double amount;
+  @JsonKey(defaultValue: 0)
   final int count;
 
   CategorySummary({
@@ -103,13 +88,10 @@ class CategorySummary {
     required this.count,
   });
 
-  factory CategorySummary.fromJson(Map<String, dynamic> json) {
-    return CategorySummary(
-      category: json['category'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      count: json['count'] as int? ?? 0,
-    );
-  }
+  factory CategorySummary.fromJson(Map<String, dynamic> json) =>
+      _$CategorySummaryFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CategorySummaryToJson(this);
 }
 
 // Categories for transactions

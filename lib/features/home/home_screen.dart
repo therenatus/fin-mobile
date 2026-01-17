@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/widgets/widgets.dart';
@@ -84,7 +85,7 @@ class HomeScreen extends StatelessWidget {
           ),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Уведомления скоро будут доступны')),
+              SnackBar(content: Text(context.l10n.notificationsComingSoon)),
             );
           },
         ),
@@ -110,11 +111,11 @@ class HomeScreen extends StatelessWidget {
     final hour = DateTime.now().hour;
     String greeting;
     if (hour < 12) {
-      greeting = 'Доброе утро';
+      greeting = context.l10n.goodMorning;
     } else if (hour < 18) {
-      greeting = 'Добрый день';
+      greeting = context.l10n.goodAfternoon;
     } else {
-      greeting = 'Добрый вечер';
+      greeting = context.l10n.goodEvening;
     }
 
     return Consumer<AppProvider>(
@@ -141,7 +142,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'У вас ${_formatOrdersCount(provider.dashboardStats?.activeOrders ?? 0)} в работе',
+                      context.l10n.youHaveOrdersInProgress(_formatOrdersCount(context, provider.dashboardStats?.activeOrders ?? 0)),
                       style: AppTypography.bodyMedium.copyWith(
                         color: Colors.white.withOpacity(0.9),
                       ),
@@ -168,11 +169,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  String _formatOrdersCount(int count) {
-    if (count == 0) return 'нет заказов';
-    if (count == 1) return '1 заказ';
-    if (count >= 2 && count <= 4) return '$count заказа';
-    return '$count заказов';
+  String _formatOrdersCount(BuildContext context, int count) {
+    return context.l10n.ordersInProgress(count);
   }
 
   Widget _buildStatsGrid(BuildContext context) {
@@ -184,7 +182,7 @@ class HomeScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(title: 'Показатели'),
+            SectionHeader(title: context.l10n.indicators),
             if (isLoading && stats == null)
               GridView.count(
                 crossAxisCount: 2,
@@ -212,7 +210,7 @@ class HomeScreen extends StatelessWidget {
                   StaggeredListItem(
                     index: 0,
                     child: StatCard(
-                      title: 'Активные заказы',
+                      title: context.l10n.activeOrders,
                       value: '${stats?.activeOrders ?? 0}',
                       icon: Icons.receipt_long,
                       iconColor: AppColors.primary,
@@ -221,7 +219,7 @@ class HomeScreen extends StatelessWidget {
                   StaggeredListItem(
                     index: 1,
                     child: StatCard(
-                      title: 'Заказчики',
+                      title: context.l10n.customers,
                       value: '${stats?.totalClients ?? 0}',
                       icon: Icons.people,
                       iconColor: AppColors.secondary,
@@ -230,7 +228,7 @@ class HomeScreen extends StatelessWidget {
                   StaggeredListItem(
                     index: 2,
                     child: StatCard(
-                      title: 'Доход за месяц',
+                      title: context.l10n.monthlyIncome,
                       value: _formatCurrency(stats?.monthlyRevenue ?? 0),
                       icon: Icons.account_balance_wallet,
                       iconColor: AppColors.warning,
@@ -239,7 +237,7 @@ class HomeScreen extends StatelessWidget {
                   StaggeredListItem(
                     index: 3,
                     child: StatCard(
-                      title: 'Просрочено',
+                      title: context.l10n.overdue,
                       value: '${stats?.overdueOrders ?? 0}',
                       icon: Icons.warning_amber,
                       iconColor: AppColors.error,
@@ -272,7 +270,7 @@ class HomeScreen extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionHeader(title: 'Финансы за месяц'),
+              SectionHeader(title: context.l10n.monthlyFinance),
               Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
@@ -293,7 +291,7 @@ class HomeScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(title: 'Финансы за месяц'),
+            SectionHeader(title: context.l10n.monthlyFinance),
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
@@ -309,7 +307,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _FinanceItem(
                           icon: Icons.arrow_upward,
-                          label: 'Доходы',
+                          label: context.l10n.income,
                           value: income,
                           color: AppColors.success,
                         ),
@@ -322,7 +320,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _FinanceItem(
                           icon: Icons.arrow_downward,
-                          label: 'Расходы',
+                          label: context.l10n.expenses,
                           value: expense,
                           color: AppColors.error,
                         ),
@@ -349,7 +347,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Прибыль: ',
+                          '${context.l10n.profit}: ',
                           style: AppTypography.bodyMedium.copyWith(
                             color: context.textSecondaryColor,
                           ),
@@ -383,8 +381,8 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeader(
-              title: 'Последние заказы',
-              actionLabel: 'Все',
+              title: context.l10n.recentOrders,
+              actionLabel: context.l10n.all,
               onAction: () {
                 // Navigate to orders tab
               },
@@ -400,8 +398,8 @@ class HomeScreen extends StatelessWidget {
             else if (orders.isEmpty)
               AnimatedEmptyState(
                 icon: Icons.receipt_long_outlined,
-                title: 'Нет заказов',
-                subtitle: 'Здесь появятся ваши последние заказы',
+                title: context.l10n.noOrders,
+                subtitle: context.l10n.ordersWillAppearHere,
               )
             else
               ListView.separated(
@@ -431,17 +429,17 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Быстрые действия'),
+        SectionHeader(title: context.l10n.quickActions),
         Row(
           children: [
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.add_circle_outline,
-                label: 'Новый заказ',
+                label: context.l10n.newOrder,
                 color: AppColors.primary,
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Создание заказа скоро будет доступно')),
+                    SnackBar(content: Text(context.l10n.orderCreationComingSoon)),
                   );
                 },
               ),
@@ -450,11 +448,11 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.person_add_outlined,
-                label: 'Новый заказчик',
+                label: context.l10n.newCustomer,
                 color: AppColors.secondary,
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Добавление заказчика скоро будет доступно')),
+                    SnackBar(content: Text(context.l10n.customerAdditionComingSoon)),
                   );
                 },
               ),

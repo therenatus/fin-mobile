@@ -1,14 +1,30 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'analytics.g.dart';
+
+@JsonSerializable()
 class DashboardStats {
+  @JsonKey(defaultValue: 0)
   final int totalOrders;
+  @JsonKey(defaultValue: 0)
   final int activeOrders;
+  @JsonKey(defaultValue: 0)
   final int completedOrders;
+  @JsonKey(defaultValue: 0)
   final int pendingOrders;
+  @JsonKey(defaultValue: 0)
   final int cancelledOrders;
+  @JsonKey(defaultValue: 0)
   final int overdueOrders;
+  @JsonKey(defaultValue: 0.0)
   final double totalRevenue;
+  @JsonKey(defaultValue: 0.0)
   final double periodRevenue;
+  @JsonKey(defaultValue: 0.0)
   final double avgOrderValue;
+  @JsonKey(defaultValue: 0)
   final int totalClients;
+  @JsonKey(defaultValue: 0)
   final int newClients;
 
   DashboardStats({
@@ -25,21 +41,10 @@ class DashboardStats {
     required this.newClients,
   });
 
-  factory DashboardStats.fromJson(Map<String, dynamic> json) {
-    return DashboardStats(
-      totalOrders: json['totalOrders'] as int? ?? 0,
-      activeOrders: json['activeOrders'] as int? ?? 0,
-      completedOrders: json['completedOrders'] as int? ?? 0,
-      pendingOrders: json['pendingOrders'] as int? ?? 0,
-      cancelledOrders: json['cancelledOrders'] as int? ?? 0,
-      overdueOrders: json['overdueOrders'] as int? ?? 0,
-      totalRevenue: (json['totalRevenue'] as num?)?.toDouble() ?? 0,
-      periodRevenue: (json['periodRevenue'] as num?)?.toDouble() ?? 0,
-      avgOrderValue: (json['avgOrderValue'] as num?)?.toDouble() ?? 0,
-      totalClients: json['totalClients'] as int? ?? 0,
-      newClients: json['newClients'] as int? ?? 0,
-    );
-  }
+  factory DashboardStats.fromJson(Map<String, dynamic> json) =>
+      _$DashboardStatsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DashboardStatsToJson(this);
 
   // Backward compatibility
   double get monthlyRevenue => periodRevenue;
@@ -49,9 +54,11 @@ class DashboardStats {
   double get completionRate => totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
 }
 
+@JsonSerializable()
 class AnalyticsDashboard {
   final DashboardStats summary;
   final AnalyticsCharts charts;
+  @JsonKey(defaultValue: [])
   final List<TopClient> topClients;
 
   AnalyticsDashboard({
@@ -60,19 +67,17 @@ class AnalyticsDashboard {
     required this.topClients,
   });
 
-  factory AnalyticsDashboard.fromJson(Map<String, dynamic> json) {
-    return AnalyticsDashboard(
-      summary: DashboardStats.fromJson(json['summary'] as Map<String, dynamic>),
-      charts: AnalyticsCharts.fromJson(json['charts'] as Map<String, dynamic>),
-      topClients: (json['topClients'] as List<dynamic>?)
-          ?.map((e) => TopClient.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-    );
-  }
+  factory AnalyticsDashboard.fromJson(Map<String, dynamic> json) =>
+      _$AnalyticsDashboardFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AnalyticsDashboardToJson(this);
 }
 
+@JsonSerializable()
 class AnalyticsCharts {
+  @JsonKey(defaultValue: [])
   final List<RevenueDataPoint> revenueByDay;
+  @JsonKey(fromJson: _ordersByStatusFromJson)
   final OrdersByStatus ordersByStatus;
 
   AnalyticsCharts({
@@ -80,36 +85,38 @@ class AnalyticsCharts {
     required this.ordersByStatus,
   });
 
-  factory AnalyticsCharts.fromJson(Map<String, dynamic> json) {
-    return AnalyticsCharts(
-      revenueByDay: (json['revenueByDay'] as List<dynamic>?)
-          ?.map((e) => RevenueDataPoint.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-      ordersByStatus: OrdersByStatus.fromJson(
-        json['ordersByStatus'] as Map<String, dynamic>? ?? {},
-      ),
-    );
-  }
+  factory AnalyticsCharts.fromJson(Map<String, dynamic> json) =>
+      _$AnalyticsChartsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AnalyticsChartsToJson(this);
+
+  static OrdersByStatus _ordersByStatusFromJson(Map<String, dynamic>? json) =>
+      OrdersByStatus.fromJson(json ?? {});
 }
 
+@JsonSerializable()
 class RevenueDataPoint {
   final String date;
+  @JsonKey(defaultValue: 0.0)
   final double amount;
 
   RevenueDataPoint({required this.date, required this.amount});
 
-  factory RevenueDataPoint.fromJson(Map<String, dynamic> json) {
-    return RevenueDataPoint(
-      date: json['date'] as String,
-      amount: (json['amount'] as num?)?.toDouble() ?? 0,
-    );
-  }
+  factory RevenueDataPoint.fromJson(Map<String, dynamic> json) =>
+      _$RevenueDataPointFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RevenueDataPointToJson(this);
 }
 
+@JsonSerializable()
 class OrdersByStatus {
+  @JsonKey(defaultValue: 0)
   final int pending;
+  @JsonKey(name: 'in_progress', defaultValue: 0)
   final int inProgress;
+  @JsonKey(defaultValue: 0)
   final int completed;
+  @JsonKey(defaultValue: 0)
   final int cancelled;
 
   OrdersByStatus({
@@ -119,14 +126,10 @@ class OrdersByStatus {
     required this.cancelled,
   });
 
-  factory OrdersByStatus.fromJson(Map<String, dynamic> json) {
-    return OrdersByStatus(
-      pending: json['pending'] as int? ?? 0,
-      inProgress: json['in_progress'] as int? ?? 0,
-      completed: json['completed'] as int? ?? 0,
-      cancelled: json['cancelled'] as int? ?? 0,
-    );
-  }
+  factory OrdersByStatus.fromJson(Map<String, dynamic> json) =>
+      _$OrdersByStatusFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrdersByStatusToJson(this);
 
   int get total => pending + inProgress + completed + cancelled;
 
@@ -147,10 +150,13 @@ class OrdersByStatus {
   }
 }
 
+@JsonSerializable()
 class TopClient {
   final String id;
   final String name;
+  @JsonKey(defaultValue: 0)
   final int ordersCount;
+  @JsonKey(defaultValue: 0.0)
   final double totalSpent;
 
   TopClient({
@@ -160,17 +166,14 @@ class TopClient {
     required this.totalSpent,
   });
 
-  factory TopClient.fromJson(Map<String, dynamic> json) {
-    return TopClient(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      ordersCount: json['ordersCount'] as int? ?? 0,
-      totalSpent: (json['totalSpent'] as num?)?.toDouble() ?? 0,
-    );
-  }
+  factory TopClient.fromJson(Map<String, dynamic> json) =>
+      _$TopClientFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TopClientToJson(this);
 }
 
 // Legacy classes for backward compatibility
+@JsonSerializable()
 class ChartDataPoint {
   final String label;
   final double value;
@@ -182,18 +185,19 @@ class ChartDataPoint {
     this.date,
   });
 
-  factory ChartDataPoint.fromJson(Map<String, dynamic> json) {
-    return ChartDataPoint(
-      label: json['label'] as String,
-      value: (json['value'] as num).toDouble(),
-      date: json['date'] != null ? DateTime.parse(json['date'] as String) : null,
-    );
-  }
+  factory ChartDataPoint.fromJson(Map<String, dynamic> json) =>
+      _$ChartDataPointFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChartDataPointToJson(this);
 }
 
+@JsonSerializable()
 class RevenueData {
+  @JsonKey(defaultValue: [])
   final List<ChartDataPoint> daily;
+  @JsonKey(defaultValue: [])
   final List<ChartDataPoint> weekly;
+  @JsonKey(defaultValue: [])
   final List<ChartDataPoint> monthly;
 
   RevenueData({
@@ -202,17 +206,8 @@ class RevenueData {
     required this.monthly,
   });
 
-  factory RevenueData.fromJson(Map<String, dynamic> json) {
-    return RevenueData(
-      daily: (json['daily'] as List<dynamic>?)
-          ?.map((e) => ChartDataPoint.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-      weekly: (json['weekly'] as List<dynamic>?)
-          ?.map((e) => ChartDataPoint.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-      monthly: (json['monthly'] as List<dynamic>?)
-          ?.map((e) => ChartDataPoint.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-    );
-  }
+  factory RevenueData.fromJson(Map<String, dynamic> json) =>
+      _$RevenueDataFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RevenueDataToJson(this);
 }

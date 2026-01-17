@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/app_drawer.dart';
@@ -69,7 +70,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка загрузки истории: $e'),
+            content: Text(context.l10n.loadingError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -110,7 +111,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Зарплата рассчитана'),
+            content: Text(context.l10n.salaryCalculated),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -134,7 +135,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка: $e'),
+            content: Text('${context.l10n.error}: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -184,7 +185,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       backgroundColor: context.backgroundColor,
       drawer: const AppDrawer(currentRoute: 'payroll'),
       appBar: AppBar(
-        title: const Text('Расчёт зарплаты'),
+        title: Text(context.l10n.payroll),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: Builder(
@@ -230,7 +231,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                 Icon(Icons.date_range, size: 20, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Период расчёта',
+                  context.l10n.calculationPeriod,
                   style: AppTypography.labelLarge.copyWith(
                     color: context.textSecondaryColor,
                   ),
@@ -242,7 +243,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
               children: [
                 Expanded(
                   child: _DatePickerButton(
-                    label: 'С',
+                    label: context.l10n.fromLabel,
                     date: _periodStart,
                     onTap: () => _selectDate(true),
                   ),
@@ -253,7 +254,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                 ),
                 Expanded(
                   child: _DatePickerButton(
-                    label: 'По',
+                    label: context.l10n.toLabel,
                     date: _periodEnd,
                     onTap: () => _selectDate(false),
                   ),
@@ -272,7 +273,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.calculate),
-                label: Text(_isLoading ? 'Расчёт...' : 'Рассчитать'),
+                label: Text(_isLoading ? context.l10n.calculating : context.l10n.calculate),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
@@ -288,8 +289,10 @@ class _PayrollScreenState extends State<PayrollScreen> {
     if (_currentPayroll == null) return;
 
     final payroll = _currentPayroll!;
-    final dateFormat = DateFormat('d.MM.yy', 'ru');
-    final description = 'Зарплата (${dateFormat.format(payroll.periodStart)} - ${dateFormat.format(payroll.periodEnd)})';
+    final locale = Localizations.localeOf(context).languageCode;
+    final dateFormat = DateFormat('d.MM.yy', locale);
+    final period = '${dateFormat.format(payroll.periodStart)} - ${dateFormat.format(payroll.periodEnd)}';
+    final description = context.l10n.salaryDescriptionFormat(period);
 
     try {
       final api = _api;
@@ -304,7 +307,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Записано в финансы'),
+            content: Text(context.l10n.recordedToFinance),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -317,7 +320,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка: $e'),
+            content: Text('${context.l10n.error}: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -363,7 +366,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Итого к выплате',
+                            context.l10n.totalToPay,
                             style: AppTypography.labelLarge.copyWith(
                               color: context.textSecondaryColor,
                             ),
@@ -387,7 +390,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _recordToFinance,
                     icon: const Icon(Icons.add_chart),
-                    label: const Text('Записать в финансы'),
+                    label: Text(context.l10n.recordToFinance),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
                       side: const BorderSide(color: AppColors.primary),
@@ -406,7 +409,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Text(
-            'Начисления по сотрудникам',
+            context.l10n.employeePayments,
             style: AppTypography.labelLarge.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -446,7 +449,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
               Icon(Icons.history, size: 18, color: context.textSecondaryColor),
               const SizedBox(width: 8),
               Text(
-                'История расчётов',
+                context.l10n.calculationHistory,
                 style: AppTypography.labelLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -481,7 +484,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Нет истории расчётов',
+                      context.l10n.noCalculationHistory,
                       style: AppTypography.bodyMedium.copyWith(
                         color: context.textSecondaryColor,
                       ),
@@ -652,7 +655,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
               ),
             ),
             title: Text(
-              employee?.name ?? 'Сотрудник',
+              employee?.name ?? context.l10n.employee,
               style: AppTypography.bodyLarge.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -660,7 +663,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
             subtitle: Text(
               employee != null
                   ? context.read<AppProvider>().getRoleLabel(employee!.role)
-                  : 'Неизвестная роль',
+                  : context.l10n.unknownRole,
               style: AppTypography.bodySmall.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -707,7 +710,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Выполненные работы',
+                      context.l10n.workDone,
                       style: AppTypography.labelSmall.copyWith(
                         color: context.textSecondaryColor,
                       ),
@@ -715,7 +718,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     ...detail.workLogs.map((log) {
                       final rateText = log.rate != null && log.rate! > 0
-                          ? '${log.rate!.toStringAsFixed(0)} ₽/${log.rateType == 'per_hour' ? 'ч' : 'шт'}'
+                          ? '${log.rate!.toStringAsFixed(0)} ₽/${log.rateType == 'per_hour' ? context.l10n.perHour : context.l10n.perPiece}'
                           : '';
                       final payoutText = log.payout != null && log.payout! > 0
                           ? '${NumberFormat('#,###', 'ru').format(log.payout)} ₽'
@@ -777,7 +780,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
                               children: [
                                 if (log.quantity > 0)
                                   Text(
-                                    '${log.quantity} шт',
+                                    context.l10n.piecesShort(log.quantity),
                                     style: AppTypography.bodySmall.copyWith(
                                       color: context.textSecondaryColor,
                                     ),
@@ -785,7 +788,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
                                 if (log.hours > 0) ...[
                                   const SizedBox(width: 12),
                                   Text(
-                                    '${log.hours.toStringAsFixed(1)} ч',
+                                    context.l10n.hoursShort(log.hours.toStringAsFixed(1)),
                                     style: AppTypography.bodySmall.copyWith(
                                       color: context.textSecondaryColor,
                                     ),

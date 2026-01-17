@@ -1,14 +1,25 @@
-/// Модель плана подписки
+import 'package:json_annotation/json_annotation.dart';
+
+part 'subscription.g.dart';
+
+@JsonSerializable()
 class SubscriptionPlan {
+  @JsonKey(defaultValue: '')
   final String id;
+  @JsonKey(defaultValue: '')
   final String name;
   final String? description;
+  @JsonKey(defaultValue: 0.0)
   final double price;
+  @JsonKey(defaultValue: 'monthly')
   final String billingCycle;
+  @JsonKey(defaultValue: 1)
   final int clientLimit;
+  @JsonKey(defaultValue: 10)
   final int employeeLimit;
   final String? googlePlayProductId;
   final String? appStoreProductId;
+  @JsonKey(defaultValue: [])
   final List<String> features;
 
   SubscriptionPlan({
@@ -24,35 +35,10 @@ class SubscriptionPlan {
     required this.features,
   });
 
-  factory SubscriptionPlan.fromJson(Map<String, dynamic> json) {
-    return SubscriptionPlan(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'],
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      billingCycle: json['billingCycle'] ?? 'monthly',
-      clientLimit: json['clientLimit'] ?? 1,
-      employeeLimit: json['employeeLimit'] ?? 10,
-      googlePlayProductId: json['googlePlayProductId'],
-      appStoreProductId: json['appStoreProductId'],
-      features: List<String>.from(json['features'] ?? []),
-    );
-  }
+  factory SubscriptionPlan.fromJson(Map<String, dynamic> json) =>
+      _$SubscriptionPlanFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'price': price,
-      'billingCycle': billingCycle,
-      'clientLimit': clientLimit,
-      'employeeLimit': employeeLimit,
-      'googlePlayProductId': googlePlayProductId,
-      'appStoreProductId': appStoreProductId,
-      'features': features,
-    };
-  }
+  Map<String, dynamic> toJson() => _$SubscriptionPlanToJson(this);
 
   bool get isUnlimitedClients => clientLimit == 0;
   bool get isUnlimitedEmployees => employeeLimit == 0;
@@ -63,12 +49,17 @@ class SubscriptionPlan {
       isUnlimitedEmployees ? 'Неограничено' : '$employeeLimit';
 }
 
-/// Модель лимитов подписки
+@JsonSerializable()
 class SubscriptionLimits {
+  @JsonKey(defaultValue: 1)
   final int clientLimit;
+  @JsonKey(defaultValue: 10)
   final int employeeLimit;
+  @JsonKey(defaultValue: 0)
   final int mlForecastLimit;
+  @JsonKey(defaultValue: 0)
   final int mlReportLimit;
+  @JsonKey(defaultValue: 0)
   final int mlInsightLimit;
 
   SubscriptionLimits({
@@ -79,26 +70,28 @@ class SubscriptionLimits {
     required this.mlInsightLimit,
   });
 
-  factory SubscriptionLimits.fromJson(Map<String, dynamic> json) {
-    return SubscriptionLimits(
-      clientLimit: json['clientLimit'] ?? 1,
-      employeeLimit: json['employeeLimit'] ?? 10,
-      mlForecastLimit: json['mlForecastLimit'] ?? 0,
-      mlReportLimit: json['mlReportLimit'] ?? 0,
-      mlInsightLimit: json['mlInsightLimit'] ?? 0,
-    );
-  }
+  factory SubscriptionLimits.fromJson(Map<String, dynamic> json) =>
+      _$SubscriptionLimitsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SubscriptionLimitsToJson(this);
 }
 
-/// Модель использования ресурсов
+@JsonSerializable()
 class ResourceUsage {
+  @JsonKey(defaultValue: 0)
   final int currentClients;
+  @JsonKey(defaultValue: 0)
   final int currentEmployees;
+  @JsonKey(fromJson: _limitsFromJson)
   final SubscriptionLimits limits;
+  @JsonKey(defaultValue: -1)
   final int clientsRemaining;
+  @JsonKey(defaultValue: -1)
   final int employeesRemaining;
+  @JsonKey(defaultValue: 'Free')
   final String planName;
   final String? planId;
+  @JsonKey(defaultValue: 'free')
   final String status;
   final DateTime? expiresAt;
 
@@ -114,21 +107,13 @@ class ResourceUsage {
     this.expiresAt,
   });
 
-  factory ResourceUsage.fromJson(Map<String, dynamic> json) {
-    return ResourceUsage(
-      currentClients: json['currentClients'] ?? 0,
-      currentEmployees: json['currentEmployees'] ?? 0,
-      limits: SubscriptionLimits.fromJson(json['limits'] ?? {}),
-      clientsRemaining: json['clientsRemaining'] ?? -1,
-      employeesRemaining: json['employeesRemaining'] ?? -1,
-      planName: json['planName'] ?? 'Free',
-      planId: json['planId'],
-      status: json['status'] ?? 'free',
-      expiresAt: json['expiresAt'] != null
-          ? DateTime.parse(json['expiresAt'])
-          : null,
-    );
-  }
+  factory ResourceUsage.fromJson(Map<String, dynamic> json) =>
+      _$ResourceUsageFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ResourceUsageToJson(this);
+
+  static SubscriptionLimits _limitsFromJson(Map<String, dynamic>? json) =>
+      SubscriptionLimits.fromJson(json ?? {});
 
   bool get isClientLimitReached =>
       limits.clientLimit > 0 && currentClients >= limits.clientLimit;
@@ -181,13 +166,18 @@ class ResourceUsage {
   }
 }
 
-/// Модель текущей подписки
+@JsonSerializable()
 class Subscription {
+  @JsonKey(defaultValue: '')
   final String id;
+  @JsonKey(defaultValue: '')
   final String tenantId;
+  @JsonKey(defaultValue: '')
   final String planId;
   final SubscriptionPlan? plan;
+  @JsonKey(defaultValue: 'free')
   final String status;
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime startDate;
   final DateTime? nextBillingDate;
   final DateTime? trialEndDate;
@@ -207,30 +197,13 @@ class Subscription {
     this.platform,
   });
 
-  factory Subscription.fromJson(Map<String, dynamic> json) {
-    return Subscription(
-      id: json['id'] ?? '',
-      tenantId: json['tenantId'] ?? '',
-      planId: json['planId'] ?? '',
-      plan: json['plan'] != null
-          ? SubscriptionPlan.fromJson(json['plan'])
-          : null,
-      status: json['status'] ?? 'free',
-      startDate: json['startDate'] != null
-          ? DateTime.parse(json['startDate'])
-          : DateTime.now(),
-      nextBillingDate: json['nextBillingDate'] != null
-          ? DateTime.parse(json['nextBillingDate'])
-          : null,
-      trialEndDate: json['trialEndDate'] != null
-          ? DateTime.parse(json['trialEndDate'])
-          : null,
-      expiresAt: json['expiresAt'] != null
-          ? DateTime.parse(json['expiresAt'])
-          : null,
-      platform: json['platform'],
-    );
-  }
+  factory Subscription.fromJson(Map<String, dynamic> json) =>
+      _$SubscriptionFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SubscriptionToJson(this);
+
+  static DateTime _dateTimeFromJson(String? json) =>
+      json != null ? DateTime.parse(json) : DateTime.now();
 
   bool get isActive => status == 'active' || status == 'trial';
 }

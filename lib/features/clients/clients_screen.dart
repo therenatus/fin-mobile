@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/widgets/widgets.dart';
@@ -47,7 +48,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Заказчики'),
+        title: Text(context.l10n.customers),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -57,16 +58,16 @@ class _ClientsScreenState extends State<ClientsScreen> {
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.sort),
-            tooltip: 'Сортировка',
+            tooltip: context.l10n.sortLabel,
             onSelected: (value) {
               setState(() {
                 _sortBy = value;
               });
             },
             itemBuilder: (ctx) => [
-              _buildSortOption(ctx, 'name', 'По имени'),
-              _buildSortOption(ctx, 'orders', 'По заказам'),
-              _buildSortOption(ctx, 'spent', 'По сумме'),
+              _buildSortOption(ctx, 'name', context.l10n.sortByName),
+              _buildSortOption(ctx, 'orders', context.l10n.sortByOrders),
+              _buildSortOption(ctx, 'spent', context.l10n.sortByAmount),
             ],
           ),
         ],
@@ -81,7 +82,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
             ),
             child: AppSearchBar(
               controller: _searchController,
-              hint: 'Поиск заказчиков...',
+              hint: context.l10n.searchCustomers,
               onChanged: _onSearchChanged,
               onClear: () {
                 _searchDebounce?.cancel();
@@ -109,7 +110,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.person_add),
-            label: const Text('Новый заказчик'),
+            label: Text(context.l10n.newCustomer),
           );
         },
       ),
@@ -172,12 +173,12 @@ class _ClientsScreenState extends State<ClientsScreen> {
       return EmptyState(
         icon: Icons.people_outline,
         title: _searchQuery.isNotEmpty
-          ? 'Ничего не найдено'
-          : 'Нет заказчиков',
+          ? context.l10n.noResults
+          : context.l10n.noCustomers,
         subtitle: _searchQuery.isNotEmpty
-          ? 'Попробуйте изменить поисковый запрос'
-          : canEdit ? 'Добавьте первого заказчика' : 'Заказчики пока не добавлены',
-        actionLabel: _searchQuery.isEmpty && canEdit ? 'Добавить заказчика' : null,
+          ? context.l10n.tryDifferentSearch
+          : canEdit ? context.l10n.addFirstCustomer : context.l10n.customersNotAdded,
+        actionLabel: _searchQuery.isEmpty && canEdit ? context.l10n.addCustomer : null,
         onAction: _searchQuery.isEmpty && canEdit ? () => _openClientForm() : null,
       );
     }
@@ -366,7 +367,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Заказчик с ${_formatDate(client.createdAt)}',
+                        context.l10n.customerSince(_formatDate(context, client.createdAt)),
                         style: AppTypography.bodyMedium.copyWith(
                           color: context.textSecondaryColor,
                         ),
@@ -387,7 +388,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
               children: [
                 Expanded(
                   child: _StatItem(
-                    label: 'Заказов',
+                    label: context.l10n.ordersCountLabel,
                     value: '${client.ordersCount ?? 0}',
                     icon: Icons.receipt_long_outlined,
                     color: AppColors.primary,
@@ -400,7 +401,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                 ),
                 Expanded(
                   child: _StatItem(
-                    label: 'Потрачено',
+                    label: context.l10n.spent,
                     value: _formatCurrency(client.totalSpent ?? 0),
                     icon: Icons.account_balance_wallet_outlined,
                     color: AppColors.secondary,
@@ -443,7 +444,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                               widget.onEdit();
                             },
                             icon: const Icon(Icons.edit_outlined),
-                            label: const Text('Изменить'),
+                            label: Text(context.l10n.editAction),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
@@ -458,7 +459,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                             widget.onCreateOrder();
                           },
                           icon: const Icon(Icons.add),
-                          label: const Text('Создать заказ'),
+                          label: Text(context.l10n.createOrder),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
@@ -485,7 +486,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Доступные модели',
+                context.l10n.availableModels,
                 style: AppTypography.labelLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -494,7 +495,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
             TextButton.icon(
               onPressed: _openModelAssignmentDialog,
               icon: const Icon(Icons.settings, size: 18),
-              label: const Text('Настроить'),
+              label: Text(context.l10n.configure),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 minimumSize: Size.zero,
@@ -532,14 +533,14 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Модели не назначены',
+                  context.l10n.noModelsAssigned,
                   style: AppTypography.bodyMedium.copyWith(
                     color: context.textSecondaryColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Заказчик может заказывать любые модели',
+                  context.l10n.clientCanOrderAnyModel,
                   style: AppTypography.labelSmall.copyWith(
                     color: context.textTertiaryColor,
                   ),
@@ -588,7 +589,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
             Icon(Icons.contact_phone_outlined, size: 18, color: context.textSecondaryColor),
             const SizedBox(width: 8),
             Text(
-              'Контакты',
+              context.l10n.contacts,
               style: AppTypography.labelLarge.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -608,7 +609,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
               if (client.contacts.phone != null)
                 _ContactRow(
                   icon: Icons.phone_outlined,
-                  label: 'Телефон',
+                  label: context.l10n.phone,
                   value: client.contacts.phone!,
                   onTap: () {},
                 ),
@@ -617,7 +618,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                   const Divider(height: AppSpacing.md),
                 _ContactRow(
                   icon: Icons.email_outlined,
-                  label: 'Email',
+                  label: context.l10n.email,
                   value: client.contacts.email!,
                   onTap: () {},
                 ),
@@ -626,7 +627,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
                 const Divider(height: AppSpacing.md),
                 _ContactRow(
                   icon: Icons.telegram,
-                  label: 'Telegram',
+                  label: context.l10n.telegram,
                   value: client.contacts.telegram!,
                   onTap: () {},
                 ),
@@ -647,7 +648,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
             Icon(Icons.notes_outlined, size: 18, color: context.textSecondaryColor),
             const SizedBox(width: 8),
             Text(
-              'Заметки',
+              context.l10n.notes,
               style: AppTypography.labelLarge.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -673,11 +674,13 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = [
-      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-    ];
+  String _formatDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final months = locale == 'ru'
+      ? ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+         'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+      : ['January', 'February', 'March', 'April', 'May', 'June',
+         'July', 'August', 'September', 'October', 'November', 'December'];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
@@ -788,7 +791,7 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      'Доступные модели',
+                      context.l10n.availableModels,
                       style: AppTypography.h4.copyWith(
                         color: context.textPrimaryColor,
                       ),
@@ -813,7 +816,7 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
                 vertical: AppSpacing.sm,
               ),
               child: Text(
-                'Выберите модели, которые заказчик сможет заказать. Если ни одна модель не выбрана - доступны все.',
+                context.l10n.selectModelsHint,
                 style: AppTypography.bodySmall.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -827,7 +830,7 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
                   : _error != null
                       ? Center(
                           child: Text(
-                            _error!,
+                            context.l10n.couldNotLoadModels,
                             style: AppTypography.bodyMedium.copyWith(
                               color: AppColors.error,
                             ),
@@ -838,7 +841,7 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
                               child: Padding(
                                 padding: const EdgeInsets.all(AppSpacing.xl),
                                 child: Text(
-                                  'Нет доступных моделей',
+                                  context.l10n.noAvailableModels,
                                   style: AppTypography.bodyMedium.copyWith(
                                     color: context.textSecondaryColor,
                                   ),
@@ -922,7 +925,7 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _isSaving ? null : () => Navigator.pop(context),
-                      child: const Text('Отмена'),
+                      child: Text(context.l10n.cancel),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -940,8 +943,8 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
                             )
                           : Text(
                               _selectedModelIds.isEmpty
-                                  ? 'Сбросить'
-                                  : 'Сохранить (${_selectedModelIds.length})',
+                                  ? context.l10n.reset
+                                  : context.l10n.saveWithCount(_selectedModelIds.length),
                             ),
                     ),
                   ),

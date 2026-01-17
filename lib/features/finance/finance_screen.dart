@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/models/models.dart';
@@ -81,7 +82,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка загрузки: $e'),
+            content: Text(context.l10n.loadingError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -95,7 +96,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       backgroundColor: context.backgroundColor,
       drawer: const AppDrawer(currentRoute: 'finance'),
       appBar: AppBar(
-        title: const Text('Финансы'),
+        title: Text(context.l10n.finance),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         leading: Builder(
@@ -110,15 +111,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
               isLabelVisible: _typeFilter != null,
               child: const Icon(Icons.filter_list),
             ),
-            tooltip: 'Фильтр',
+            tooltip: context.l10n.filterTooltip,
             onSelected: (value) {
               setState(() => _typeFilter = value);
               _loadData();
             },
             itemBuilder: (context) => [
-              _buildFilterOption(null, 'Все'),
-              _buildFilterOption('income', 'Доходы'),
-              _buildFilterOption('expense', 'Расходы'),
+              _buildFilterOption(context, null, context.l10n.allFilter),
+              _buildFilterOption(context, 'income', context.l10n.incomesFilter),
+              _buildFilterOption(context, 'expense', context.l10n.expensesFilter),
             ],
           ),
         ],
@@ -159,13 +160,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Транзакции',
+                            context.l10n.transactions,
                             style: AppTypography.h4.copyWith(
                               color: context.textPrimaryColor,
                             ),
                           ),
                           Text(
-                            '${_transactions.length} записей',
+                            context.l10n.transactionEntriesCount(_transactions.length),
                             style: AppTypography.bodyMedium.copyWith(
                               color: context.textSecondaryColor,
                             ),
@@ -180,9 +181,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       ? SliverFillRemaining(
                           child: EmptyState(
                             icon: Icons.receipt_long_outlined,
-                            title: 'Нет транзакций',
-                            subtitle: 'Добавьте первую транзакцию',
-                            actionLabel: 'Добавить',
+                            title: context.l10n.noTransactions,
+                            subtitle: context.l10n.addFirstTransaction,
+                            actionLabel: context.l10n.add,
                             onAction: () => _openTransactionForm(),
                           ),
                         )
@@ -209,12 +210,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Транзакция'),
+        label: Text(context.l10n.transaction),
       ),
     );
   }
 
-  PopupMenuItem<String?> _buildFilterOption(String? value, String label) {
+  PopupMenuItem<String?> _buildFilterOption(BuildContext context, String? value, String label) {
     return PopupMenuItem(
       value: value,
       child: Row(
@@ -242,7 +243,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       children: [
         Expanded(
           child: _SummaryCard(
-            title: 'Доход',
+            title: context.l10n.incomeLabel,
             amount: _report?.totalIncome ?? 0,
             icon: Icons.trending_up,
             color: AppColors.success,
@@ -251,7 +252,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: _SummaryCard(
-            title: 'Расход',
+            title: context.l10n.expenseLabel,
             amount: _report?.totalExpense ?? 0,
             icon: Icons.trending_down,
             color: AppColors.error,
@@ -260,7 +261,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: _SummaryCard(
-            title: 'Прибыль',
+            title: context.l10n.profit,
             amount: _report?.profit ?? 0,
             icon: Icons.account_balance_wallet,
             color: AppColors.primary,
@@ -294,19 +295,20 @@ class _FinanceScreenState extends State<FinanceScreen> {
   }
 
   void _confirmDelete(Transaction transaction) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Удалить транзакцию?'),
-        content: Text('Вы уверены, что хотите удалить эту транзакцию на сумму ${_formatCurrency(transaction.amount)}?'),
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteTransactionTitle),
+        content: Text(l10n.deleteTransactionMessage(_formatCurrency(transaction.amount))),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(ctx); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
                 final api = _api;
@@ -315,7 +317,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Транзакция удалена'),
+                      content: Text(l10n.transactionDeleted),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
@@ -328,7 +330,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Ошибка: $e'),
+                      content: Text('${l10n.error}: $e'),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -336,7 +338,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
               }
             },
             child: Text(
-              'Удалить',
+              l10n.delete,
               style: TextStyle(color: AppColors.error),
             ),
           ),
@@ -375,17 +377,17 @@ class _PeriodSelector extends StatelessWidget {
       child: Row(
         children: [
           _PeriodButton(
-            label: 'Неделя',
+            label: context.l10n.periodWeek,
             isSelected: currentPeriod == 'week',
             onTap: () => onChanged('week'),
           ),
           _PeriodButton(
-            label: 'Месяц',
+            label: context.l10n.periodMonth,
             isSelected: currentPeriod == 'month',
             onTap: () => onChanged('month'),
           ),
           _PeriodButton(
-            label: 'Квартал',
+            label: context.l10n.periodQuarter,
             isSelected: currentPeriod == 'quarter',
             onTap: () => onChanged('quarter'),
           ),
@@ -647,7 +649,7 @@ class _TransactionDetailsSheet extends StatelessWidget {
                               borderRadius: BorderRadius.circular(AppRadius.full),
                             ),
                             child: Text(
-                              isIncome ? 'Доход' : 'Расход',
+                              isIncome ? context.l10n.incomeLabel : context.l10n.expenseLabel,
                               style: AppTypography.labelSmall.copyWith(
                                 color: color,
                                 fontWeight: FontWeight.w500,
@@ -672,15 +674,15 @@ class _TransactionDetailsSheet extends StatelessWidget {
                 // Date
                 _DetailRow(
                   icon: Icons.calendar_today_outlined,
-                  label: 'Дата',
-                  value: _formatFullDate(transaction.date),
+                  label: context.l10n.dateLabel,
+                  value: _formatFullDate(context, transaction.date),
                 ),
 
                 if (transaction.description?.isNotEmpty == true) ...[
                   const SizedBox(height: AppSpacing.md),
                   _DetailRow(
                     icon: Icons.description_outlined,
-                    label: 'Описание',
+                    label: context.l10n.description,
                     value: transaction.description!,
                   ),
                 ],
@@ -697,7 +699,7 @@ class _TransactionDetailsSheet extends StatelessWidget {
                     },
                     icon: Icon(Icons.delete_outline, color: AppColors.error),
                     label: Text(
-                      'Удалить',
+                      context.l10n.delete,
                       style: TextStyle(color: AppColors.error),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -714,11 +716,13 @@ class _TransactionDetailsSheet extends StatelessWidget {
     );
   }
 
-  String _formatFullDate(DateTime date) {
-    final months = [
-      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-    ];
+  String _formatFullDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final months = locale == 'ru'
+        ? ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+           'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+        : ['January', 'February', 'March', 'April', 'May', 'June',
+           'July', 'August', 'September', 'October', 'November', 'December'];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }

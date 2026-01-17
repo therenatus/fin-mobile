@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../core/providers/client_provider.dart';
@@ -96,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (context) => const AppShell()),
       );
     } else if (mounted) {
-      _showError(appProvider.error ?? 'Произошла ошибка');
+      _showError(appProvider.error ?? context.l10n.errorOccurred);
     }
   }
 
@@ -127,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (context) => const ClientAppShell()),
       );
     } else if (mounted) {
-      _showError(clientProvider.error ?? 'Произошла ошибка');
+      _showError(clientProvider.error ?? context.l10n.errorOccurred);
     }
   }
 
@@ -149,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (context) => const EmployeeAppShell()),
       );
     } else if (mounted) {
-      _showError(employeeProvider.error ?? 'Произошла ошибка');
+      _showError(employeeProvider.error ?? context.l10n.errorOccurred);
     }
   }
 
@@ -176,10 +177,10 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   // Tab data with icons and colors
-  static const _tabData = [
-    (icon: Icons.business_center_outlined, label: 'Менеджер', color: AppColors.primary),
-    (icon: Icons.shopping_bag_outlined, label: 'Заказчик', color: AppColors.secondary),
-    (icon: Icons.badge_outlined, label: 'Сотрудник', color: AppColors.accent),
+  List<({IconData icon, String label, Color color})> _getTabData(BuildContext context) => [
+    (icon: Icons.business_center_outlined, label: context.l10n.loginTabManager, color: AppColors.primary),
+    (icon: Icons.shopping_bag_outlined, label: context.l10n.loginTabClient, color: AppColors.secondary),
+    (icon: Icons.badge_outlined, label: context.l10n.loginTabEmployee, color: AppColors.accent),
   ];
 
   @override
@@ -292,9 +293,9 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'AteliePro',
-            style: TextStyle(
+          Text(
+            context.l10n.appTitle,
+            style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -303,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            'Управление ателье',
+            context.l10n.atelierManagement,
             style: TextStyle(
               fontSize: 14,
               color: Colors.white.withAlpha(180),
@@ -316,6 +317,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildCustomTabBar() {
+    final tabData = _getTabData(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Container(
@@ -327,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen>
         child: Row(
           children: List.generate(3, (index) {
             final isSelected = _currentTabIndex == index;
-            final data = _tabData[index];
+            final data = tabData[index];
 
             return Expanded(
               child: GestureDetector(
@@ -395,8 +397,8 @@ class _LoginScreenState extends State<LoginScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildFormHeader(
-              title: _isManagerRegister ? 'Регистрация ателье' : 'Вход для менеджера',
-              subtitle: 'Полный контроль над бизнесом',
+              title: _isManagerRegister ? context.l10n.registerAtelier : context.l10n.loginManager,
+              subtitle: context.l10n.fullBusinessControl,
               icon: Icons.business_center,
               color: AppColors.primary,
             ),
@@ -409,11 +411,11 @@ class _LoginScreenState extends State<LoginScreen>
                       children: [
                         _buildTextField(
                           controller: _businessNameController,
-                          label: 'Название ателье',
-                          hint: 'Моё ателье',
+                          label: context.l10n.atelierName,
+                          hint: context.l10n.myAtelierHint,
                           icon: Icons.store_outlined,
                           validator: (v) =>
-                              v?.isEmpty == true ? 'Введите название' : null,
+                              v?.isEmpty == true ? context.l10n.enterName : null,
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
@@ -423,13 +425,13 @@ class _LoginScreenState extends State<LoginScreen>
 
             _buildTextField(
               controller: _managerEmailController,
-              label: 'Email',
-              hint: 'example@mail.ru',
+              label: context.l10n.email,
+              hint: context.l10n.exampleEmailHint,
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v?.isEmpty == true) return 'Введите email';
-                if (!v!.contains('@')) return 'Некорректный email';
+                if (v?.isEmpty == true) return context.l10n.emailRequired;
+                if (!v!.contains('@')) return context.l10n.emailInvalid;
                 return null;
               },
             ),
@@ -437,7 +439,7 @@ class _LoginScreenState extends State<LoginScreen>
 
             _buildTextField(
               controller: _managerPasswordController,
-              label: 'Пароль',
+              label: context.l10n.password,
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureManagerPassword,
@@ -447,8 +449,8 @@ class _LoginScreenState extends State<LoginScreen>
                     () => _obscureManagerPassword = !_obscureManagerPassword),
               ),
               validator: (v) {
-                if (v?.isEmpty == true) return 'Введите пароль';
-                if (v!.length < 6) return 'Минимум 6 символов';
+                if (v?.isEmpty == true) return context.l10n.passwordRequired;
+                if (v!.length < 6) return context.l10n.passwordTooShort;
                 return null;
               },
             ),
@@ -457,7 +459,7 @@ class _LoginScreenState extends State<LoginScreen>
             _buildSubmitButton(
               onPressed: isLoading ? null : _submitManager,
               isLoading: isLoading,
-              label: _isManagerRegister ? 'Создать аккаунт' : 'Войти',
+              label: _isManagerRegister ? context.l10n.createAccount : context.l10n.login,
               color: AppColors.primary,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -485,8 +487,8 @@ class _LoginScreenState extends State<LoginScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildFormHeader(
-              title: _isClientRegister ? 'Регистрация' : 'Вход для заказчика',
-              subtitle: 'Отслеживание ваших заказов',
+              title: _isClientRegister ? context.l10n.registration : context.l10n.loginClient,
+              subtitle: context.l10n.trackYourOrders,
               icon: Icons.shopping_bag,
               color: AppColors.secondary,
             ),
@@ -499,11 +501,11 @@ class _LoginScreenState extends State<LoginScreen>
                       children: [
                         _buildTextField(
                           controller: _clientNameController,
-                          label: 'Ваше имя',
-                          hint: 'Иван Иванов',
+                          label: context.l10n.yourName,
+                          hint: context.l10n.exampleNameHint,
                           icon: Icons.person_outlined,
                           validator: (v) =>
-                              v?.isEmpty == true ? 'Введите имя' : null,
+                              v?.isEmpty == true ? context.l10n.enterYourName : null,
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
@@ -513,13 +515,13 @@ class _LoginScreenState extends State<LoginScreen>
 
             _buildTextField(
               controller: _clientEmailController,
-              label: 'Email',
-              hint: 'example@mail.ru',
+              label: context.l10n.email,
+              hint: context.l10n.exampleEmailHint,
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v?.isEmpty == true) return 'Введите email';
-                if (!v!.contains('@')) return 'Некорректный email';
+                if (v?.isEmpty == true) return context.l10n.emailRequired;
+                if (!v!.contains('@')) return context.l10n.emailInvalid;
                 return null;
               },
             ),
@@ -527,7 +529,7 @@ class _LoginScreenState extends State<LoginScreen>
 
             _buildTextField(
               controller: _clientPasswordController,
-              label: 'Пароль',
+              label: context.l10n.password,
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureClientPassword,
@@ -537,8 +539,8 @@ class _LoginScreenState extends State<LoginScreen>
                     () => _obscureClientPassword = !_obscureClientPassword),
               ),
               validator: (v) {
-                if (v?.isEmpty == true) return 'Введите пароль';
-                if (v!.length < 6) return 'Минимум 6 символов';
+                if (v?.isEmpty == true) return context.l10n.passwordRequired;
+                if (v!.length < 6) return context.l10n.passwordTooShort;
                 return null;
               },
             ),
@@ -547,7 +549,7 @@ class _LoginScreenState extends State<LoginScreen>
             _buildSubmitButton(
               onPressed: isLoading ? null : _submitClient,
               isLoading: isLoading,
-              label: _isClientRegister ? 'Создать аккаунт' : 'Войти',
+              label: _isClientRegister ? context.l10n.createAccount : context.l10n.login,
               color: AppColors.secondary,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -575,8 +577,8 @@ class _LoginScreenState extends State<LoginScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildFormHeader(
-              title: 'Вход для сотрудника',
-              subtitle: 'Учёт работы и заработка',
+              title: context.l10n.loginEmployee,
+              subtitle: context.l10n.workAndEarningsTracking,
               icon: Icons.badge,
               color: AppColors.accent,
             ),
@@ -584,13 +586,13 @@ class _LoginScreenState extends State<LoginScreen>
 
             _buildTextField(
               controller: _employeeEmailController,
-              label: 'Email',
-              hint: 'example@mail.ru',
+              label: context.l10n.email,
+              hint: context.l10n.exampleEmailHint,
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v?.isEmpty == true) return 'Введите email';
-                if (!v!.contains('@')) return 'Некорректный email';
+                if (v?.isEmpty == true) return context.l10n.emailRequired;
+                if (!v!.contains('@')) return context.l10n.emailInvalid;
                 return null;
               },
             ),
@@ -598,7 +600,7 @@ class _LoginScreenState extends State<LoginScreen>
 
             _buildTextField(
               controller: _employeePasswordController,
-              label: 'Пароль',
+              label: context.l10n.password,
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureEmployeePassword,
@@ -608,7 +610,7 @@ class _LoginScreenState extends State<LoginScreen>
                     () => _obscureEmployeePassword = !_obscureEmployeePassword),
               ),
               validator: (v) {
-                if (v?.isEmpty == true) return 'Введите пароль';
+                if (v?.isEmpty == true) return context.l10n.passwordRequired;
                 return null;
               },
             ),
@@ -617,7 +619,7 @@ class _LoginScreenState extends State<LoginScreen>
             _buildSubmitButton(
               onPressed: isLoading ? null : _submitEmployee,
               isLoading: isLoading,
-              label: 'Войти',
+              label: context.l10n.login,
               color: AppColors.accent,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -649,7 +651,7 @@ class _LoginScreenState extends State<LoginScreen>
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      'Учётные данные выдаёт менеджер ателье',
+                      context.l10n.credentialsFromManager,
                       style: AppTypography.bodySmall.copyWith(
                         color: context.isDark
                             ? AppColors.accent
@@ -860,7 +862,7 @@ class _LoginScreenState extends State<LoginScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?',
+          isRegister ? context.l10n.alreadyHaveAccount : context.l10n.noAccount,
           style: AppTypography.bodySmall.copyWith(
             color: context.textSecondaryColor,
           ),
@@ -876,7 +878,7 @@ class _LoginScreenState extends State<LoginScreen>
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
           child: Text(
-            isRegister ? 'Войти' : 'Регистрация',
+            isRegister ? context.l10n.login : context.l10n.registration,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),

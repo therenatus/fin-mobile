@@ -1,12 +1,20 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'employee.dart';
 
-/// Назначение сотрудника на этап заказа
+part 'order_assignment.g.dart';
+
+/// Order assignment for an employee
+@JsonSerializable()
 class OrderAssignment {
+  @JsonKey(includeToJson: false)
   final String id;
+  @JsonKey(includeToJson: false)
   final String orderId;
   final String stepName;
   final String employeeId;
+  @JsonKey(includeToJson: false)
   final Employee? employee;
+  @JsonKey(includeToJson: false)
   final DateTime assignedAt;
 
   OrderAssignment({
@@ -18,23 +26,8 @@ class OrderAssignment {
     required this.assignedAt,
   });
 
-  factory OrderAssignment.fromJson(Map<String, dynamic> json) {
-    return OrderAssignment(
-      id: json['id'] as String,
-      orderId: json['orderId'] as String,
-      stepName: json['stepName'] as String,
-      employeeId: json['employeeId'] as String,
-      employee: json['employee'] != null
-          ? Employee.fromJson(json['employee'] as Map<String, dynamic>)
-          : null,
-      assignedAt: DateTime.parse(json['assignedAt'] as String),
-    );
-  }
+  factory OrderAssignment.fromJson(Map<String, dynamic> json) =>
+      _$OrderAssignmentFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'stepName': stepName,
-      'employeeId': employeeId,
-    };
-  }
+  Map<String, dynamic> toJson() => _$OrderAssignmentToJson(this);
 }

@@ -1,5 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'pagination_meta.dart';
 
+part 'employee_user.g.dart';
+
+@JsonSerializable()
 class EmployeeUser {
   final String id;
   final String name;
@@ -8,6 +12,7 @@ class EmployeeUser {
   final String? phone;
   final String tenantId;
   final String tenantName;
+  @JsonKey(defaultValue: true)
   final bool isActive;
   final DateTime? lastLoginAt;
 
@@ -23,37 +28,13 @@ class EmployeeUser {
     this.lastLoginAt,
   });
 
-  factory EmployeeUser.fromJson(Map<String, dynamic> json) {
-    return EmployeeUser(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      role: json['role'] as String,
-      phone: json['phone'] as String?,
-      tenantId: json['tenantId'] as String,
-      tenantName: json['tenantName'] as String,
-      isActive: json['isActive'] as bool? ?? true,
-      lastLoginAt: json['lastLoginAt'] != null
-          ? DateTime.parse(json['lastLoginAt'] as String)
-          : null,
-    );
-  }
+  factory EmployeeUser.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeUserFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'role': role,
-      'phone': phone,
-      'tenantId': tenantId,
-      'tenantName': tenantName,
-      'isActive': isActive,
-      'lastLoginAt': lastLoginAt?.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$EmployeeUserToJson(this);
 }
 
+@JsonSerializable()
 class EmployeeAuthResponse {
   final String accessToken;
   final String refreshToken;
@@ -65,15 +46,13 @@ class EmployeeAuthResponse {
     required this.user,
   });
 
-  factory EmployeeAuthResponse.fromJson(Map<String, dynamic> json) {
-    return EmployeeAuthResponse(
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String,
-      user: EmployeeUser.fromJson(json['user'] as Map<String, dynamic>),
-    );
-  }
+  factory EmployeeAuthResponse.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeAuthResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeAuthResponseToJson(this);
 }
 
+@JsonSerializable()
 class EmployeeAssignment {
   final String id;
   final String stepName;
@@ -87,16 +66,13 @@ class EmployeeAssignment {
     required this.order,
   });
 
-  factory EmployeeAssignment.fromJson(Map<String, dynamic> json) {
-    return EmployeeAssignment(
-      id: json['id'] as String,
-      stepName: json['stepName'] as String,
-      assignedAt: DateTime.parse(json['assignedAt'] as String),
-      order: EmployeeAssignmentOrder.fromJson(json['order'] as Map<String, dynamic>),
-    );
-  }
+  factory EmployeeAssignment.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeAssignmentFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeAssignmentToJson(this);
 }
 
+@JsonSerializable()
 class EmployeeAssignmentOrder {
   final String id;
   final String status;
@@ -105,8 +81,11 @@ class EmployeeAssignmentOrder {
   final String modelName;
   final String? modelCategory;
   final String clientName;
+  @JsonKey(defaultValue: 0)
   final int completedQuantity;      // This employee's progress
+  @JsonKey(defaultValue: 0)
   final int totalCompletedQuantity; // ALL employees' progress for this step
+  @JsonKey(defaultValue: 0.0)
   final double loggedHours;
 
   EmployeeAssignmentOrder({
@@ -123,11 +102,16 @@ class EmployeeAssignmentOrder {
   });
 
   factory EmployeeAssignmentOrder.fromJson(Map<String, dynamic> json) {
-    final completedQty = json['completedQuantity'] as int? ?? 0;
+    final completedQty = (json['completedQuantity'] as num?)?.toInt() ?? 0;
+    // Fallback totalCompletedQuantity to completedQuantity for backwards compatibility
+    final totalCompletedQty = json['totalCompletedQuantity'] != null
+        ? (json['totalCompletedQuantity'] as num).toInt()
+        : completedQty;
+
     return EmployeeAssignmentOrder(
       id: json['id'] as String,
       status: json['status'] as String,
-      quantity: json['quantity'] as int,
+      quantity: (json['quantity'] as num).toInt(),
       dueDate: json['dueDate'] != null
           ? DateTime.parse(json['dueDate'] as String)
           : null,
@@ -135,11 +119,12 @@ class EmployeeAssignmentOrder {
       modelCategory: json['modelCategory'] as String?,
       clientName: json['clientName'] as String,
       completedQuantity: completedQty,
-      // Use totalCompletedQuantity if available, fallback to completedQuantity for backwards compatibility
-      totalCompletedQuantity: json['totalCompletedQuantity'] as int? ?? completedQty,
-      loggedHours: (json['loggedHours'] as num?)?.toDouble() ?? 0,
+      totalCompletedQuantity: totalCompletedQty,
+      loggedHours: (json['loggedHours'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  Map<String, dynamic> toJson() => _$EmployeeAssignmentOrderToJson(this);
 
   /// This employee's remaining work
   int get remaining => quantity - completedQuantity;
@@ -154,6 +139,7 @@ class EmployeeAssignmentOrder {
   double get totalProgressPercent => quantity > 0 ? totalCompletedQuantity / quantity : 0;
 }
 
+@JsonSerializable()
 class EmployeeWorkLog {
   final String id;
   final String step;
@@ -171,18 +157,13 @@ class EmployeeWorkLog {
     required this.order,
   });
 
-  factory EmployeeWorkLog.fromJson(Map<String, dynamic> json) {
-    return EmployeeWorkLog(
-      id: json['id'] as String,
-      step: json['step'] as String,
-      quantity: json['quantity'] as int,
-      hours: (json['hours'] as num).toDouble(),
-      date: DateTime.parse(json['date'] as String),
-      order: EmployeeWorkLogOrder.fromJson(json['order'] as Map<String, dynamic>),
-    );
-  }
+  factory EmployeeWorkLog.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeWorkLogFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeWorkLogToJson(this);
 }
 
+@JsonSerializable()
 class EmployeeWorkLogOrder {
   final String id;
   final String modelName;
@@ -194,15 +175,13 @@ class EmployeeWorkLogOrder {
     required this.clientName,
   });
 
-  factory EmployeeWorkLogOrder.fromJson(Map<String, dynamic> json) {
-    return EmployeeWorkLogOrder(
-      id: json['id'] as String,
-      modelName: json['modelName'] as String,
-      clientName: json['clientName'] as String,
-    );
-  }
+  factory EmployeeWorkLogOrder.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeWorkLogOrderFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeWorkLogOrderToJson(this);
 }
 
+@JsonSerializable()
 class EmployeePayroll {
   final String id;
   final DateTime periodStart;
@@ -220,20 +199,13 @@ class EmployeePayroll {
     required this.createdAt,
   });
 
-  factory EmployeePayroll.fromJson(Map<String, dynamic> json) {
-    return EmployeePayroll(
-      id: json['id'] as String,
-      periodStart: DateTime.parse(json['periodStart'] as String),
-      periodEnd: DateTime.parse(json['periodEnd'] as String),
-      totalPayout: (json['totalPayout'] as num).toDouble(),
-      workLogs: (json['workLogs'] as List<dynamic>)
-          .map((e) => EmployeePayrollWorkLog.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
+  factory EmployeePayroll.fromJson(Map<String, dynamic> json) =>
+      _$EmployeePayrollFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeePayrollToJson(this);
 }
 
+@JsonSerializable()
 class EmployeePayrollWorkLog {
   final String step;
   final int quantity;
@@ -249,17 +221,13 @@ class EmployeePayrollWorkLog {
     this.modelName,
   });
 
-  factory EmployeePayrollWorkLog.fromJson(Map<String, dynamic> json) {
-    return EmployeePayrollWorkLog(
-      step: json['step'] as String,
-      quantity: json['quantity'] as int,
-      hours: (json['hours'] as num).toDouble(),
-      date: DateTime.parse(json['date'] as String),
-      modelName: json['modelName'] as String?,
-    );
-  }
+  factory EmployeePayrollWorkLog.fromJson(Map<String, dynamic> json) =>
+      _$EmployeePayrollWorkLogFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeePayrollWorkLogToJson(this);
 }
 
+@JsonSerializable()
 class CreateWorkLogRequest {
   final String assignmentId;
   final int quantity;
@@ -273,28 +241,21 @@ class CreateWorkLogRequest {
     required this.date,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'assignmentId': assignmentId,
-      'quantity': quantity,
-      if (hours != null) 'hours': hours,
-      'date': date,
-    };
-  }
+  factory CreateWorkLogRequest.fromJson(Map<String, dynamic> json) =>
+      _$CreateWorkLogRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CreateWorkLogRequestToJson(this);
 }
 
+@JsonSerializable()
 class EmployeeAssignmentsResponse {
   final List<EmployeeAssignment> assignments;
   final PaginationMeta meta;
 
   EmployeeAssignmentsResponse({required this.assignments, required this.meta});
 
-  factory EmployeeAssignmentsResponse.fromJson(Map<String, dynamic> json) {
-    return EmployeeAssignmentsResponse(
-      assignments: (json['assignments'] as List<dynamic>)
-          .map((e) => EmployeeAssignment.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      meta: PaginationMeta.fromJson(json['meta'] as Map<String, dynamic>),
-    );
-  }
+  factory EmployeeAssignmentsResponse.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeAssignmentsResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeAssignmentsResponseToJson(this);
 }

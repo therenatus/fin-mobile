@@ -1,0 +1,1328 @@
+{
+  "@@locale": "ru",
+
+  "appTitle": "АтельеПро",
+  "@appTitle": {
+    "description": "The application title"
+  },
+
+  "loading": "Загрузка...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+
+  "error": "Ошибка",
+  "@error": {
+    "description": "Generic error title"
+  },
+
+  "retry": "Повторить",
+  "@retry": {
+    "description": "Retry button text"
+  },
+
+  "cancel": "Отмена",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "save": "Сохранить",
+  "@save": {
+    "description": "Save button text"
+  },
+
+  "delete": "Удалить",
+  "@delete": {
+    "description": "Delete button text"
+  },
+
+  "edit": "Редактировать",
+  "@edit": {
+    "description": "Edit button text"
+  },
+
+  "close": "Закрыть",
+  "@close": {
+    "description": "Close button text"
+  },
+
+  "search": "Поиск",
+  "@search": {
+    "description": "Search placeholder text"
+  },
+
+  "noResults": "Ничего не найдено",
+  "@noResults": {
+    "description": "Empty search results message"
+  },
+
+  "connectionError": "Ошибка подключения",
+  "@connectionError": {
+    "description": "Network connection error title"
+  },
+
+  "connectionErrorMessage": "Проверьте подключение к интернету и попробуйте снова",
+  "@connectionErrorMessage": {
+    "description": "Network connection error message"
+  },
+
+  "serverError": "Ошибка сервера",
+  "@serverError": {
+    "description": "Server error title"
+  },
+
+  "serverErrorMessage": "Произошла ошибка на сервере. Попробуйте позже",
+  "@serverErrorMessage": {
+    "description": "Server error message"
+  },
+
+  "loginTabManager": "Менеджер",
+  "@loginTabManager": {
+    "description": "Manager login tab title"
+  },
+
+  "loginTabClient": "Заказчик",
+  "@loginTabClient": {
+    "description": "Client login tab title"
+  },
+
+  "loginTabEmployee": "Сотрудник",
+  "@loginTabEmployee": {
+    "description": "Employee login tab title"
+  },
+
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+
+  "password": "Пароль",
+  "@password": {
+    "description": "Password field label"
+  },
+
+  "login": "Войти",
+  "@login": {
+    "description": "Login button text"
+  },
+
+  "logout": "Выйти",
+  "@logout": {
+    "description": "Logout button text"
+  },
+
+  "emailRequired": "Введите email",
+  "@emailRequired": {
+    "description": "Email validation error"
+  },
+
+  "emailInvalid": "Некорректный email",
+  "@emailInvalid": {
+    "description": "Invalid email validation error"
+  },
+
+  "passwordRequired": "Введите пароль",
+  "@passwordRequired": {
+    "description": "Password validation error"
+  },
+
+  "passwordTooShort": "Минимум 6 символов",
+  "@passwordTooShort": {
+    "description": "Password too short validation error"
+  },
+
+  "home": "Главная",
+  "@home": {
+    "description": "Home screen title"
+  },
+
+  "orders": "Заказы",
+  "@orders": {
+    "description": "Orders screen title"
+  },
+
+  "clients": "Клиенты",
+  "@clients": {
+    "description": "Clients screen title"
+  },
+
+  "employees": "Сотрудники",
+  "@employees": {
+    "description": "Employees screen title"
+  },
+
+  "analytics": "Аналитика",
+  "@analytics": {
+    "description": "Analytics screen title"
+  },
+
+  "finance": "Финансы",
+  "@finance": {
+    "description": "Finance screen title"
+  },
+
+  "profile": "Профиль",
+  "@profile": {
+    "description": "Profile screen title"
+  },
+
+  "settings": "Настройки",
+  "@settings": {
+    "description": "Settings screen title"
+  },
+
+  "statusPending": "Ожидает",
+  "@statusPending": {
+    "description": "Order status: pending"
+  },
+
+  "statusInProgress": "В работе",
+  "@statusInProgress": {
+    "description": "Order status: in progress"
+  },
+
+  "statusCompleted": "Выполнен",
+  "@statusCompleted": {
+    "description": "Order status: completed"
+  },
+
+  "statusCancelled": "Отменён",
+  "@statusCancelled": {
+    "description": "Order status: cancelled"
+  },
+
+  "activeOrders": "Активные заказы",
+  "@activeOrders": {
+    "description": "Active orders section title"
+  },
+
+  "recentOrders": "Последние заказы",
+  "@recentOrders": {
+    "description": "Recent orders section title"
+  },
+
+  "totalOrders": "Всего заказов",
+  "@totalOrders": {
+    "description": "Total orders stat label"
+  },
+
+  "totalRevenue": "Выручка",
+  "@totalRevenue": {
+    "description": "Total revenue stat label"
+  },
+
+  "totalClients": "Клиентов",
+  "@totalClients": {
+    "description": "Total clients stat label"
+  },
+
+  "newClients": "Новых клиентов",
+  "@newClients": {
+    "description": "New clients stat label"
+  },
+
+  "addOrder": "Добавить заказ",
+  "@addOrder": {
+    "description": "Add order button text"
+  },
+
+  "addClient": "Добавить клиента",
+  "@addClient": {
+    "description": "Add client button text"
+  },
+
+  "addEmployee": "Добавить сотрудника",
+  "@addEmployee": {
+    "description": "Add employee button text"
+  },
+
+  "orderDetails": "Детали заказа",
+  "@orderDetails": {
+    "description": "Order details screen title"
+  },
+
+  "clientDetails": "Данные клиента",
+  "@clientDetails": {
+    "description": "Client details screen title"
+  },
+
+  "noOrders": "Нет заказов",
+  "@noOrders": {
+    "description": "No orders message"
+  },
+
+  "noClients": "Нет клиентов",
+  "@noClients": {
+    "description": "No clients message"
+  },
+
+  "noEmployees": "Нет сотрудников",
+  "@noEmployees": {
+    "description": "No employees message"
+  },
+
+  "ordersInProgress": "{count, plural, =0{нет заказов в работе} =1{1 заказ в работе} few{{count} заказа в работе} other{{count} заказов в работе}}",
+  "@ordersInProgress": {
+    "description": "Orders in progress count with pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "currency": "{amount} ₽",
+  "@currency": {
+    "description": "Currency format",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "daysRemaining": "{days, plural, =0{сегодня} =1{остался 1 день} few{осталось {days} дня} other{осталось {days} дней}}",
+  "@daysRemaining": {
+    "description": "Days remaining with pluralization",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "overdue": "Просрочен",
+  "@overdue": {
+    "description": "Overdue order label"
+  },
+
+  "today": "Сегодня",
+  "@today": {
+    "description": "Today label"
+  },
+
+  "yesterday": "Вчера",
+  "@yesterday": {
+    "description": "Yesterday label"
+  },
+
+  "quantity": "Количество",
+  "@quantity": {
+    "description": "Quantity field label"
+  },
+
+  "price": "Цена",
+  "@price": {
+    "description": "Price field label"
+  },
+
+  "dueDate": "Срок",
+  "@dueDate": {
+    "description": "Due date field label"
+  },
+
+  "notes": "Заметки",
+  "@notes": {
+    "description": "Notes field label"
+  },
+
+  "phone": "Телефон",
+  "@phone": {
+    "description": "Phone field label"
+  },
+
+  "name": "Имя",
+  "@name": {
+    "description": "Name field label"
+  },
+
+  "role": "Роль",
+  "@role": {
+    "description": "Role field label"
+  },
+
+  "selectClient": "Выберите клиента",
+  "@selectClient": {
+    "description": "Select client placeholder"
+  },
+
+  "selectModel": "Выберите модель",
+  "@selectModel": {
+    "description": "Select model placeholder"
+  },
+
+  "models": "Модели",
+  "@models": {
+    "description": "Models screen title"
+  },
+
+  "payroll": "Расчёт зарплаты",
+  "@payroll": {
+    "description": "Payroll screen title"
+  },
+
+  "workLogs": "Журнал работ",
+  "@workLogs": {
+    "description": "Work logs screen title"
+  },
+
+  "subscription": "Подписка",
+  "@subscription": {
+    "description": "Subscription screen title"
+  },
+
+  "ml": "ML Аналитика",
+  "@ml": {
+    "description": "ML analytics screen title"
+  },
+
+  "forecast": "Прогноз",
+  "@forecast": {
+    "description": "Forecast screen title"
+  },
+
+  "insights": "Инсайты",
+  "@insights": {
+    "description": "Business insights section"
+  },
+
+  "report": "Отчёт",
+  "@report": {
+    "description": "Report section"
+  },
+
+  "darkMode": "Тёмная тема",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+
+  "lightMode": "Светлая тема",
+  "@lightMode": {
+    "description": "Light mode setting"
+  },
+
+  "systemMode": "Системная тема",
+  "@systemMode": {
+    "description": "System theme mode setting"
+  },
+
+  "confirmDelete": "Подтвердите удаление",
+  "@confirmDelete": {
+    "description": "Delete confirmation dialog title"
+  },
+
+  "confirmDeleteMessage": "Вы уверены, что хотите удалить этот элемент?",
+  "@confirmDeleteMessage": {
+    "description": "Delete confirmation dialog message"
+  },
+
+  "yes": "Да",
+  "@yes": {
+    "description": "Yes button text"
+  },
+
+  "no": "Нет",
+  "@no": {
+    "description": "No button text"
+  },
+
+  "successSaved": "Успешно сохранено",
+  "@successSaved": {
+    "description": "Success save message"
+  },
+
+  "successDeleted": "Успешно удалено",
+  "@successDeleted": {
+    "description": "Success delete message"
+  },
+
+  "vipClient": "VIP",
+  "@vipClient": {
+    "description": "VIP client badge"
+  },
+
+  "errorOccurred": "Произошла ошибка",
+  "@errorOccurred": {
+    "description": "Generic error message"
+  },
+
+  "atelierManagement": "Управление ателье",
+  "@atelierManagement": {
+    "description": "App subtitle on login"
+  },
+
+  "registerAtelier": "Регистрация ателье",
+  "@registerAtelier": {
+    "description": "Atelier registration title"
+  },
+
+  "loginManager": "Вход для менеджера",
+  "@loginManager": {
+    "description": "Manager login title"
+  },
+
+  "fullBusinessControl": "Полный контроль над бизнесом",
+  "@fullBusinessControl": {
+    "description": "Manager login subtitle"
+  },
+
+  "registration": "Регистрация",
+  "@registration": {
+    "description": "Registration button/title"
+  },
+
+  "loginClient": "Вход для заказчика",
+  "@loginClient": {
+    "description": "Client login title"
+  },
+
+  "trackYourOrders": "Отслеживание ваших заказов",
+  "@trackYourOrders": {
+    "description": "Client login subtitle"
+  },
+
+  "loginEmployee": "Вход для сотрудника",
+  "@loginEmployee": {
+    "description": "Employee login title"
+  },
+
+  "workAndEarningsTracking": "Учёт работы и заработка",
+  "@workAndEarningsTracking": {
+    "description": "Employee login subtitle"
+  },
+
+  "atelierName": "Название ателье",
+  "@atelierName": {
+    "description": "Atelier name field label"
+  },
+
+  "myAtelierHint": "Моё ателье",
+  "@myAtelierHint": {
+    "description": "Atelier name hint"
+  },
+
+  "yourName": "Ваше имя",
+  "@yourName": {
+    "description": "Your name field label"
+  },
+
+  "enterName": "Введите название",
+  "@enterName": {
+    "description": "Enter name validation"
+  },
+
+  "enterYourName": "Введите имя",
+  "@enterYourName": {
+    "description": "Enter your name validation"
+  },
+
+  "createAccount": "Создать аккаунт",
+  "@createAccount": {
+    "description": "Create account button"
+  },
+
+  "alreadyHaveAccount": "Уже есть аккаунт?",
+  "@alreadyHaveAccount": {
+    "description": "Already have account text"
+  },
+
+  "noAccount": "Нет аккаунта?",
+  "@noAccount": {
+    "description": "No account text"
+  },
+
+  "credentialsFromManager": "Учётные данные выдаёт менеджер ателье",
+  "@credentialsFromManager": {
+    "description": "Info about employee credentials"
+  },
+
+  "exampleEmailHint": "example@mail.ru",
+  "@exampleEmailHint": {
+    "description": "Example email hint"
+  },
+
+  "exampleNameHint": "Иван Иванов",
+  "@exampleNameHint": {
+    "description": "Example name hint"
+  },
+
+  "searchHint": "Поиск...",
+  "@searchHint": {
+    "description": "Search field hint"
+  },
+
+  "selectDates": "Выбрать даты",
+  "@selectDates": {
+    "description": "Date picker placeholder"
+  },
+
+  "dates": "Даты",
+  "@dates": {
+    "description": "Dates chip label"
+  },
+
+  "tomorrow": "Завтра",
+  "@tomorrow": {
+    "description": "Tomorrow label"
+  },
+
+  "inDays": "Через {days} дн.",
+  "@inDays": {
+    "description": "In X days label",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "orderNumber": "Заказ #{id}",
+  "@orderNumber": {
+    "description": "Order number with ID",
+    "placeholders": {
+      "id": {"type": "String"}
+    }
+  },
+
+  "clientPlaceholder": "Заказчик",
+  "@clientPlaceholder": {
+    "description": "Client placeholder"
+  },
+
+  "quantityItems": "{count} шт.",
+  "@quantityItems": {
+    "description": "Quantity with unit",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "ordersCountPlural": "{count, plural, =0{0 заказов} =1{1 заказ} few{{count} заказа} other{{count} заказов}}",
+  "@ordersCountPlural": {
+    "description": "Orders count with pluralization",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "dashboard": "Дашборд",
+  "@dashboard": {
+    "description": "Dashboard menu item"
+  },
+
+  "customers": "Заказчики",
+  "@customers": {
+    "description": "Customers menu item"
+  },
+
+  "workload": "Загрузка",
+  "@workload": {
+    "description": "Workload menu item"
+  },
+
+  "notFound": "Не найдено",
+  "@notFound": {
+    "description": "Not found title"
+  },
+
+  "notFoundMessage": "Запрашиваемые данные не найдены",
+  "@notFoundMessage": {
+    "description": "Not found message"
+  },
+
+  "back": "Назад",
+  "@back": {
+    "description": "Back button"
+  },
+
+  "continue_": "Продолжить",
+  "@continue_": {
+    "description": "Continue button"
+  },
+
+  "camera": "Камера",
+  "@camera": {
+    "description": "Camera option"
+  },
+
+  "gallery": "Галерея",
+  "@gallery": {
+    "description": "Gallery option"
+  },
+
+  "add": "Добавить",
+  "@add": {
+    "description": "Add button"
+  },
+
+  "modelPhoto": "Фото модели",
+  "@modelPhoto": {
+    "description": "Model photo label"
+  },
+
+  "confirmation": "Подтверждение",
+  "@confirmation": {
+    "description": "Confirmation dialog title"
+  },
+
+  "roleTailor": "Портной",
+  "@roleTailor": {
+    "description": "Tailor role"
+  },
+
+  "roleDesigner": "Дизайнер",
+  "@roleDesigner": {
+    "description": "Designer role"
+  },
+
+  "roleCutter": "Раскройщик",
+  "@roleCutter": {
+    "description": "Cutter role"
+  },
+
+  "roleSeamstress": "Швея",
+  "@roleSeamstress": {
+    "description": "Seamstress role"
+  },
+
+  "roleFinisher": "Отделочник",
+  "@roleFinisher": {
+    "description": "Finisher role"
+  },
+
+  "rolePresser": "Гладильщик",
+  "@rolePresser": {
+    "description": "Presser role"
+  },
+
+  "roleQualityControl": "ОТК",
+  "@roleQualityControl": {
+    "description": "Quality control role"
+  },
+
+  "executorLabel": "Исполнитель",
+  "@executorLabel": {
+    "description": "Executor field label"
+  },
+
+  "category": "Категория",
+  "@category": {
+    "description": "Category field label"
+  },
+
+  "selectCategory": "Выберите категорию",
+  "@selectCategory": {
+    "description": "Select category hint"
+  },
+
+  "goodMorning": "Доброе утро",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+
+  "goodAfternoon": "Добрый день",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+
+  "goodEvening": "Добрый вечер",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+
+  "youHaveOrdersInProgress": "У вас {orders} в работе",
+  "@youHaveOrdersInProgress": {
+    "description": "Orders in progress message",
+    "placeholders": {
+      "orders": {"type": "String"}
+    }
+  },
+
+  "indicators": "Показатели",
+  "@indicators": {
+    "description": "Dashboard indicators section"
+  },
+
+  "monthlyIncome": "Доход за месяц",
+  "@monthlyIncome": {
+    "description": "Monthly income stat"
+  },
+
+  "monthlyFinance": "Финансы за месяц",
+  "@monthlyFinance": {
+    "description": "Monthly finance section"
+  },
+
+  "income": "Доходы",
+  "@income": {
+    "description": "Income label"
+  },
+
+  "expenses": "Расходы",
+  "@expenses": {
+    "description": "Expenses label"
+  },
+
+  "profit": "Прибыль",
+  "@profit": {
+    "description": "Profit label"
+  },
+
+  "all": "Все",
+  "@all": {
+    "description": "All button"
+  },
+
+  "ordersWillAppearHere": "Здесь появятся ваши последние заказы",
+  "@ordersWillAppearHere": {
+    "description": "Empty orders subtitle"
+  },
+
+  "quickActions": "Быстрые действия",
+  "@quickActions": {
+    "description": "Quick actions section"
+  },
+
+  "newOrder": "Новый заказ",
+  "@newOrder": {
+    "description": "New order button"
+  },
+
+  "newCustomer": "Новый заказчик",
+  "@newCustomer": {
+    "description": "New customer button"
+  },
+
+  "comingSoon": "Скоро будет доступно",
+  "@comingSoon": {
+    "description": "Coming soon message"
+  },
+
+  "notificationsComingSoon": "Уведомления скоро будут доступны",
+  "@notificationsComingSoon": {
+    "description": "Notifications coming soon"
+  },
+
+  "orderCreationComingSoon": "Создание заказа скоро будет доступно",
+  "@orderCreationComingSoon": {
+    "description": "Order creation coming soon"
+  },
+
+  "customerAdditionComingSoon": "Добавление заказчика скоро будет доступно",
+  "@customerAdditionComingSoon": {
+    "description": "Customer addition coming soon"
+  },
+
+  "workRecords": "Записи работы",
+  "@workRecords": {
+    "description": "Work records menu item"
+  },
+
+  "help": "Помощь",
+  "@help": {
+    "description": "Help menu item"
+  },
+
+  "filters": "Фильтры",
+  "@filters": {
+    "description": "Filters button/title"
+  },
+
+  "searchOrders": "Поиск заказов...",
+  "@searchOrders": {
+    "description": "Orders search hint"
+  },
+
+  "tabPending": "Ожидают",
+  "@tabPending": {
+    "description": "Pending tab label"
+  },
+
+  "tabCompleted": "Готово",
+  "@tabCompleted": {
+    "description": "Completed tab label"
+  },
+
+  "tabCancelled": "Отменены",
+  "@tabCancelled": {
+    "description": "Cancelled tab label"
+  },
+
+  "noOrdersWithStatus": "Нет заказов с этим статусом",
+  "@noOrdersWithStatus": {
+    "description": "No orders with status message"
+  },
+
+  "tryDifferentSearch": "Попробуйте изменить поисковый запрос",
+  "@tryDifferentSearch": {
+    "description": "Try different search suggestion"
+  },
+
+  "createFirstOrder": "Создайте первый заказ",
+  "@createFirstOrder": {
+    "description": "Create first order suggestion"
+  },
+
+  "createOrder": "Создать заказ",
+  "@createOrder": {
+    "description": "Create order button"
+  },
+
+  "reset": "Сбросить",
+  "@reset": {
+    "description": "Reset button"
+  },
+
+  "dueDateLabel": "Срок сдачи",
+  "@dueDateLabel": {
+    "description": "Due date filter label"
+  },
+
+  "allDates": "Все даты",
+  "@allDates": {
+    "description": "All dates placeholder"
+  },
+
+  "createdDateLabel": "Дата создания",
+  "@createdDateLabel": {
+    "description": "Created date filter label"
+  },
+
+  "sortLabel": "Сортировка",
+  "@sortLabel": {
+    "description": "Sort section label"
+  },
+
+  "sortByCreatedDate": "По дате создания",
+  "@sortByCreatedDate": {
+    "description": "Sort by created date option"
+  },
+
+  "sortByDueDate": "По сроку",
+  "@sortByDueDate": {
+    "description": "Sort by due date option"
+  },
+
+  "sortByQuantity": "По кол-ву",
+  "@sortByQuantity": {
+    "description": "Sort by quantity option"
+  },
+
+  "sortDescending": "По убыванию",
+  "@sortDescending": {
+    "description": "Sort descending option"
+  },
+
+  "sortAscending": "По возрастанию",
+  "@sortAscending": {
+    "description": "Sort ascending option"
+  },
+
+  "apply": "Применить",
+  "@apply": {
+    "description": "Apply button"
+  },
+
+  "searchCustomers": "Поиск заказчиков...",
+  "@searchCustomers": {
+    "description": "Customers search hint"
+  },
+
+  "sortByName": "По имени",
+  "@sortByName": {
+    "description": "Sort by name option"
+  },
+
+  "sortByOrders": "По заказам",
+  "@sortByOrders": {
+    "description": "Sort by orders option"
+  },
+
+  "sortByAmount": "По сумме",
+  "@sortByAmount": {
+    "description": "Sort by amount option"
+  },
+
+  "noCustomers": "Нет заказчиков",
+  "@noCustomers": {
+    "description": "No customers message"
+  },
+
+  "addFirstCustomer": "Добавьте первого заказчика",
+  "@addFirstCustomer": {
+    "description": "Add first customer suggestion"
+  },
+
+  "customersNotAdded": "Заказчики пока не добавлены",
+  "@customersNotAdded": {
+    "description": "Customers not added message"
+  },
+
+  "addCustomer": "Добавить заказчика",
+  "@addCustomer": {
+    "description": "Add customer button"
+  },
+
+  "customerSince": "Заказчик с {date}",
+  "@customerSince": {
+    "description": "Customer since date",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "ordersCountLabel": "Заказов",
+  "@ordersCountLabel": {
+    "description": "Orders count label"
+  },
+
+  "spent": "Потрачено",
+  "@spent": {
+    "description": "Spent amount label"
+  },
+
+  "availableModels": "Доступные модели",
+  "@availableModels": {
+    "description": "Available models section"
+  },
+
+  "configure": "Настроить",
+  "@configure": {
+    "description": "Configure button"
+  },
+
+  "noModelsAssigned": "Модели не назначены",
+  "@noModelsAssigned": {
+    "description": "No models assigned message"
+  },
+
+  "clientCanOrderAnyModel": "Заказчик может заказывать любые модели",
+  "@clientCanOrderAnyModel": {
+    "description": "Client can order any model hint"
+  },
+
+  "contacts": "Контакты",
+  "@contacts": {
+    "description": "Contacts section"
+  },
+
+  "editAction": "Изменить",
+  "@editAction": {
+    "description": "Edit action button"
+  },
+
+  "selectModelsHint": "Выберите модели, которые заказчик сможет заказать. Если ни одна модель не выбрана - доступны все.",
+  "@selectModelsHint": {
+    "description": "Select models dialog hint"
+  },
+
+  "couldNotLoadModels": "Не удалось загрузить модели",
+  "@couldNotLoadModels": {
+    "description": "Could not load models error"
+  },
+
+  "noAvailableModels": "Нет доступных моделей",
+  "@noAvailableModels": {
+    "description": "No available models message"
+  },
+
+  "saveWithCount": "Сохранить ({count})",
+  "@saveWithCount": {
+    "description": "Save button with count",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "telegram": "Telegram",
+  "@telegram": {
+    "description": "Telegram contact label"
+  },
+
+  "filterByRole": "Фильтр по роли",
+  "@filterByRole": {
+    "description": "Filter by role tooltip"
+  },
+
+  "allRoles": "Все роли",
+  "@allRoles": {
+    "description": "All roles filter option"
+  },
+
+  "searchEmployees": "Поиск сотрудников...",
+  "@searchEmployees": {
+    "description": "Employees search hint"
+  },
+
+  "activeEmployees": "Активные",
+  "@activeEmployees": {
+    "description": "Active employees filter"
+  },
+
+  "inactiveEmployees": "Неактивные",
+  "@inactiveEmployees": {
+    "description": "Inactive employees filter"
+  },
+
+  "loadingError": "Ошибка загрузки: {message}",
+  "@loadingError": {
+    "description": "Loading error message",
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "tryDifferentFilters": "Попробуйте изменить параметры поиска",
+  "@tryDifferentFilters": {
+    "description": "Try different filters suggestion"
+  },
+
+  "addFirstEmployee": "Добавьте первого сотрудника",
+  "@addFirstEmployee": {
+    "description": "Add first employee suggestion"
+  },
+
+  "deleteEmployeeTitle": "Удалить сотрудника?",
+  "@deleteEmployeeTitle": {
+    "description": "Delete employee dialog title"
+  },
+
+  "deleteEmployeeMessage": "Вы уверены, что хотите удалить \"{name}\"?",
+  "@deleteEmployeeMessage": {
+    "description": "Delete employee confirmation",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "employeeDeleted": "Сотрудник удалён",
+  "@employeeDeleted": {
+    "description": "Employee deleted message"
+  },
+
+  "workHistory": "История работы",
+  "@workHistory": {
+    "description": "Work history button"
+  },
+
+  "periodWeek": "Неделя",
+  "@periodWeek": {
+    "description": "Week period option"
+  },
+
+  "periodMonth": "Месяц",
+  "@periodMonth": {
+    "description": "Month period option"
+  },
+
+  "periodQuarter": "Квартал",
+  "@periodQuarter": {
+    "description": "Quarter period option"
+  },
+
+  "periodYear": "Год",
+  "@periodYear": {
+    "description": "Year period option"
+  },
+
+  "overview": "Обзор",
+  "@overview": {
+    "description": "Overview section title"
+  },
+
+  "revenue": "Выручка",
+  "@revenue": {
+    "description": "Revenue label"
+  },
+
+  "averageCheck": "Средний чек",
+  "@averageCheck": {
+    "description": "Average check label"
+  },
+
+  "noRevenueData": "Нет данных о выручке",
+  "@noRevenueData": {
+    "description": "No revenue data message"
+  },
+
+  "ordersByStatus": "Заказы по статусу",
+  "@ordersByStatus": {
+    "description": "Orders by status section"
+  },
+
+  "statusInWork": "В работе",
+  "@statusInWork": {
+    "description": "In work status label"
+  },
+
+  "statusDone": "Выполнено",
+  "@statusDone": {
+    "description": "Done status label"
+  },
+
+  "statusWaiting": "Ожидают",
+  "@statusWaiting": {
+    "description": "Waiting status label"
+  },
+
+  "statusCancelledShort": "Отменено",
+  "@statusCancelledShort": {
+    "description": "Cancelled status short label"
+  },
+
+  "noOrdersData": "Нет данных о заказах",
+  "@noOrdersData": {
+    "description": "No orders data message"
+  },
+
+  "topCustomers": "Топ заказчики",
+  "@topCustomers": {
+    "description": "Top customers section"
+  },
+
+  "noCustomersData": "Нет данных о заказчиках",
+  "@noCustomersData": {
+    "description": "No customers data message"
+  },
+
+  "ordersCountShort": "{count} заказов",
+  "@ordersCountShort": {
+    "description": "Orders count short format",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "avatarUpdated": "Аватар обновлён",
+  "avatarDeleted": "Аватар удалён",
+  "account": "Аккаунт",
+  "personalData": "Личные данные",
+  "nameEmailPhone": "Имя, email, телефон",
+  "atelierData": "Данные ателье",
+  "changePassword": "Сменить пароль",
+  "changeCurrentPassword": "Изменить текущий пароль",
+  "appearance": "Внешний вид",
+  "theme": "Тема",
+  "themeLight": "Светлая",
+  "themeDark": "Тёмная",
+  "themeAuto": "Авто",
+  "subscriptionActive": "Активна",
+  "subscriptionTrial": "Пробный период",
+  "subscriptionExpired": "Истекла",
+  "subscriptionFree": "Бесплатный план",
+  "manageSubscription": "Управление подпиской",
+  "other": "Другое",
+  "notifications": "Уведомления",
+  "pushEmailSms": "Push, email, SMS",
+  "helpSupport": "Помощь и поддержка",
+  "faqContactUs": "FAQ, связаться с нами",
+  "aboutApp": "О приложении",
+  "version": "Версия {version}",
+  "@version": {"placeholders": {"version": {"type": "String"}}},
+  "aboutAppDescription": "Приложение для управления ателье. Управляйте заказами, заказчиками и аналитикой в одном месте.",
+  "logoutAccount": "Выйти из аккаунта",
+  "logoutTitle": "Выход",
+  "logoutConfirmation": "Вы уверены, что хотите выйти из аккаунта?",
+  "logoutButton": "Выйти",
+  "currentPassword": "Текущий пароль",
+  "newPassword": "Новый пароль",
+  "confirmPassword": "Подтвердите пароль",
+  "enterCurrentPassword": "Введите текущий пароль",
+  "enterNewPassword": "Введите новый пароль",
+  "minCharacters": "Минимум {count} символов",
+  "@minCharacters": {"placeholders": {"count": {"type": "int"}}},
+  "passwordsDoNotMatch": "Пароли не совпадают",
+  "passwordChanged": "Пароль успешно изменён",
+  "expiresOn": "до {date}",
+  "@expiresOn": {"placeholders": {"date": {"type": "String"}}},
+
+  "transactions": "Транзакции",
+  "transactionEntriesCount": "{count} записей",
+  "@transactionEntriesCount": {"placeholders": {"count": {"type": "int"}}},
+  "noTransactions": "Нет транзакций",
+  "addFirstTransaction": "Добавьте первую транзакцию",
+  "transaction": "Транзакция",
+  "incomeLabel": "Доход",
+  "expenseLabel": "Расход",
+  "allFilter": "Все",
+  "incomesFilter": "Доходы",
+  "expensesFilter": "Расходы",
+  "filterTooltip": "Фильтр",
+  "deleteTransactionTitle": "Удалить транзакцию?",
+  "deleteTransactionMessage": "Вы уверены, что хотите удалить эту транзакцию на сумму {amount}?",
+  "@deleteTransactionMessage": {"placeholders": {"amount": {"type": "String"}}},
+  "transactionDeleted": "Транзакция удалена",
+  "dateLabel": "Дата",
+  "description": "Описание",
+
+  "searchModels": "Поиск моделей...",
+  "filterByCategory": "Фильтр по категории",
+  "allCategories": "Все категории",
+  "nothingFound": "Ничего не найдено",
+  "tryChangeSearchParams": "Попробуйте изменить параметры поиска",
+  "noModels": "Нет моделей",
+  "addFirstModel": "Добавьте первую модель одежды",
+  "addModel": "Добавить модель",
+  "newModel": "Новая модель",
+  "deleteModelTitle": "Удалить модель?",
+  "deleteModelMessage": "Вы уверены, что хотите удалить \"{name}\"?",
+  "@deleteModelMessage": {"placeholders": {"name": {"type": "String"}}},
+  "modelDeleted": "Модель удалена",
+  "changeAction": "Изменить",
+
+  "categoryDress": "Платье",
+  "categorySuit": "Костюм",
+  "categoryPants": "Брюки",
+  "categoryShirt": "Рубашка",
+  "categorySkirt": "Юбка",
+  "categoryCoat": "Пальто",
+  "categoryOther": "Другое",
+
+  "calculationPeriod": "Период расчёта",
+  "fromLabel": "С",
+  "toLabel": "По",
+  "calculating": "Расчёт...",
+  "calculate": "Рассчитать",
+  "salaryCalculated": "Зарплата рассчитана",
+  "totalToPay": "Итого к выплате",
+  "recordToFinance": "Записать в финансы",
+  "employeePayments": "Начисления по сотрудникам",
+  "employee": "Сотрудник",
+  "unknownRole": "Неизвестная роль",
+  "workDone": "Выполненные работы",
+  "calculationHistory": "История расчётов",
+  "noCalculationHistory": "Нет истории расчётов",
+  "recordedToFinance": "Записано в финансы",
+  "salaryDescriptionFormat": "Зарплата ({period})",
+  "perHour": "ч",
+  "perPiece": "шт",
+  "hoursShort": "{hours} ч",
+  "@hoursShort": {"placeholders": {"hours": {"type": "String"}}},
+  "piecesShort": "{count} шт",
+  "@piecesShort": {"placeholders": {"count": {"type": "int"}}},
+
+  "allEmployees": "Все сотрудники",
+  "totalPieces": "Всего шт",
+  "totalHours": "Всего часов",
+  "recordsCount": "Записей",
+  "noRecords": "Нет записей",
+  "tryChangeFilters": "Попробуйте изменить фильтры",
+  "employeesNotRecordedWork": "Сотрудники ещё не записывали работу",
+  "unknown": "Неизвестно",
+
+  "currentPlan": "Текущий план",
+  "freePlan": "Бесплатный план",
+  "somethingWentWrong": "Что-то пошло не так",
+  "errorHappened": "Произошла ошибка",
+  "resourceUsage": "Использование ресурсов",
+  "customersLabel": "Заказчики",
+  "employeesLabel": "Сотрудники",
+  "unlimited": "Безлимит",
+  "availablePlans": "Доступные планы",
+  "loadingPlans": "Загрузка планов...",
+  "activePlan": "Активен",
+  "currentPlanButton": "Текущий план",
+  "selectPlan": "Выбрать план",
+  "popular": "Популярный",
+  "restorePurchases": "Восстановить покупки",
+  "ofCustomers": "заказчиков",
+  "ofEmployees": "сотрудников"
+}

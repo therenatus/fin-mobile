@@ -5,6 +5,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import 'core/l10n/l10n.dart';
+
 import 'core/theme/app_theme.dart';
 import 'core/providers/app_provider.dart';
 import 'core/providers/client_provider.dart';
@@ -20,8 +22,11 @@ import 'features/shell/app_shell.dart';
 import 'features/client_mode/shell/client_app_shell.dart';
 import 'features/employee_mode/shell/employee_app_shell.dart';
 
-// OneSignal App ID - replace with your actual app ID from OneSignal dashboard
-const String kOneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+// OneSignal App ID - configure via flutter build --dart-define=ONESIGNAL_APP_ID=...
+const String kOneSignalAppId = String.fromEnvironment(
+  'ONESIGNAL_APP_ID',
+  defaultValue: '',
+);
 
 // Sentry DSN - configure via flutter build --dart-define=SENTRY_DSN=...
 const String kSentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
@@ -40,7 +45,11 @@ void main() async {
   await initializeDateFormatting('ru_RU', null);
 
   // Initialize notification services
-  await NotificationService.instance.init(kOneSignalAppId);
+  if (kOneSignalAppId.isNotEmpty && !kOneSignalAppId.startsWith('YOUR_')) {
+    await NotificationService.instance.init(kOneSignalAppId);
+  } else {
+    debugPrint('[Main] OneSignal not configured - push notifications disabled');
+  }
   await LocalNotificationService.instance.init();
 
   final storageService = StorageService();
@@ -144,6 +153,7 @@ class _AtelieProAppState extends State<AtelieProApp> {
             Locale('en', 'US'),
           ],
           localizationsDelegates: const [
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,

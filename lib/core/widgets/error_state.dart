@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/page_transitions.dart';
 import 'animated_button.dart';
@@ -11,6 +12,7 @@ class ErrorState extends StatefulWidget {
   final VoidCallback? onRetry;
   final IconData? icon;
   final bool animate;
+  final bool useLocalizedRetry;
 
   const ErrorState({
     super.key,
@@ -20,6 +22,7 @@ class ErrorState extends StatefulWidget {
     this.onRetry,
     this.icon,
     this.animate = true,
+    this.useLocalizedRetry = true,
   });
 
   @override
@@ -128,7 +131,7 @@ class _ErrorStateState extends State<ErrorState>
                   if (widget.onRetry != null) ...[
                     const SizedBox(height: AppSpacing.lg),
                     AnimatedElevatedButton(
-                      label: widget.retryLabel ?? 'Повторить',
+                      label: widget.retryLabel ?? (widget.useLocalizedRetry ? context.l10n.retry : 'Retry'),
                       icon: Icons.refresh,
                       onPressed: widget.onRetry,
                       fullWidth: false,
@@ -243,7 +246,7 @@ class _ErrorBannerState extends State<ErrorBanner>
                 icon: Icons.refresh,
                 color: AppColors.error,
                 onPressed: widget.onRetry,
-                tooltip: 'Повторить',
+                tooltip: context.l10n.retry,
               ),
             ],
             if (widget.onDismiss != null) ...[
@@ -252,7 +255,7 @@ class _ErrorBannerState extends State<ErrorBanner>
                 icon: Icons.close,
                 color: AppColors.error,
                 onPressed: _dismiss,
-                tooltip: 'Закрыть',
+                tooltip: context.l10n.close,
               ),
             ],
           ],
@@ -272,9 +275,9 @@ class NetworkErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return ErrorState(
       icon: Icons.wifi_off_rounded,
-      title: 'Нет подключения',
-      message: 'Проверьте подключение к интернету и повторите попытку',
-      retryLabel: 'Повторить',
+      title: context.l10n.connectionError,
+      message: context.l10n.connectionErrorMessage,
+      retryLabel: context.l10n.retry,
       onRetry: onRetry,
     );
   }
@@ -291,9 +294,9 @@ class ServerErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return ErrorState(
       icon: Icons.cloud_off_rounded,
-      title: 'Ошибка сервера',
-      message: message ?? 'Произошла ошибка на сервере. Попробуйте позже',
-      retryLabel: 'Повторить',
+      title: context.l10n.serverError,
+      message: message ?? context.l10n.serverErrorMessage,
+      retryLabel: context.l10n.retry,
       onRetry: onRetry,
     );
   }
@@ -318,9 +321,9 @@ class NotFoundState extends StatelessWidget {
   Widget build(BuildContext context) {
     return ErrorState(
       icon: Icons.search_off_rounded,
-      title: title ?? 'Не найдено',
-      message: message ?? 'Запрашиваемые данные не найдены',
-      retryLabel: actionLabel ?? 'Назад',
+      title: title ?? context.l10n.notFound,
+      message: message ?? context.l10n.notFoundMessage,
+      retryLabel: actionLabel ?? context.l10n.back,
       onRetry: onAction ?? () => Navigator.of(context).pop(),
     );
   }
@@ -589,7 +592,7 @@ class _SuccessStateState extends State<SuccessState>
                   if (widget.onContinue != null) ...[
                     const SizedBox(height: AppSpacing.lg),
                     AnimatedElevatedButton(
-                      label: widget.continueLabel ?? 'Продолжить',
+                      label: widget.continueLabel ?? context.l10n.continue_,
                       onPressed: widget.onContinue,
                       fullWidth: false,
                       backgroundColor: AppColors.success,

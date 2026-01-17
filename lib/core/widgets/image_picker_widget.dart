@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 
 class ImagePickerWidget extends StatefulWidget {
@@ -83,7 +84,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   ),
                   child: const Icon(Icons.camera_alt, color: AppColors.primary),
                 ),
-                title: const Text('Камера'),
+                title: Text(context.l10n.camera),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -98,7 +99,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   ),
                   child: const Icon(Icons.photo_library, color: AppColors.secondary),
                 ),
-                title: const Text('Галерея'),
+                title: Text(context.l10n.gallery),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -114,7 +115,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     ),
                     child: const Icon(Icons.delete_outline, color: AppColors.error),
                   ),
-                  title: const Text('Удалить'),
+                  title: Text(context.l10n.delete),
                   onTap: () {
                     Navigator.pop(context);
                     setState(() {
@@ -212,7 +213,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Добавить',
+          context.l10n.add,
           style: AppTypography.bodySmall.copyWith(
             color: context.textSecondaryColor,
           ),
@@ -293,7 +294,7 @@ class ModelImagePickerWidget extends StatelessWidget {
       size: size,
       isCircle: false,
       placeholderIcon: Icons.checkroom_outlined,
-      label: 'Фото модели',
+      label: context.l10n.modelPhoto,
     );
   }
 }

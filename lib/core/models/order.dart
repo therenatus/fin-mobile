@@ -1,5 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'client.dart';
 import 'process_step.dart';
+import 'json_converters.dart';
+
+part 'order.g.dart';
 
 enum OrderStatus {
   pending('pending', 'Ожидает'),
@@ -19,6 +23,7 @@ enum OrderStatus {
   }
 }
 
+@JsonSerializable()
 class OrderModel {
   final String id;
   final String name;
@@ -26,6 +31,7 @@ class OrderModel {
   final String? description;
   final String? imageUrl;
   final double basePrice;
+  @JsonKey(defaultValue: [])
   final List<ProcessStep> processSteps;
 
   OrderModel({
@@ -38,20 +44,10 @@ class OrderModel {
     this.processSteps = const [],
   });
 
-  factory OrderModel.fromJson(Map<String, dynamic> json) {
-    return OrderModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      category: json['category'] as String?,
-      description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
-      basePrice: (json['basePrice'] as num).toDouble(),
-      processSteps: (json['processSteps'] as List<dynamic>?)
-              ?.map((e) => ProcessStep.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-    );
-  }
+  factory OrderModel.fromJson(Map<String, dynamic> json) =>
+      _$OrderModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderModelToJson(this);
 
   /// Total estimated time for all process steps in minutes
   int get totalEstimatedTime =>
@@ -62,6 +58,7 @@ class OrderModel {
       0.0, (sum, step) => sum + (step.rate ?? 0));
 }
 
+@JsonSerializable()
 class OrderStatusLog {
   final String id;
   final String status;
@@ -75,27 +72,26 @@ class OrderStatusLog {
     this.notes,
   });
 
-  factory OrderStatusLog.fromJson(Map<String, dynamic> json) {
-    return OrderStatusLog(
-      id: json['id'] as String,
-      status: json['status'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      notes: json['notes'] as String?,
-    );
-  }
+  factory OrderStatusLog.fromJson(Map<String, dynamic> json) =>
+      _$OrderStatusLogFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderStatusLogToJson(this);
 }
 
+@JsonSerializable()
 class Order {
   final String id;
   final String clientId;
   final String modelId;
   final int quantity;
+  @OrderStatusConverter()
   final OrderStatus status;
   final DateTime? dueDate;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Client? client;
   final OrderModel? model;
+  @JsonKey(defaultValue: [])
   final List<OrderStatusLog> statusLogs;
 
   Order({
@@ -112,23 +108,9 @@ class Order {
     this.statusLogs = const [],
   });
 
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
-      id: json['id'] as String,
-      clientId: json['clientId'] as String,
-      modelId: json['modelId'] as String,
-      quantity: json['quantity'] as int,
-      status: OrderStatus.fromString(json['status'] as String),
-      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String) : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      client: json['client'] != null ? Client.fromJson(json['client'] as Map<String, dynamic>) : null,
-      model: json['model'] != null ? OrderModel.fromJson(json['model'] as Map<String, dynamic>) : null,
-      statusLogs: (json['statusLogs'] as List<dynamic>?)
-          ?.map((e) => OrderStatusLog.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-    );
-  }
+  factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderToJson(this);
 
   double get totalPrice => (model?.basePrice ?? 0) * quantity;
 
@@ -144,22 +126,20 @@ class Order {
   }
 }
 
+@JsonSerializable()
 class OrdersResponse {
   final List<Order> orders;
   final OrdersMeta meta;
 
   OrdersResponse({required this.orders, required this.meta});
 
-  factory OrdersResponse.fromJson(Map<String, dynamic> json) {
-    return OrdersResponse(
-      orders: (json['orders'] as List<dynamic>)
-          .map((e) => Order.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      meta: OrdersMeta.fromJson(json['meta'] as Map<String, dynamic>),
-    );
-  }
+  factory OrdersResponse.fromJson(Map<String, dynamic> json) =>
+      _$OrdersResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrdersResponseToJson(this);
 }
 
+@JsonSerializable()
 class OrdersMeta {
   final int page;
   final int perPage;
@@ -173,12 +153,8 @@ class OrdersMeta {
     required this.totalPages,
   });
 
-  factory OrdersMeta.fromJson(Map<String, dynamic> json) {
-    return OrdersMeta(
-      page: json['page'] as int,
-      perPage: json['perPage'] as int,
-      total: json['total'] as int,
-      totalPages: json['totalPages'] as int,
-    );
-  }
+  factory OrdersMeta.fromJson(Map<String, dynamic> json) =>
+      _$OrdersMetaFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrdersMetaToJson(this);
 }

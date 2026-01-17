@@ -1,15 +1,26 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'employee.dart';
 import 'order.dart';
 
+part 'work_log.g.dart';
+
+@JsonSerializable()
 class WorkLog {
+  @JsonKey(defaultValue: '')
   final String id;
+  @JsonKey(defaultValue: '')
   final String employeeId;
+  @JsonKey(defaultValue: '')
   final String orderId;
   final String step;
   final int quantity;
+  @JsonKey(defaultValue: 0.0)
   final double hours;
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime date;
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime updatedAt;
   final Employee? employee;
   final Order? order;
@@ -37,47 +48,11 @@ class WorkLog {
     this.payout,
   });
 
-  factory WorkLog.fromJson(Map<String, dynamic> json) {
-    return WorkLog(
-      id: json['id'] as String? ?? '',
-      employeeId: json['employeeId'] as String? ?? '',
-      orderId: json['orderId'] as String? ?? '',
-      step: json['step'] as String,
-      quantity: json['quantity'] as int,
-      hours: (json['hours'] as num?)?.toDouble() ?? 0,
-      date: json['date'] != null
-          ? DateTime.parse(json['date'] as String)
-          : DateTime.now(),
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : DateTime.now(),
-      employee: json['employee'] != null
-          ? Employee.fromJson(json['employee'] as Map<String, dynamic>)
-          : null,
-      order: json['order'] != null
-          ? Order.fromJson(json['order'] as Map<String, dynamic>)
-          : null,
-      modelName: json['modelName'] as String?,
-      rate: (json['rate'] as num?)?.toDouble(),
-      rateType: json['rateType'] as String?,
-      payout: (json['payout'] as num?)?.toDouble(),
-    );
-  }
+  factory WorkLog.fromJson(Map<String, dynamic> json) =>
+      _$WorkLogFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'employeeId': employeeId,
-      'orderId': orderId,
-      'step': step,
-      'quantity': quantity,
-      'hours': hours,
-      'date': date.toIso8601String(),
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$WorkLogToJson(this);
+
+  static DateTime _dateTimeFromJson(String? json) =>
+      json != null ? DateTime.parse(json) : DateTime.now();
 }

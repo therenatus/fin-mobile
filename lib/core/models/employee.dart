@@ -1,10 +1,18 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'employee.g.dart';
+
+@JsonSerializable()
 class Employee {
+  @JsonKey(includeToJson: false)
   final String id;
   final String name;
   final String role;
   final String? phone;
   final String? email;
+  @JsonKey(defaultValue: true, includeToJson: false)
   final bool isActive;
+  @JsonKey(includeToJson: false)
   final DateTime createdAt;
 
   Employee({
@@ -17,33 +25,19 @@ class Employee {
     required this.createdAt,
   });
 
-  factory Employee.fromJson(Map<String, dynamic> json) {
-    return Employee(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      role: json['role'] as String,
-      phone: json['phone'] as String?,
-      email: json['email'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
+  factory Employee.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'role': role,
-      if (phone != null) 'phone': phone,
-      if (email != null) 'email': email,
-    };
-  }
+  Map<String, dynamic> toJson() => _$EmployeeToJson(this);
 }
 
-/// Роль сотрудника из БД
+/// Role from database
+@JsonSerializable()
 class EmployeeRole {
   final String id;
   final String code;
   final String label;
+  @JsonKey(defaultValue: 0)
   final int sortOrder;
 
   EmployeeRole({
@@ -53,14 +47,10 @@ class EmployeeRole {
     required this.sortOrder,
   });
 
-  factory EmployeeRole.fromJson(Map<String, dynamic> json) {
-    return EmployeeRole(
-      id: json['id'] as String,
-      code: json['code'] as String,
-      label: json['label'] as String,
-      sortOrder: json['sortOrder'] as int? ?? 0,
-    );
-  }
+  factory EmployeeRole.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeRoleFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EmployeeRoleToJson(this);
 
   @override
   String toString() => label;

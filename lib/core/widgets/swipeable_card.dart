@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/haptic_feedback.dart';
 import '../utils/page_transitions.dart';
@@ -56,6 +57,7 @@ class _SwipeableCardState extends State<SwipeableCard>
   late AnimationController _controller;
   double _dragExtent = 0;
   bool _isDragging = false;
+  VoidCallback? _animationListener;
 
   double get _maxLeftDrag =>
       widget.leftActions != null ? widget.leftActions!.length * widget.actionWidth : 0;
@@ -73,6 +75,9 @@ class _SwipeableCardState extends State<SwipeableCard>
 
   @override
   void dispose() {
+    if (_animationListener != null) {
+      _controller.removeListener(_animationListener!);
+    }
     _controller.dispose();
     super.dispose();
   }
@@ -127,14 +132,24 @@ class _SwipeableCardState extends State<SwipeableCard>
     final startExtent = _dragExtent;
     _controller.reset();
 
-    _controller.addListener(() {
+    // Remove previous listener if exists
+    if (_animationListener != null) {
+      _controller.removeListener(_animationListener!);
+    }
+
+    _animationListener = () {
       setState(() {
         _dragExtent = startExtent + (_controller.value * (target - startExtent));
       });
-    });
+    };
+
+    _controller.addListener(_animationListener!);
 
     _controller.forward().then((_) {
-      _controller.removeListener(() {});
+      if (_animationListener != null) {
+        _controller.removeListener(_animationListener!);
+        _animationListener = null;
+      }
     });
   }
 
@@ -253,7 +268,7 @@ class _SwipeableCardState extends State<SwipeableCard>
 class DismissibleCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onDismissed;
-  final String dismissText;
+  final String? dismissText;
   final Color dismissColor;
   final IconData dismissIcon;
   final bool confirmDismiss;
@@ -264,7 +279,7 @@ class DismissibleCard extends StatelessWidget {
     super.key,
     required this.child,
     this.onDismissed,
-    this.dismissText = 'Удалить',
+    this.dismissText,
     this.dismissColor = AppColors.error,
     this.dismissIcon = Icons.delete_outline,
     this.confirmDismiss = true,
@@ -276,12 +291,12 @@ class DismissibleCard extends StatelessWidget {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(confirmTitle ?? 'Подтверждение'),
-        content: Text(confirmMessage ?? 'Вы уверены, что хотите удалить?'),
+        title: Text(confirmTitle ?? context.l10n.confirmation),
+        content: Text(confirmMessage ?? context.l10n.confirmDeleteMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Отмена'),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -289,7 +304,7 @@ class DismissibleCard extends StatelessWidget {
               Navigator.of(context).pop(true);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Удалить'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -322,7 +337,7 @@ class DismissibleCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              dismissText,
+              dismissText ?? context.l10n.delete,
               style: AppTypography.labelMedium.copyWith(color: Colors.white),
             ),
             const SizedBox(width: AppSpacing.sm),
