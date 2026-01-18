@@ -1,30 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
-import '../../core/services/api_service.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../orders/order_detail_screen.dart';
 
-class WorkloadScreen extends StatefulWidget {
+class WorkloadScreen extends ConsumerStatefulWidget {
   const WorkloadScreen({super.key});
 
   @override
-  State<WorkloadScreen> createState() => _WorkloadScreenState();
+  ConsumerState<WorkloadScreen> createState() => _WorkloadScreenState();
 }
 
-class _WorkloadScreenState extends State<WorkloadScreen> {
+class _WorkloadScreenState extends ConsumerState<WorkloadScreen> {
   bool _isLoading = true;
   String? _error;
   Map<String, dynamic>? _data;
   int _days = 14;
   String? _selectedEmployeeId;
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -47,7 +44,7 @@ class _WorkloadScreenState extends State<WorkloadScreen> {
     });
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       debugPrint('[WorkloadScreen] Loading data: days=$_days, employeeId=$_selectedEmployeeId');
       final data = await api.getWorkloadCalendar(
         days: _days,
@@ -484,7 +481,7 @@ class _WorkloadScreenState extends State<WorkloadScreen> {
     );
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final order = await api.getOrder(orderId);
 
       if (mounted) {

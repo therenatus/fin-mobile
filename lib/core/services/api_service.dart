@@ -17,6 +17,8 @@ import 'api/suppliers_api.dart';
 import 'api/purchases_api.dart';
 import 'api/bom_api.dart';
 import 'api/costing_api.dart';
+import 'api/production_api.dart';
+import 'api/qc_api.dart';
 
 /// Exception class for ApiService
 class ApiException extends BaseApiException {
@@ -48,6 +50,8 @@ class ApiException extends BaseApiException {
 /// - PurchasesApiMixin: purchases management
 /// - BomApiMixin: bill of materials
 /// - CostingApiMixin: costing, pricing and profitability
+/// - ProductionApiMixin: production planning and workload
+/// - QcApiMixin: quality control templates, checks and defects
 class ApiService extends BaseApiService
     with
         AuthApiMixin,
@@ -66,7 +70,9 @@ class ApiService extends BaseApiService
         SuppliersApiMixin,
         PurchasesApiMixin,
         BomApiMixin,
-        CostingApiMixin {
+        CostingApiMixin,
+        ProductionApiMixin,
+        QcApiMixin {
   ApiService(StorageService storage) : super(storage);
 
   @override

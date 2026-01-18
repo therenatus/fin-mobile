@@ -1,59 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/client_user.dart';
 import 'atelier_detail_screen.dart';
 
-class MyAteliersScreen extends StatefulWidget {
+class MyAteliersScreen extends ConsumerStatefulWidget {
   const MyAteliersScreen({super.key});
 
   @override
-  State<MyAteliersScreen> createState() => _MyAteliersScreenState();
+  ConsumerState<MyAteliersScreen> createState() => _MyAteliersScreenState();
 }
 
-class _MyAteliersScreenState extends State<MyAteliersScreen> {
+class _MyAteliersScreenState extends ConsumerState<MyAteliersScreen> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ClientProvider>().refreshData();
+      ref.read(clientAuthNotifierProvider.notifier).refreshData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(clientAuthNotifierProvider);
+    final notifier = ref.read(clientAuthNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Мои ателье'),
+        title: Text(context.l10n.myAteliers),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Consumer<ClientProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && provider.tenants.isEmpty) {
+      body: Builder(
+        builder: (context) {
+          if (authState.isLoading && authState.tenants.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (provider.tenants.isEmpty) {
+          if (authState.tenants.isEmpty) {
             return _buildEmptyState();
           }
 
           return RefreshIndicator(
-            onRefresh: () => provider.refreshData(),
+            onRefresh: () => notifier.refreshData(),
             child: ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: provider.tenants.length,
+              itemCount: authState.tenants.length,
               separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, index) {
-                final tenant = provider.tenants[index];
+                final tenant = authState.tenants[index];
                 return _AtelierCard(
                   tenant: tenant,
-                  ordersCount: provider.getOrdersCountForTenant(tenant.tenantId),
-                  totalSpent: provider.getTotalSpentForTenant(tenant.tenantId),
-                  pendingCount: provider.getPendingOrdersCountForTenant(tenant.tenantId),
+                  ordersCount: authState.getOrdersCountForTenant(tenant.tenantId),
+                  totalSpent: authState.getTotalSpentForTenant(tenant.tenantId),
+                  pendingCount: authState.getPendingOrdersCountForTenant(tenant.tenantId),
                   onTap: () => _openAtelierDetail(tenant),
                 );
               },
@@ -78,13 +82,13 @@ class _MyAteliersScreenState extends State<MyAteliersScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Вы ещё не привязаны к ателье',
+              context.l10n.notLinkedToAtelier,
               style: AppTypography.h3,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Привяжитесь к ателье, чтобы создавать заказы',
+              context.l10n.linkToAtelierHint,
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -94,13 +98,13 @@ class _MyAteliersScreenState extends State<MyAteliersScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Функция скоро будет доступна'),
+                  SnackBar(
+                    content: Text(context.l10n.featureComingSoon),
                   ),
                 );
               },
               icon: const Icon(Icons.add),
-              label: const Text('Привязать ателье'),
+              label: Text(context.l10n.linkAtelier),
             ),
           ],
         ),
@@ -188,7 +192,7 @@ class _AtelierCard extends StatelessWidget {
                       children: [
                         _StatChip(
                           icon: Icons.receipt_long,
-                          label: _ordersLabel(ordersCount),
+                          label: _ordersLabel(context, ordersCount),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         _StatChip(
@@ -219,11 +223,11 @@ class _AtelierCard extends StatelessWidget {
     );
   }
 
-  String _ordersLabel(int count) {
-    if (count == 0) return 'Нет заказов';
-    if (count == 1) return '1 заказ';
-    if (count >= 2 && count <= 4) return '$count заказа';
-    return '$count заказов';
+  String _ordersLabel(BuildContext context, int count) {
+    if (count == 0) return context.l10n.noOrdersLabel;
+    if (count == 1) return context.l10n.oneOrder;
+    if (count >= 2 && count <= 4) return context.l10n.fewOrders(count);
+    return context.l10n.manyOrders(count);
   }
 
   String _formatPrice(double price) {

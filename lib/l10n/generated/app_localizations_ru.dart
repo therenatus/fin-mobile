@@ -731,7 +731,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statusDone => 'Выполнено';
 
   @override
-  String get statusWaiting => 'Ожидают';
+  String get statusWaiting => 'Ожидает';
 
   @override
   String get statusCancelledShort => 'Отменено';
@@ -1128,4 +1128,148 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get ofEmployees => 'сотрудников';
+
+  @override
+  String get ateliers => 'Ателье';
+
+  @override
+  String get myAteliers => 'Мои ателье';
+
+  @override
+  String get notLinkedToAtelier => 'Вы ещё не привязаны к ателье';
+
+  @override
+  String get linkToAtelierHint =>
+      'Привяжитесь к ателье, чтобы создавать заказы';
+
+  @override
+  String get featureComingSoon => 'Функция скоро будет доступна';
+
+  @override
+  String get linkAtelier => 'Привязать ателье';
+
+  @override
+  String get noOrdersLabel => 'Нет заказов';
+
+  @override
+  String get oneOrder => '1 заказ';
+
+  @override
+  String fewOrders(int count) {
+    return '$count заказа';
+  }
+
+  @override
+  String manyOrders(int count) {
+    return '$count заказов';
+  }
+
+  @override
+  String get tasks => 'Задачи';
+
+  @override
+  String get history => 'История';
+
+  @override
+  String get myTasks => 'Мои задачи';
+
+  @override
+  String get inWork => 'В работе';
+
+  @override
+  String get ready => 'Готовые';
+
+  @override
+  String get dateFilter => 'Фильтр по дате';
+
+  @override
+  String tasksCount(int count) {
+    return '$count задач';
+  }
+
+  @override
+  String get noActiveTasks => 'Нет активных задач';
+
+  @override
+  String get tasksWillAppearHere =>
+      'Когда менеджер назначит вам заказ, он появится здесь';
+
+  @override
+  String get statusReady => 'Готов';
+
+  @override
+  String get works => 'Работы';
+
+  @override
+  String get salary => 'Зарплата';
+
+  @override
+  String get noWorkRecords => 'Нет записей о работе';
+
+  @override
+  String get workRecordsHint =>
+      'Записи появятся после того, как вы начнёте работать';
+
+  @override
+  String get noPayrollRecords => 'Нет расчётов';
+
+  @override
+  String get payrollRecordsHint =>
+      'Когда менеджер рассчитает зарплату, информация появится здесь';
+
+  @override
+  String entriesCount(int count) {
+    return '$count записей';
+  }
+
+  @override
+  String get rub => 'руб';
+
+  @override
+  String get details => 'Детализация';
+
+  @override
+  String get hoursAbbr => 'ч';
+
+  @override
+  String get contactInfo => 'Контактная информация';
+
+  @override
+  String get phoneLabel => 'Телефон';
+
+  @override
+  String get workplace => 'Место работы';
+
+  @override
+  String get atelierLabel => 'Ателье';
+
+  @override
+  String get activity => 'Активность';
+
+  @override
+  String get lastLogin => 'Последний вход';
+
+  @override
+  String get justNow => 'Только что';
+
+  @override
+  String minutesAgo(int minutes) {
+    return '$minutes мин. назад';
+  }
+
+  @override
+  String hoursAgo(int hours) {
+    return '$hours ч. назад';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days дн. назад';
+  }
+
+  @override
+  String get logoutQuestion => 'Вы уверены, что хотите выйти?';
+
+  @override
+  String get appVersionEmployee => 'AteliePro Employee v1.0.0';
 }

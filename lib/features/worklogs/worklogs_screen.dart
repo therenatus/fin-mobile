@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/date_range_picker_button.dart';
-import '../../core/services/api_service.dart';
 
-class WorklogsScreen extends StatefulWidget {
+class WorklogsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const WorklogsScreen({super.key, this.onMenuPressed});
 
   @override
-  State<WorklogsScreen> createState() => _WorklogsScreenState();
+  ConsumerState<WorklogsScreen> createState() => _WorklogsScreenState();
 }
 
-class _WorklogsScreenState extends State<WorklogsScreen> {
+class _WorklogsScreenState extends ConsumerState<WorklogsScreen> {
   DateTimeRange? _dateRange;
   String? _selectedEmployeeId;
   bool _isLoading = true;
@@ -27,8 +26,6 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
   int _totalQuantity = 0;
   double _totalHours = 0;
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -53,7 +50,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
 
   Future<void> _loadEmployees() async {
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final employees = await api.getEmployees();
       if (mounted) {
         setState(() => _employees = employees);
@@ -66,7 +63,7 @@ class _WorklogsScreenState extends State<WorklogsScreen> {
   Future<void> _loadWorkLogs() async {
     setState(() => _isLoading = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final workLogs = await api.getAllWorklogs(
         employeeId: _selectedEmployeeId,
         dateFrom: _dateRange?.start.toIso8601String().split('T')[0],

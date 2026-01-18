@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 
 import '../auth/login_screen.dart';
 import '../home/home_screen.dart';
@@ -20,57 +20,33 @@ import '../payroll/payroll_screen.dart';
 import '../worklogs/worklogs_screen.dart';
 import '../subscription/subscription_screen.dart';
 import '../materials/materials_screen.dart';
+import '../production/production_screen.dart';
+import '../notifications/notification_center_screen.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   final int initialIndex;
 
   const AppShell({super.key, this.initialIndex = 0});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   late int _currentIndex;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  AppProvider? _appProvider;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _loadNotificationCount();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Listen to auth state changes
-    final provider = context.read<AppProvider>();
-    if (_appProvider != provider) {
-      _appProvider?.removeListener(_onAuthStateChanged);
-      _appProvider = provider;
-      _appProvider?.addListener(_onAuthStateChanged);
-    }
-  }
-
-  @override
-  void dispose() {
-    _appProvider?.removeListener(_onAuthStateChanged);
-    super.dispose();
-  }
-
-  void _onAuthStateChanged() {
-    if (_appProvider?.state == AppState.unauthenticated) {
-      // Navigate to login and clear navigation stack
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-          );
-        }
-      });
-    }
+  void _loadNotificationCount() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationsNotifierProvider).refreshUnreadCount();
+    });
   }
 
   void _openDrawer() {
@@ -115,6 +91,21 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes
+    ref.listen<AuthStateData>(authNotifierProvider, (previous, next) {
+      if (!next.isAuthenticated && previous?.isAuthenticated == true) {
+        // Navigate to login and clear navigation stack
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+            );
+          }
+        });
+      }
+    });
+
     return Scaffold(
       key: _scaffoldKey,
       body: IndexedStack(
@@ -139,8 +130,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   Widget _buildDrawer(BuildContext context) {
-    final appProvider = context.watch<AppProvider>();
-    final user = appProvider.user;
+    final user = ref.watch(currentUserProvider);
 
     return Drawer(
       backgroundColor: context.surfaceColor,
@@ -254,6 +244,17 @@ class _AppShellState extends State<AppShell> {
                   },
                 ),
                 _DrawerItem(
+                  icon: Icons.precision_manufacturing_outlined,
+                  label: 'Производство',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProductionScreen()),
+                    );
+                  },
+                ),
+                _DrawerItem(
                   icon: Icons.checkroom_outlined,
                   label: context.l10n.models,
                   onTap: () {
@@ -320,6 +321,7 @@ class _AppShellState extends State<AppShell> {
                   },
                 ),
                 const Divider(height: 32),
+                _buildNotificationsItem(context),
                 _DrawerItem(
                   icon: Icons.card_membership_outlined,
                   label: context.l10n.subscription,
@@ -373,7 +375,7 @@ class _AppShellState extends State<AppShell> {
               ),
               onTap: () async {
                 Navigator.pop(context);
-                await context.read<AppProvider>().logout();
+                await ref.read(authNotifierProvider.notifier).logout();
               },
             ),
           ),
@@ -397,6 +399,55 @@ class _AppShellState extends State<AppShell> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationsItem(BuildContext context) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
+      child: ListTile(
+        leading: Badge(
+          isLabelVisible: unreadCount > 0,
+          label: Text(
+            unreadCount > 99 ? '99+' : unreadCount.toString(),
+            style: const TextStyle(fontSize: 10),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: context.surfaceVariantColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.notifications_outlined,
+              color: context.textSecondaryColor,
+              size: 20,
+            ),
+          ),
+        ),
+        title: Text(
+          'Уведомления',
+          style: AppTypography.bodyLarge.copyWith(
+            color: context.textPrimaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NotificationCenterScreen()),
+          );
+        },
       ),
     );
   }

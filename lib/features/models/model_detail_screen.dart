@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
-import '../../core/providers/bom_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/order.dart';
 import '../../core/models/process_step.dart';
 import '../../core/models/bom.dart';
@@ -13,25 +12,22 @@ import 'process_step_form_screen.dart';
 import 'model_form_screen.dart';
 import '../bom/bom_detail_screen.dart';
 
-class ModelDetailScreen extends StatefulWidget {
+class ModelDetailScreen extends ConsumerStatefulWidget {
   final OrderModel model;
 
   const ModelDetailScreen({super.key, required this.model});
 
   @override
-  State<ModelDetailScreen> createState() => _ModelDetailScreenState();
+  ConsumerState<ModelDetailScreen> createState() => _ModelDetailScreenState();
 }
 
-class _ModelDetailScreenState extends State<ModelDetailScreen> {
+class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
   late OrderModel _model;
   List<ProcessStep> _processSteps = [];
   Bom? _bom;
   bool _isLoading = true;
   bool _isBomLoading = true;
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
-  BomProvider get _bomProvider => context.read<BomProvider>();
 
   @override
   void initState() {
@@ -58,7 +54,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
   Future<void> _loadBom() async {
     setState(() => _isBomLoading = true);
     try {
-      final bom = await _bomProvider.loadModelBom(_model.id);
+      final bom = await ref.read(bomNotifierProvider.notifier).loadModelBom(_model.id);
       setState(() {
         _bom = bom;
         _isBomLoading = false;
@@ -71,7 +67,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
   Future<void> _loadProcessSteps() async {
     setState(() => _isLoading = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final steps = await api.getProcessSteps(_model.id);
       setState(() {
         _processSteps = steps..sort((a, b) => a.stepOrder.compareTo(b.stepOrder));
@@ -631,7 +627,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
 
     // Update step orders on server
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       for (int i = 0; i < _processSteps.length; i++) {
         final step = _processSteps[i];
         if (step.stepOrder != i + 1) {
@@ -767,7 +763,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
     if (result == true) {
       // Reload model data
       try {
-        final api = _api;
+        final api = ref.read(apiServiceProvider);
         final updatedModel = await api.getModel(_model.id);
         setState(() {
           _model = updatedModel;
@@ -840,7 +836,7 @@ class _ModelDetailScreenState extends State<ModelDetailScreen> {
 
   Future<void> _deleteStep(ProcessStep step) async {
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.deleteProcessStep(step.id);
       _loadProcessSteps();
       if (mounted) {

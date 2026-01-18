@@ -1,39 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/utils/haptic_feedback.dart';
 import '../../core/utils/page_transitions.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   final VoidCallback? onMenuPressed;
 
   const HomeScreen({super.key, this.onMenuPressed});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       body: RefreshIndicator(
-        onRefresh: () => context.read<AppProvider>().refreshDashboard(),
+        onRefresh: () => ref.read(dashboardNotifierProvider.notifier).refreshDashboard(),
         child: CustomScrollView(
           slivers: [
-            _buildAppBar(context),
+            _buildAppBar(context, ref),
             SliverPadding(
               padding: const EdgeInsets.all(AppSpacing.md),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  _buildWelcomeSection(context),
+                  _buildWelcomeSection(context, ref),
                   const SizedBox(height: AppSpacing.lg),
-                  _buildStatsGrid(context),
+                  _buildStatsGrid(context, ref),
                   const SizedBox(height: AppSpacing.xl),
-                  _buildFinanceSummary(context),
+                  _buildFinanceSummary(context, ref),
                   const SizedBox(height: AppSpacing.xl),
-                  _buildRecentOrders(context),
+                  _buildRecentOrders(context, ref),
                   const SizedBox(height: AppSpacing.xl),
                   _buildQuickActions(context),
                   const SizedBox(height: AppSpacing.lg),
@@ -46,7 +46,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+
     return SliverAppBar(
       expandedHeight: 120,
       floating: false,
@@ -93,21 +95,17 @@ class HomeScreen extends StatelessWidget {
       ],
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
-        title: Consumer<AppProvider>(
-          builder: (context, provider, _) {
-            return Text(
-              provider.user?.tenant?.name ?? 'AteliePro',
-              style: AppTypography.h4.copyWith(
-                color: context.textPrimaryColor,
-              ),
-            );
-          },
+        title: Text(
+          user?.tenant?.name ?? 'AteliePro',
+          style: AppTypography.h4.copyWith(
+            color: context.textPrimaryColor,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildWelcomeSection(BuildContext context) {
+  Widget _buildWelcomeSection(BuildContext context, WidgetRef ref) {
     final hour = DateTime.now().hour;
     String greeting;
     if (hour < 12) {
@@ -118,54 +116,52 @@ class HomeScreen extends StatelessWidget {
       greeting = context.l10n.goodEvening;
     }
 
-    return Consumer<AppProvider>(
-      builder: (context, provider, _) {
-        return Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            boxShadow: [AppShadows.lg],
+    final stats = ref.watch(dashboardStatsProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        boxShadow: [AppShadows.lg],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$greeting!',
+                  style: AppTypography.h3.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.youHaveOrdersInProgress(_formatOrdersCount(context, stats?.activeOrders ?? 0)),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$greeting!',
-                      style: AppTypography.h3.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      context.l10n.youHaveOrdersInProgress(_formatOrdersCount(context, provider.dashboardStats?.activeOrders ?? 0)),
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                ),
-                child: const Icon(
-                  Icons.trending_up,
-                  color: Colors.white,
-                  size: 32,
-                ),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: const Icon(
+              Icons.trending_up,
+              color: Colors.white,
+              size: 32,
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -173,81 +169,77 @@ class HomeScreen extends StatelessWidget {
     return context.l10n.ordersInProgress(count);
   }
 
-  Widget _buildStatsGrid(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, provider, _) {
-        final stats = provider.dashboardStats;
-        final isLoading = provider.isLoading;
+  Widget _buildStatsGrid(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(dashboardStatsProvider);
+    final isLoading = ref.watch(isDashboardLoadingProvider);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SectionHeader(title: context.l10n.indicators),
-            if (isLoading && stats == null)
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.2,
-                children: const [
-                  ShimmerStatCard(),
-                  ShimmerStatCard(),
-                  ShimmerStatCard(),
-                  ShimmerStatCard(),
-                ],
-              )
-            else
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.2,
-                children: [
-                  StaggeredListItem(
-                    index: 0,
-                    child: StatCard(
-                      title: context.l10n.activeOrders,
-                      value: '${stats?.activeOrders ?? 0}',
-                      icon: Icons.receipt_long,
-                      iconColor: AppColors.primary,
-                    ),
-                  ),
-                  StaggeredListItem(
-                    index: 1,
-                    child: StatCard(
-                      title: context.l10n.customers,
-                      value: '${stats?.totalClients ?? 0}',
-                      icon: Icons.people,
-                      iconColor: AppColors.secondary,
-                    ),
-                  ),
-                  StaggeredListItem(
-                    index: 2,
-                    child: StatCard(
-                      title: context.l10n.monthlyIncome,
-                      value: _formatCurrency(stats?.monthlyRevenue ?? 0),
-                      icon: Icons.account_balance_wallet,
-                      iconColor: AppColors.warning,
-                    ),
-                  ),
-                  StaggeredListItem(
-                    index: 3,
-                    child: StatCard(
-                      title: context.l10n.overdue,
-                      value: '${stats?.overdueOrders ?? 0}',
-                      icon: Icons.warning_amber,
-                      iconColor: AppColors.error,
-                    ),
-                  ),
-                ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(title: context.l10n.indicators),
+        if (isLoading && stats == null)
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: AppSpacing.md,
+            crossAxisSpacing: AppSpacing.md,
+            childAspectRatio: 1.2,
+            children: const [
+              ShimmerStatCard(),
+              ShimmerStatCard(),
+              ShimmerStatCard(),
+              ShimmerStatCard(),
+            ],
+          )
+        else
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: AppSpacing.md,
+            crossAxisSpacing: AppSpacing.md,
+            childAspectRatio: 1.2,
+            children: [
+              StaggeredListItem(
+                index: 0,
+                child: StatCard(
+                  title: context.l10n.activeOrders,
+                  value: '${stats?.activeOrders ?? 0}',
+                  icon: Icons.receipt_long,
+                  iconColor: AppColors.primary,
+                ),
               ),
-          ],
-        );
-      },
+              StaggeredListItem(
+                index: 1,
+                child: StatCard(
+                  title: context.l10n.customers,
+                  value: '${stats?.totalClients ?? 0}',
+                  icon: Icons.people,
+                  iconColor: AppColors.secondary,
+                ),
+              ),
+              StaggeredListItem(
+                index: 2,
+                child: StatCard(
+                  title: context.l10n.monthlyIncome,
+                  value: _formatCurrency(stats?.monthlyRevenue ?? 0),
+                  icon: Icons.account_balance_wallet,
+                  iconColor: AppColors.warning,
+                ),
+              ),
+              StaggeredListItem(
+                index: 3,
+                child: StatCard(
+                  title: context.l10n.overdue,
+                  value: '${stats?.overdueOrders ?? 0}',
+                  icon: Icons.warning_amber,
+                  iconColor: AppColors.error,
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 
@@ -260,168 +252,160 @@ class HomeScreen extends StatelessWidget {
     return '${amount.toStringAsFixed(0)} ₽';
   }
 
-  Widget _buildFinanceSummary(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, provider, _) {
-        final finance = provider.financeReport;
-        final isLoading = provider.isLoading;
+  Widget _buildFinanceSummary(BuildContext context, WidgetRef ref) {
+    final finance = ref.watch(financeReportProvider);
+    final isLoading = ref.watch(isDashboardLoadingProvider);
 
-        if (isLoading && finance == null) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    if (isLoading && finance == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeader(title: context.l10n.monthlyFinance),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: context.borderColor),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+        ],
+      );
+    }
+
+    final income = finance?.totalIncome ?? 0;
+    final expense = finance?.totalExpense ?? 0;
+    final profit = finance?.profit ?? 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(title: context.l10n.monthlyFinance),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: context.borderColor),
+            boxShadow: context.cardShadow,
+          ),
+          child: Column(
             children: [
-              SectionHeader(title: context.l10n.monthlyFinance),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: context.borderColor),
-                ),
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            ],
-          );
-        }
-
-        final income = finance?.totalIncome ?? 0;
-        final expense = finance?.totalExpense ?? 0;
-        final profit = finance?.profit ?? 0;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SectionHeader(title: context.l10n.monthlyFinance),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: context.borderColor),
-                boxShadow: context.cardShadow,
-              ),
-              child: Column(
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _FinanceItem(
-                          icon: Icons.arrow_upward,
-                          label: context.l10n.income,
-                          value: income,
-                          color: AppColors.success,
-                        ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 60,
-                        color: context.borderColor,
-                      ),
-                      Expanded(
-                        child: _FinanceItem(
-                          icon: Icons.arrow_downward,
-                          label: context.l10n.expenses,
-                          value: expense,
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: profit >= 0
-                          ? AppColors.success.withOpacity(0.1)
-                          : AppColors.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                  Expanded(
+                    child: _FinanceItem(
+                      icon: Icons.arrow_upward,
+                      label: context.l10n.income,
+                      value: income,
+                      color: AppColors.success,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          profit >= 0 ? Icons.trending_up : Icons.trending_down,
-                          color: profit >= 0 ? AppColors.success : AppColors.error,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${context.l10n.profit}: ',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                        Text(
-                          '${NumberFormat('#,###', 'ru').format(profit)} ₽',
-                          style: AppTypography.h4.copyWith(
-                            color: profit >= 0 ? AppColors.success : AppColors.error,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  ),
+                  Container(
+                    width: 1,
+                    height: 60,
+                    color: context.borderColor,
+                  ),
+                  Expanded(
+                    child: _FinanceItem(
+                      icon: Icons.arrow_downward,
+                      label: context.l10n.expenses,
+                      value: expense,
+                      color: AppColors.error,
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        );
-      },
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: profit >= 0
+                      ? AppColors.success.withOpacity(0.1)
+                      : AppColors.error.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      profit >= 0 ? Icons.trending_up : Icons.trending_down,
+                      color: profit >= 0 ? AppColors.success : AppColors.error,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${context.l10n.profit}: ',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                    Text(
+                      '${NumberFormat('#,###', 'ru').format(profit)} ₽',
+                      style: AppTypography.h4.copyWith(
+                        color: profit >= 0 ? AppColors.success : AppColors.error,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildRecentOrders(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, provider, _) {
-        final orders = provider.recentOrders;
-        final isLoading = provider.isLoading;
+  Widget _buildRecentOrders(BuildContext context, WidgetRef ref) {
+    final orders = ref.watch(recentOrdersProvider);
+    final isLoading = ref.watch(isDashboardLoadingProvider);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SectionHeader(
-              title: context.l10n.recentOrders,
-              actionLabel: context.l10n.all,
-              onAction: () {
-                // Navigate to orders tab
-              },
-            ),
-            if (isLoading && orders.isEmpty)
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 3,
-                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (_, __) => const ShimmerOrderCard(),
-              )
-            else if (orders.isEmpty)
-              AnimatedEmptyState(
-                icon: Icons.receipt_long_outlined,
-                title: context.l10n.noOrders,
-                subtitle: context.l10n.ordersWillAppearHere,
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: orders.length.clamp(0, 3),
-                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, index) {
-                  return StaggeredListItem(
-                    index: index,
-                    child: OrderCard(
-                      order: orders[index],
-                      onTap: () {
-                        // Navigate to order details
-                      },
-                    ),
-                  );
-                },
-              ),
-          ],
-        );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(
+          title: context.l10n.recentOrders,
+          actionLabel: context.l10n.all,
+          onAction: () {
+            // Navigate to orders tab
+          },
+        ),
+        if (isLoading && orders.isEmpty)
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+            itemBuilder: (_, __) => const ShimmerOrderCard(),
+          )
+        else if (orders.isEmpty)
+          AnimatedEmptyState(
+            icon: Icons.receipt_long_outlined,
+            title: context.l10n.noOrders,
+            subtitle: context.l10n.ordersWillAppearHere,
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: orders.length.clamp(0, 3),
+            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+            itemBuilder: (context, index) {
+              return StaggeredListItem(
+                index: index,
+                child: OrderCard(
+                  order: orders[index],
+                  onTap: () {
+                    // Navigate to order details
+                  },
+                ),
+              );
+            },
+          ),
+      ],
     );
   }
 

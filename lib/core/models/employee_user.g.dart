@@ -26,11 +26,12 @@ Map<String, dynamic> _$EmployeeUserToJson(EmployeeUser instance) =>
       'name': instance.name,
       'email': instance.email,
       'role': instance.role,
-      'phone': ?instance.phone,
+      if (instance.phone case final value?) 'phone': value,
       'tenantId': instance.tenantId,
       'tenantName': instance.tenantName,
       'isActive': instance.isActive,
-      'lastLoginAt': ?instance.lastLoginAt?.toIso8601String(),
+      if (instance.lastLoginAt?.toIso8601String() case final value?)
+        'lastLoginAt': value,
     };
 
 EmployeeAuthResponse _$EmployeeAuthResponseFromJson(
@@ -91,9 +92,9 @@ Map<String, dynamic> _$EmployeeAssignmentOrderToJson(
   'id': instance.id,
   'status': instance.status,
   'quantity': instance.quantity,
-  'dueDate': ?instance.dueDate?.toIso8601String(),
+  if (instance.dueDate?.toIso8601String() case final value?) 'dueDate': value,
   'modelName': instance.modelName,
-  'modelCategory': ?instance.modelCategory,
+  if (instance.modelCategory case final value?) 'modelCategory': value,
   'clientName': instance.clientName,
   'completedQuantity': instance.completedQuantity,
   'totalCompletedQuantity': instance.totalCompletedQuantity,
@@ -179,7 +180,7 @@ Map<String, dynamic> _$EmployeePayrollWorkLogToJson(
   'quantity': instance.quantity,
   'hours': instance.hours,
   'date': instance.date.toIso8601String(),
-  'modelName': ?instance.modelName,
+  if (instance.modelName case final value?) 'modelName': value,
 };
 
 CreateWorkLogRequest _$CreateWorkLogRequestFromJson(
@@ -196,7 +197,7 @@ Map<String, dynamic> _$CreateWorkLogRequestToJson(
 ) => <String, dynamic>{
   'assignmentId': instance.assignmentId,
   'quantity': instance.quantity,
-  'hours': ?instance.hours,
+  if (instance.hours case final value?) 'hours': value,
   'date': instance.date,
 };
 

@@ -33,7 +33,6 @@ import 'package:shared_preferences/shared_preferences.dart' as _i9;
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
-// ignore_for_file: invalid_use_of_internal_member
 
 class _FakeStorageService_0 extends _i1.SmartFake
     implements _i2.StorageService {
@@ -160,85 +159,267 @@ class _FakeSubscription_23 extends _i1.SmartFake implements _i6.Subscription {
     : super(parent, parentInvocation);
 }
 
-class _FakeOrderAssignment_24 extends _i1.SmartFake
-    implements _i6.OrderAssignment {
-  _FakeOrderAssignment_24(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeClientApiException_25 extends _i1.SmartFake
-    implements _i7.ClientApiException {
-  _FakeClientApiException_25(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeClientAuthResponse_26 extends _i1.SmartFake
-    implements _i6.ClientAuthResponse {
-  _FakeClientAuthResponse_26(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeClientUser_27 extends _i1.SmartFake implements _i6.ClientUser {
-  _FakeClientUser_27(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeTenantLink_28 extends _i1.SmartFake implements _i6.TenantLink {
-  _FakeTenantLink_28(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeClientOrdersResponse_29 extends _i1.SmartFake
-    implements _i6.ClientOrdersResponse {
-  _FakeClientOrdersResponse_29(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeClientOrder_30 extends _i1.SmartFake implements _i6.ClientOrder {
-  _FakeClientOrder_30(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeEmployeeApiException_31 extends _i1.SmartFake
-    implements _i8.EmployeeApiException {
-  _FakeEmployeeApiException_31(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeEmployeeAuthResponse_32 extends _i1.SmartFake
-    implements _i6.EmployeeAuthResponse {
-  _FakeEmployeeAuthResponse_32(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeEmployeeUser_33 extends _i1.SmartFake implements _i6.EmployeeUser {
-  _FakeEmployeeUser_33(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeEmployeeAssignmentsResponse_34 extends _i1.SmartFake
-    implements _i6.EmployeeAssignmentsResponse {
-  _FakeEmployeeAssignmentsResponse_34(
+class _FakeNotificationHistoryResponse_24 extends _i1.SmartFake
+    implements _i6.NotificationHistoryResponse {
+  _FakeNotificationHistoryResponse_24(
     Object parent,
     Invocation parentInvocation,
   ) : super(parent, parentInvocation);
 }
 
-class _FakeEmployeeWorkLog_35 extends _i1.SmartFake
+class _FakeNotificationPreferences_25 extends _i1.SmartFake
+    implements _i6.NotificationPreferences {
+  _FakeNotificationPreferences_25(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeOrderAssignment_26 extends _i1.SmartFake
+    implements _i6.OrderAssignment {
+  _FakeOrderAssignment_26(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeMaterialCategoriesResponse_27 extends _i1.SmartFake
+    implements _i6.MaterialCategoriesResponse {
+  _FakeMaterialCategoriesResponse_27(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeMaterialCategory_28 extends _i1.SmartFake
+    implements _i6.MaterialCategory {
+  _FakeMaterialCategory_28(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeMaterialsResponse_29 extends _i1.SmartFake
+    implements _i6.MaterialsResponse {
+  _FakeMaterialsResponse_29(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeMaterial_30 extends _i1.SmartFake implements _i6.Material {
+  _FakeMaterial_30(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeStockMovementsResponse_31 extends _i1.SmartFake
+    implements _i6.StockMovementsResponse {
+  _FakeStockMovementsResponse_31(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeLowStockResponse_32 extends _i1.SmartFake
+    implements _i6.LowStockResponse {
+  _FakeLowStockResponse_32(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeSuppliersResponse_33 extends _i1.SmartFake
+    implements _i6.SuppliersResponse {
+  _FakeSuppliersResponse_33(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeSupplier_34 extends _i1.SmartFake implements _i6.Supplier {
+  _FakeSupplier_34(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePurchasesResponse_35 extends _i1.SmartFake
+    implements _i6.PurchasesResponse {
+  _FakePurchasesResponse_35(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePurchase_36 extends _i1.SmartFake implements _i6.Purchase {
+  _FakePurchase_36(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeBom_37 extends _i1.SmartFake implements _i6.Bom {
+  _FakeBom_37(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeBomVersionsResponse_38 extends _i1.SmartFake
+    implements _i6.BomVersionsResponse {
+  _FakeBomVersionsResponse_38(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeOrderCost_39 extends _i1.SmartFake implements _i6.OrderCost {
+  _FakeOrderCost_39(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePriceSuggestion_40 extends _i1.SmartFake
+    implements _i6.PriceSuggestion {
+  _FakePriceSuggestion_40(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeProfitabilityReport_41 extends _i1.SmartFake
+    implements _i6.ProfitabilityReport {
+  _FakeProfitabilityReport_41(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeVarianceReport_42 extends _i1.SmartFake
+    implements _i6.VarianceReport {
+  _FakeVarianceReport_42(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePricingSettings_43 extends _i1.SmartFake
+    implements _i6.PricingSettings {
+  _FakePricingSettings_43(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePlansResponse_44 extends _i1.SmartFake implements _i6.PlansResponse {
+  _FakePlansResponse_44(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeProductionPlan_45 extends _i1.SmartFake
+    implements _i6.ProductionPlan {
+  _FakeProductionPlan_45(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeTasksResponse_46 extends _i1.SmartFake implements _i6.TasksResponse {
+  _FakeTasksResponse_46(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeProductionTask_47 extends _i1.SmartFake
+    implements _i6.ProductionTask {
+  _FakeProductionTask_47(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeWorkloadCalendar_48 extends _i1.SmartFake
+    implements _i6.WorkloadCalendar {
+  _FakeWorkloadCalendar_48(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeGanttData_49 extends _i1.SmartFake implements _i6.GanttData {
+  _FakeGanttData_49(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeTemplatesResponse_50 extends _i1.SmartFake
+    implements _i6.TemplatesResponse {
+  _FakeTemplatesResponse_50(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeQcTemplate_51 extends _i1.SmartFake implements _i6.QcTemplate {
+  _FakeQcTemplate_51(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeChecksResponse_52 extends _i1.SmartFake
+    implements _i6.ChecksResponse {
+  _FakeChecksResponse_52(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeQcCheck_53 extends _i1.SmartFake implements _i6.QcCheck {
+  _FakeQcCheck_53(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeDefectsResponse_54 extends _i1.SmartFake
+    implements _i6.DefectsResponse {
+  _FakeDefectsResponse_54(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeDefect_55 extends _i1.SmartFake implements _i6.Defect {
+  _FakeDefect_55(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeQcStats_56 extends _i1.SmartFake implements _i6.QcStats {
+  _FakeQcStats_56(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeClientApiException_57 extends _i1.SmartFake
+    implements _i7.ClientApiException {
+  _FakeClientApiException_57(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeClientAuthResponse_58 extends _i1.SmartFake
+    implements _i6.ClientAuthResponse {
+  _FakeClientAuthResponse_58(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeClientUser_59 extends _i1.SmartFake implements _i6.ClientUser {
+  _FakeClientUser_59(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeTenantLink_60 extends _i1.SmartFake implements _i6.TenantLink {
+  _FakeTenantLink_60(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeClientOrdersResponse_61 extends _i1.SmartFake
+    implements _i6.ClientOrdersResponse {
+  _FakeClientOrdersResponse_61(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeClientOrder_62 extends _i1.SmartFake implements _i6.ClientOrder {
+  _FakeClientOrder_62(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeEmployeeApiException_63 extends _i1.SmartFake
+    implements _i8.EmployeeApiException {
+  _FakeEmployeeApiException_63(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeEmployeeAuthResponse_64 extends _i1.SmartFake
+    implements _i6.EmployeeAuthResponse {
+  _FakeEmployeeAuthResponse_64(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeEmployeeUser_65 extends _i1.SmartFake implements _i6.EmployeeUser {
+  _FakeEmployeeUser_65(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeEmployeeAssignmentsResponse_66 extends _i1.SmartFake
+    implements _i6.EmployeeAssignmentsResponse {
+  _FakeEmployeeAssignmentsResponse_66(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(parent, parentInvocation);
+}
+
+class _FakeEmployeeWorkLog_67 extends _i1.SmartFake
     implements _i6.EmployeeWorkLog {
-  _FakeEmployeeWorkLog_35(Object parent, Invocation parentInvocation)
+  _FakeEmployeeWorkLog_67(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeTokenHandler_36<T> extends _i1.SmartFake
+class _FakeTokenHandler_68<T> extends _i1.SmartFake
     implements _i2.TokenHandler<T> {
-  _FakeTokenHandler_36(Object parent, Invocation parentInvocation)
+  _FakeTokenHandler_68(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSharedPreferences_37 extends _i1.SmartFake
+class _FakeSharedPreferences_69 extends _i1.SmartFake
     implements _i9.SharedPreferences {
-  _FakeSharedPreferences_37(Object parent, Invocation parentInvocation)
+  _FakeSharedPreferences_69(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -1722,6 +1903,83 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
           as _i5.Future<void>);
 
   @override
+  _i5.Future<_i6.NotificationHistoryResponse> getNotificationHistory({
+    int? page = 1,
+    int? limit = 20,
+    bool? unreadOnly = false,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getNotificationHistory, [], {
+              #page: page,
+              #limit: limit,
+              #unreadOnly: unreadOnly,
+            }),
+            returnValue: _i5.Future<_i6.NotificationHistoryResponse>.value(
+              _FakeNotificationHistoryResponse_24(
+                this,
+                Invocation.method(#getNotificationHistory, [], {
+                  #page: page,
+                  #limit: limit,
+                  #unreadOnly: unreadOnly,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.NotificationHistoryResponse>);
+
+  @override
+  _i5.Future<int> getUnreadNotificationCount() =>
+      (super.noSuchMethod(
+            Invocation.method(#getUnreadNotificationCount, []),
+            returnValue: _i5.Future<int>.value(0),
+          )
+          as _i5.Future<int>);
+
+  @override
+  _i5.Future<void> markNotificationAsRead(String? notificationId) =>
+      (super.noSuchMethod(
+            Invocation.method(#markNotificationAsRead, [notificationId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> markAllNotificationsAsRead() =>
+      (super.noSuchMethod(
+            Invocation.method(#markAllNotificationsAsRead, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.NotificationPreferences> getNotificationPreferences() =>
+      (super.noSuchMethod(
+            Invocation.method(#getNotificationPreferences, []),
+            returnValue: _i5.Future<_i6.NotificationPreferences>.value(
+              _FakeNotificationPreferences_25(
+                this,
+                Invocation.method(#getNotificationPreferences, []),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.NotificationPreferences>);
+
+  @override
+  _i5.Future<void> updateNotificationPreferences({
+    required bool? pushEnabled,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateNotificationPreferences, [], {
+              #pushEnabled: pushEnabled,
+            }),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<List<_i6.OrderAssignment>> getOrderAssignments(String? orderId) =>
       (super.noSuchMethod(
             Invocation.method(#getOrderAssignments, [orderId]),
@@ -1744,7 +2002,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #employeeId: employeeId,
             }),
             returnValue: _i5.Future<_i6.OrderAssignment>.value(
-              _FakeOrderAssignment_24(
+              _FakeOrderAssignment_26(
                 this,
                 Invocation.method(#createOrderAssignment, [], {
                   #orderId: orderId,
@@ -1767,6 +2025,1908 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
           as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.MaterialCategoriesResponse> getMaterialCategories() =>
+      (super.noSuchMethod(
+            Invocation.method(#getMaterialCategories, []),
+            returnValue: _i5.Future<_i6.MaterialCategoriesResponse>.value(
+              _FakeMaterialCategoriesResponse_27(
+                this,
+                Invocation.method(#getMaterialCategories, []),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.MaterialCategoriesResponse>);
+
+  @override
+  _i5.Future<_i6.MaterialCategory> getMaterialCategory(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMaterialCategory, [id]),
+            returnValue: _i5.Future<_i6.MaterialCategory>.value(
+              _FakeMaterialCategory_28(
+                this,
+                Invocation.method(#getMaterialCategory, [id]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.MaterialCategory>);
+
+  @override
+  _i5.Future<_i6.MaterialCategory> createMaterialCategory({
+    required String? name,
+    String? description,
+    String? parentId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createMaterialCategory, [], {
+              #name: name,
+              #description: description,
+              #parentId: parentId,
+            }),
+            returnValue: _i5.Future<_i6.MaterialCategory>.value(
+              _FakeMaterialCategory_28(
+                this,
+                Invocation.method(#createMaterialCategory, [], {
+                  #name: name,
+                  #description: description,
+                  #parentId: parentId,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.MaterialCategory>);
+
+  @override
+  _i5.Future<_i6.MaterialCategory> updateMaterialCategory(
+    String? id, {
+    String? name,
+    String? description,
+    String? parentId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateMaterialCategory,
+              [id],
+              {#name: name, #description: description, #parentId: parentId},
+            ),
+            returnValue: _i5.Future<_i6.MaterialCategory>.value(
+              _FakeMaterialCategory_28(
+                this,
+                Invocation.method(
+                  #updateMaterialCategory,
+                  [id],
+                  {#name: name, #description: description, #parentId: parentId},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.MaterialCategory>);
+
+  @override
+  _i5.Future<void> deleteMaterialCategory(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteMaterialCategory, [id]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.MaterialsResponse> getMaterials({
+    int? page = 1,
+    int? limit = 20,
+    String? search,
+    String? categoryId,
+    String? supplierId,
+    bool? lowStock,
+    bool? isActive,
+    String? sortBy = 'name',
+    String? sortOrder = 'asc',
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMaterials, [], {
+              #page: page,
+              #limit: limit,
+              #search: search,
+              #categoryId: categoryId,
+              #supplierId: supplierId,
+              #lowStock: lowStock,
+              #isActive: isActive,
+              #sortBy: sortBy,
+              #sortOrder: sortOrder,
+            }),
+            returnValue: _i5.Future<_i6.MaterialsResponse>.value(
+              _FakeMaterialsResponse_29(
+                this,
+                Invocation.method(#getMaterials, [], {
+                  #page: page,
+                  #limit: limit,
+                  #search: search,
+                  #categoryId: categoryId,
+                  #supplierId: supplierId,
+                  #lowStock: lowStock,
+                  #isActive: isActive,
+                  #sortBy: sortBy,
+                  #sortOrder: sortOrder,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.MaterialsResponse>);
+
+  @override
+  _i5.Future<_i6.Material> getMaterial(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMaterial, [id]),
+            returnValue: _i5.Future<_i6.Material>.value(
+              _FakeMaterial_30(this, Invocation.method(#getMaterial, [id])),
+            ),
+          )
+          as _i5.Future<_i6.Material>);
+
+  @override
+  _i5.Future<_i6.Material> createMaterial({
+    required String? sku,
+    required String? name,
+    String? description,
+    String? categoryId,
+    String? supplierId,
+    String? unit = 'METER',
+    double? quantity = 0.0,
+    double? minStockLevel,
+    double? costPrice,
+    double? sellPrice,
+    String? color,
+    double? width,
+    String? composition,
+    String? barcode,
+    String? imageUrl,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createMaterial, [], {
+              #sku: sku,
+              #name: name,
+              #description: description,
+              #categoryId: categoryId,
+              #supplierId: supplierId,
+              #unit: unit,
+              #quantity: quantity,
+              #minStockLevel: minStockLevel,
+              #costPrice: costPrice,
+              #sellPrice: sellPrice,
+              #color: color,
+              #width: width,
+              #composition: composition,
+              #barcode: barcode,
+              #imageUrl: imageUrl,
+            }),
+            returnValue: _i5.Future<_i6.Material>.value(
+              _FakeMaterial_30(
+                this,
+                Invocation.method(#createMaterial, [], {
+                  #sku: sku,
+                  #name: name,
+                  #description: description,
+                  #categoryId: categoryId,
+                  #supplierId: supplierId,
+                  #unit: unit,
+                  #quantity: quantity,
+                  #minStockLevel: minStockLevel,
+                  #costPrice: costPrice,
+                  #sellPrice: sellPrice,
+                  #color: color,
+                  #width: width,
+                  #composition: composition,
+                  #barcode: barcode,
+                  #imageUrl: imageUrl,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Material>);
+
+  @override
+  _i5.Future<_i6.Material> updateMaterial(
+    String? id, {
+    String? sku,
+    String? name,
+    String? description,
+    String? categoryId,
+    String? supplierId,
+    String? unit,
+    double? minStockLevel,
+    double? costPrice,
+    double? sellPrice,
+    String? color,
+    double? width,
+    String? composition,
+    String? barcode,
+    String? imageUrl,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateMaterial,
+              [id],
+              {
+                #sku: sku,
+                #name: name,
+                #description: description,
+                #categoryId: categoryId,
+                #supplierId: supplierId,
+                #unit: unit,
+                #minStockLevel: minStockLevel,
+                #costPrice: costPrice,
+                #sellPrice: sellPrice,
+                #color: color,
+                #width: width,
+                #composition: composition,
+                #barcode: barcode,
+                #imageUrl: imageUrl,
+              },
+            ),
+            returnValue: _i5.Future<_i6.Material>.value(
+              _FakeMaterial_30(
+                this,
+                Invocation.method(
+                  #updateMaterial,
+                  [id],
+                  {
+                    #sku: sku,
+                    #name: name,
+                    #description: description,
+                    #categoryId: categoryId,
+                    #supplierId: supplierId,
+                    #unit: unit,
+                    #minStockLevel: minStockLevel,
+                    #costPrice: costPrice,
+                    #sellPrice: sellPrice,
+                    #color: color,
+                    #width: width,
+                    #composition: composition,
+                    #barcode: barcode,
+                    #imageUrl: imageUrl,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Material>);
+
+  @override
+  _i5.Future<void> deleteMaterial(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteMaterial, [id]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.StockMovementsResponse> getMaterialMovements(
+    String? id, {
+    int? page = 1,
+    int? limit = 20,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getMaterialMovements,
+              [id],
+              {#page: page, #limit: limit},
+            ),
+            returnValue: _i5.Future<_i6.StockMovementsResponse>.value(
+              _FakeStockMovementsResponse_31(
+                this,
+                Invocation.method(
+                  #getMaterialMovements,
+                  [id],
+                  {#page: page, #limit: limit},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.StockMovementsResponse>);
+
+  @override
+  _i5.Future<_i6.Material> adjustStock(
+    String? id, {
+    required double? quantity,
+    required String? reason,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #adjustStock,
+              [id],
+              {#quantity: quantity, #reason: reason},
+            ),
+            returnValue: _i5.Future<_i6.Material>.value(
+              _FakeMaterial_30(
+                this,
+                Invocation.method(
+                  #adjustStock,
+                  [id],
+                  {#quantity: quantity, #reason: reason},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Material>);
+
+  @override
+  _i5.Future<_i6.Material> reserveMaterial(
+    String? id, {
+    required double? quantity,
+    String? orderId,
+    String? reason,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #reserveMaterial,
+              [id],
+              {#quantity: quantity, #orderId: orderId, #reason: reason},
+            ),
+            returnValue: _i5.Future<_i6.Material>.value(
+              _FakeMaterial_30(
+                this,
+                Invocation.method(
+                  #reserveMaterial,
+                  [id],
+                  {#quantity: quantity, #orderId: orderId, #reason: reason},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Material>);
+
+  @override
+  _i5.Future<_i6.LowStockResponse> getLowStockMaterials() =>
+      (super.noSuchMethod(
+            Invocation.method(#getLowStockMaterials, []),
+            returnValue: _i5.Future<_i6.LowStockResponse>.value(
+              _FakeLowStockResponse_32(
+                this,
+                Invocation.method(#getLowStockMaterials, []),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.LowStockResponse>);
+
+  @override
+  _i5.Future<_i6.Material?> getMaterialByBarcode(String? barcode) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMaterialByBarcode, [barcode]),
+            returnValue: _i5.Future<_i6.Material?>.value(),
+          )
+          as _i5.Future<_i6.Material?>);
+
+  @override
+  _i5.Future<_i6.StockMovementsResponse> getStockMovements({
+    int? page = 1,
+    int? limit = 20,
+    String? materialId,
+    String? type,
+    String? orderId,
+    String? dateFrom,
+    String? dateTo,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getStockMovements, [], {
+              #page: page,
+              #limit: limit,
+              #materialId: materialId,
+              #type: type,
+              #orderId: orderId,
+              #dateFrom: dateFrom,
+              #dateTo: dateTo,
+            }),
+            returnValue: _i5.Future<_i6.StockMovementsResponse>.value(
+              _FakeStockMovementsResponse_31(
+                this,
+                Invocation.method(#getStockMovements, [], {
+                  #page: page,
+                  #limit: limit,
+                  #materialId: materialId,
+                  #type: type,
+                  #orderId: orderId,
+                  #dateFrom: dateFrom,
+                  #dateTo: dateTo,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.StockMovementsResponse>);
+
+  @override
+  _i5.Future<Map<String, dynamic>> consumeMaterials({
+    required String? orderId,
+    required List<Map<String, dynamic>>? items,
+    String? reason,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#consumeMaterials, [], {
+              #orderId: orderId,
+              #items: items,
+              #reason: reason,
+            }),
+            returnValue: _i5.Future<Map<String, dynamic>>.value(
+              <String, dynamic>{},
+            ),
+          )
+          as _i5.Future<Map<String, dynamic>>);
+
+  @override
+  _i5.Future<_i6.SuppliersResponse> getSuppliers({
+    int? page = 1,
+    int? limit = 20,
+    String? search,
+    bool? isActive,
+    String? sortBy = 'name',
+    String? sortOrder = 'asc',
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getSuppliers, [], {
+              #page: page,
+              #limit: limit,
+              #search: search,
+              #isActive: isActive,
+              #sortBy: sortBy,
+              #sortOrder: sortOrder,
+            }),
+            returnValue: _i5.Future<_i6.SuppliersResponse>.value(
+              _FakeSuppliersResponse_33(
+                this,
+                Invocation.method(#getSuppliers, [], {
+                  #page: page,
+                  #limit: limit,
+                  #search: search,
+                  #isActive: isActive,
+                  #sortBy: sortBy,
+                  #sortOrder: sortOrder,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.SuppliersResponse>);
+
+  @override
+  _i5.Future<_i6.Supplier> getSupplier(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getSupplier, [id]),
+            returnValue: _i5.Future<_i6.Supplier>.value(
+              _FakeSupplier_34(this, Invocation.method(#getSupplier, [id])),
+            ),
+          )
+          as _i5.Future<_i6.Supplier>);
+
+  @override
+  _i5.Future<_i6.Supplier> createSupplier({
+    required String? name,
+    String? contactName,
+    String? phone,
+    String? email,
+    String? address,
+    String? inn,
+    String? notes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createSupplier, [], {
+              #name: name,
+              #contactName: contactName,
+              #phone: phone,
+              #email: email,
+              #address: address,
+              #inn: inn,
+              #notes: notes,
+            }),
+            returnValue: _i5.Future<_i6.Supplier>.value(
+              _FakeSupplier_34(
+                this,
+                Invocation.method(#createSupplier, [], {
+                  #name: name,
+                  #contactName: contactName,
+                  #phone: phone,
+                  #email: email,
+                  #address: address,
+                  #inn: inn,
+                  #notes: notes,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Supplier>);
+
+  @override
+  _i5.Future<_i6.Supplier> updateSupplier(
+    String? id, {
+    String? name,
+    String? contactName,
+    String? phone,
+    String? email,
+    String? address,
+    String? inn,
+    String? notes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateSupplier,
+              [id],
+              {
+                #name: name,
+                #contactName: contactName,
+                #phone: phone,
+                #email: email,
+                #address: address,
+                #inn: inn,
+                #notes: notes,
+              },
+            ),
+            returnValue: _i5.Future<_i6.Supplier>.value(
+              _FakeSupplier_34(
+                this,
+                Invocation.method(
+                  #updateSupplier,
+                  [id],
+                  {
+                    #name: name,
+                    #contactName: contactName,
+                    #phone: phone,
+                    #email: email,
+                    #address: address,
+                    #inn: inn,
+                    #notes: notes,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Supplier>);
+
+  @override
+  _i5.Future<void> deleteSupplier(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteSupplier, [id]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.PurchasesResponse> getPurchases({
+    int? page = 1,
+    int? limit = 20,
+    String? status,
+    String? supplierId,
+    String? dateFrom,
+    String? dateTo,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPurchases, [], {
+              #page: page,
+              #limit: limit,
+              #status: status,
+              #supplierId: supplierId,
+              #dateFrom: dateFrom,
+              #dateTo: dateTo,
+            }),
+            returnValue: _i5.Future<_i6.PurchasesResponse>.value(
+              _FakePurchasesResponse_35(
+                this,
+                Invocation.method(#getPurchases, [], {
+                  #page: page,
+                  #limit: limit,
+                  #status: status,
+                  #supplierId: supplierId,
+                  #dateFrom: dateFrom,
+                  #dateTo: dateTo,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.PurchasesResponse>);
+
+  @override
+  _i5.Future<_i6.Purchase> getPurchase(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPurchase, [id]),
+            returnValue: _i5.Future<_i6.Purchase>.value(
+              _FakePurchase_36(this, Invocation.method(#getPurchase, [id])),
+            ),
+          )
+          as _i5.Future<_i6.Purchase>);
+
+  @override
+  _i5.Future<_i6.Purchase> createPurchase({
+    String? supplierId,
+    String? orderDate,
+    String? expectedDate,
+    String? notes,
+    required List<Map<String, dynamic>>? items,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createPurchase, [], {
+              #supplierId: supplierId,
+              #orderDate: orderDate,
+              #expectedDate: expectedDate,
+              #notes: notes,
+              #items: items,
+            }),
+            returnValue: _i5.Future<_i6.Purchase>.value(
+              _FakePurchase_36(
+                this,
+                Invocation.method(#createPurchase, [], {
+                  #supplierId: supplierId,
+                  #orderDate: orderDate,
+                  #expectedDate: expectedDate,
+                  #notes: notes,
+                  #items: items,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Purchase>);
+
+  @override
+  _i5.Future<_i6.Purchase> updatePurchase(
+    String? id, {
+    String? supplierId,
+    String? orderDate,
+    String? expectedDate,
+    String? notes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updatePurchase,
+              [id],
+              {
+                #supplierId: supplierId,
+                #orderDate: orderDate,
+                #expectedDate: expectedDate,
+                #notes: notes,
+              },
+            ),
+            returnValue: _i5.Future<_i6.Purchase>.value(
+              _FakePurchase_36(
+                this,
+                Invocation.method(
+                  #updatePurchase,
+                  [id],
+                  {
+                    #supplierId: supplierId,
+                    #orderDate: orderDate,
+                    #expectedDate: expectedDate,
+                    #notes: notes,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Purchase>);
+
+  @override
+  _i5.Future<void> deletePurchase(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deletePurchase, [id]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.Purchase> changePurchaseStatus(
+    String? id, {
+    required String? status,
+    String? notes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #changePurchaseStatus,
+              [id],
+              {#status: status, #notes: notes},
+            ),
+            returnValue: _i5.Future<_i6.Purchase>.value(
+              _FakePurchase_36(
+                this,
+                Invocation.method(
+                  #changePurchaseStatus,
+                  [id],
+                  {#status: status, #notes: notes},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Purchase>);
+
+  @override
+  _i5.Future<Map<String, dynamic>> receivePurchaseItems(
+    String? id, {
+    required List<Map<String, dynamic>>? items,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#receivePurchaseItems, [id], {#items: items}),
+            returnValue: _i5.Future<Map<String, dynamic>>.value(
+              <String, dynamic>{},
+            ),
+          )
+          as _i5.Future<Map<String, dynamic>>);
+
+  @override
+  _i5.Future<_i6.Bom> createBom({
+    required String? modelId,
+    required List<Map<String, dynamic>>? items,
+    required List<Map<String, dynamic>>? operations,
+    String? notes,
+    bool? isActive = true,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createBom, [], {
+              #modelId: modelId,
+              #items: items,
+              #operations: operations,
+              #notes: notes,
+              #isActive: isActive,
+            }),
+            returnValue: _i5.Future<_i6.Bom>.value(
+              _FakeBom_37(
+                this,
+                Invocation.method(#createBom, [], {
+                  #modelId: modelId,
+                  #items: items,
+                  #operations: operations,
+                  #notes: notes,
+                  #isActive: isActive,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Bom>);
+
+  @override
+  _i5.Future<_i6.Bom?> getModelBom(String? modelId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getModelBom, [modelId]),
+            returnValue: _i5.Future<_i6.Bom?>.value(),
+          )
+          as _i5.Future<_i6.Bom?>);
+
+  @override
+  _i5.Future<_i6.BomVersionsResponse> getBomVersions(String? modelId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getBomVersions, [modelId]),
+            returnValue: _i5.Future<_i6.BomVersionsResponse>.value(
+              _FakeBomVersionsResponse_38(
+                this,
+                Invocation.method(#getBomVersions, [modelId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.BomVersionsResponse>);
+
+  @override
+  _i5.Future<_i6.Bom> recalculateModelBom(String? modelId) =>
+      (super.noSuchMethod(
+            Invocation.method(#recalculateModelBom, [modelId]),
+            returnValue: _i5.Future<_i6.Bom>.value(
+              _FakeBom_37(
+                this,
+                Invocation.method(#recalculateModelBom, [modelId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Bom>);
+
+  @override
+  _i5.Future<_i6.Bom> getBom(String? bomId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getBom, [bomId]),
+            returnValue: _i5.Future<_i6.Bom>.value(
+              _FakeBom_37(this, Invocation.method(#getBom, [bomId])),
+            ),
+          )
+          as _i5.Future<_i6.Bom>);
+
+  @override
+  _i5.Future<_i6.Bom> updateBom(
+    String? bomId, {
+    List<Map<String, dynamic>>? items,
+    List<Map<String, dynamic>>? operations,
+    String? notes,
+    bool? isActive,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateBom,
+              [bomId],
+              {
+                #items: items,
+                #operations: operations,
+                #notes: notes,
+                #isActive: isActive,
+              },
+            ),
+            returnValue: _i5.Future<_i6.Bom>.value(
+              _FakeBom_37(
+                this,
+                Invocation.method(
+                  #updateBom,
+                  [bomId],
+                  {
+                    #items: items,
+                    #operations: operations,
+                    #notes: notes,
+                    #isActive: isActive,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Bom>);
+
+  @override
+  _i5.Future<void> deleteBom(String? bomId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteBom, [bomId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.Bom> recalculateBom(String? bomId) =>
+      (super.noSuchMethod(
+            Invocation.method(#recalculateBom, [bomId]),
+            returnValue: _i5.Future<_i6.Bom>.value(
+              _FakeBom_37(this, Invocation.method(#recalculateBom, [bomId])),
+            ),
+          )
+          as _i5.Future<_i6.Bom>);
+
+  @override
+  _i5.Future<_i6.OrderCost> getOrderCost(String? orderId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getOrderCost, [orderId]),
+            returnValue: _i5.Future<_i6.OrderCost>.value(
+              _FakeOrderCost_39(
+                this,
+                Invocation.method(#getOrderCost, [orderId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.OrderCost>);
+
+  @override
+  _i5.Future<_i6.OrderCost> recalculateOrderCost(String? orderId) =>
+      (super.noSuchMethod(
+            Invocation.method(#recalculateOrderCost, [orderId]),
+            returnValue: _i5.Future<_i6.OrderCost>.value(
+              _FakeOrderCost_39(
+                this,
+                Invocation.method(#recalculateOrderCost, [orderId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.OrderCost>);
+
+  @override
+  _i5.Future<_i6.PriceSuggestion> getPriceSuggestion({
+    required String? modelId,
+    required int? quantity,
+    double? marginPct,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPriceSuggestion, [], {
+              #modelId: modelId,
+              #quantity: quantity,
+              #marginPct: marginPct,
+            }),
+            returnValue: _i5.Future<_i6.PriceSuggestion>.value(
+              _FakePriceSuggestion_40(
+                this,
+                Invocation.method(#getPriceSuggestion, [], {
+                  #modelId: modelId,
+                  #quantity: quantity,
+                  #marginPct: marginPct,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.PriceSuggestion>);
+
+  @override
+  _i5.Future<_i6.ProfitabilityReport> getProfitabilityReport({
+    String? period,
+    String? startDate,
+    String? endDate,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getProfitabilityReport, [], {
+              #period: period,
+              #startDate: startDate,
+              #endDate: endDate,
+            }),
+            returnValue: _i5.Future<_i6.ProfitabilityReport>.value(
+              _FakeProfitabilityReport_41(
+                this,
+                Invocation.method(#getProfitabilityReport, [], {
+                  #period: period,
+                  #startDate: startDate,
+                  #endDate: endDate,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProfitabilityReport>);
+
+  @override
+  _i5.Future<_i6.VarianceReport> getVarianceReport({
+    String? period,
+    String? startDate,
+    String? endDate,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getVarianceReport, [], {
+              #period: period,
+              #startDate: startDate,
+              #endDate: endDate,
+            }),
+            returnValue: _i5.Future<_i6.VarianceReport>.value(
+              _FakeVarianceReport_42(
+                this,
+                Invocation.method(#getVarianceReport, [], {
+                  #period: period,
+                  #startDate: startDate,
+                  #endDate: endDate,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.VarianceReport>);
+
+  @override
+  _i5.Future<_i6.PricingSettings> getPricingSettings() =>
+      (super.noSuchMethod(
+            Invocation.method(#getPricingSettings, []),
+            returnValue: _i5.Future<_i6.PricingSettings>.value(
+              _FakePricingSettings_43(
+                this,
+                Invocation.method(#getPricingSettings, []),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.PricingSettings>);
+
+  @override
+  _i5.Future<_i6.PricingSettings> updatePricingSettings({
+    double? defaultHourlyRate,
+    double? overheadPct,
+    double? defaultMarginPct,
+    Map<String, double>? roleRates,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#updatePricingSettings, [], {
+              #defaultHourlyRate: defaultHourlyRate,
+              #overheadPct: overheadPct,
+              #defaultMarginPct: defaultMarginPct,
+              #roleRates: roleRates,
+            }),
+            returnValue: _i5.Future<_i6.PricingSettings>.value(
+              _FakePricingSettings_43(
+                this,
+                Invocation.method(#updatePricingSettings, [], {
+                  #defaultHourlyRate: defaultHourlyRate,
+                  #overheadPct: overheadPct,
+                  #defaultMarginPct: defaultMarginPct,
+                  #roleRates: roleRates,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.PricingSettings>);
+
+  @override
+  _i5.Future<_i6.PlansResponse> getPlans({
+    int? page = 1,
+    int? limit = 20,
+    String? status,
+    String? orderId,
+    String? startFrom,
+    String? startTo,
+    String? sortBy,
+    String? sortOrder,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPlans, [], {
+              #page: page,
+              #limit: limit,
+              #status: status,
+              #orderId: orderId,
+              #startFrom: startFrom,
+              #startTo: startTo,
+              #sortBy: sortBy,
+              #sortOrder: sortOrder,
+            }),
+            returnValue: _i5.Future<_i6.PlansResponse>.value(
+              _FakePlansResponse_44(
+                this,
+                Invocation.method(#getPlans, [], {
+                  #page: page,
+                  #limit: limit,
+                  #status: status,
+                  #orderId: orderId,
+                  #startFrom: startFrom,
+                  #startTo: startTo,
+                  #sortBy: sortBy,
+                  #sortOrder: sortOrder,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.PlansResponse>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> getPlan(String? planId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPlan, [planId]),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#getPlan, [planId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> createPlan({
+    required String? orderId,
+    required List<Map<String, dynamic>>? tasks,
+    String? plannedStart,
+    String? plannedEnd,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createPlan, [], {
+              #orderId: orderId,
+              #tasks: tasks,
+              #plannedStart: plannedStart,
+              #plannedEnd: plannedEnd,
+            }),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#createPlan, [], {
+                  #orderId: orderId,
+                  #tasks: tasks,
+                  #plannedStart: plannedStart,
+                  #plannedEnd: plannedEnd,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> scheduleOrder({
+    required String? orderId,
+    String? priority,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#scheduleOrder, [], {
+              #orderId: orderId,
+              #priority: priority,
+            }),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#scheduleOrder, [], {
+                  #orderId: orderId,
+                  #priority: priority,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> updatePlan(
+    String? planId, {
+    String? status,
+    String? plannedStart,
+    String? plannedEnd,
+    List<Map<String, dynamic>>? tasks,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updatePlan,
+              [planId],
+              {
+                #status: status,
+                #plannedStart: plannedStart,
+                #plannedEnd: plannedEnd,
+                #tasks: tasks,
+              },
+            ),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(
+                  #updatePlan,
+                  [planId],
+                  {
+                    #status: status,
+                    #plannedStart: plannedStart,
+                    #plannedEnd: plannedEnd,
+                    #tasks: tasks,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<void> deletePlan(String? planId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deletePlan, [planId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> reschedulePlan(String? planId) =>
+      (super.noSuchMethod(
+            Invocation.method(#reschedulePlan, [planId]),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#reschedulePlan, [planId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> updatePlanStatus(
+    String? planId,
+    String? status,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updatePlanStatus, [planId, status]),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#updatePlanStatus, [planId, status]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> startPlan(String? planId) =>
+      (super.noSuchMethod(
+            Invocation.method(#startPlan, [planId]),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#startPlan, [planId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.ProductionPlan> completePlan(String? planId) =>
+      (super.noSuchMethod(
+            Invocation.method(#completePlan, [planId]),
+            returnValue: _i5.Future<_i6.ProductionPlan>.value(
+              _FakeProductionPlan_45(
+                this,
+                Invocation.method(#completePlan, [planId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionPlan>);
+
+  @override
+  _i5.Future<_i6.TasksResponse> getTasks({
+    int? page = 1,
+    int? limit = 20,
+    String? status,
+    String? assigneeId,
+    String? planId,
+    String? date,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getTasks, [], {
+              #page: page,
+              #limit: limit,
+              #status: status,
+              #assigneeId: assigneeId,
+              #planId: planId,
+              #date: date,
+            }),
+            returnValue: _i5.Future<_i6.TasksResponse>.value(
+              _FakeTasksResponse_46(
+                this,
+                Invocation.method(#getTasks, [], {
+                  #page: page,
+                  #limit: limit,
+                  #status: status,
+                  #assigneeId: assigneeId,
+                  #planId: planId,
+                  #date: date,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.TasksResponse>);
+
+  @override
+  _i5.Future<_i6.TasksResponse> getMyTasks({String? date}) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMyTasks, [], {#date: date}),
+            returnValue: _i5.Future<_i6.TasksResponse>.value(
+              _FakeTasksResponse_46(
+                this,
+                Invocation.method(#getMyTasks, [], {#date: date}),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.TasksResponse>);
+
+  @override
+  _i5.Future<_i6.ProductionTask> assignTask(
+    String? taskId,
+    String? assigneeId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#assignTask, [taskId, assigneeId]),
+            returnValue: _i5.Future<_i6.ProductionTask>.value(
+              _FakeProductionTask_47(
+                this,
+                Invocation.method(#assignTask, [taskId, assigneeId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionTask>);
+
+  @override
+  _i5.Future<_i6.ProductionTask> startTask(String? taskId) =>
+      (super.noSuchMethod(
+            Invocation.method(#startTask, [taskId]),
+            returnValue: _i5.Future<_i6.ProductionTask>.value(
+              _FakeProductionTask_47(
+                this,
+                Invocation.method(#startTask, [taskId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionTask>);
+
+  @override
+  _i5.Future<_i6.ProductionTask> completeTask(
+    String? taskId, {
+    double? actualHours,
+    String? notes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #completeTask,
+              [taskId],
+              {#actualHours: actualHours, #notes: notes},
+            ),
+            returnValue: _i5.Future<_i6.ProductionTask>.value(
+              _FakeProductionTask_47(
+                this,
+                Invocation.method(
+                  #completeTask,
+                  [taskId],
+                  {#actualHours: actualHours, #notes: notes},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ProductionTask>);
+
+  @override
+  _i5.Future<_i6.WorkloadCalendar> getProductionWorkloadCalendar({
+    int? days = 14,
+    String? employeeId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getProductionWorkloadCalendar, [], {
+              #days: days,
+              #employeeId: employeeId,
+            }),
+            returnValue: _i5.Future<_i6.WorkloadCalendar>.value(
+              _FakeWorkloadCalendar_48(
+                this,
+                Invocation.method(#getProductionWorkloadCalendar, [], {
+                  #days: days,
+                  #employeeId: employeeId,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.WorkloadCalendar>);
+
+  @override
+  _i5.Future<_i6.GanttData> getGanttData({
+    String? startDate,
+    String? endDate,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getGanttData, [], {
+              #startDate: startDate,
+              #endDate: endDate,
+            }),
+            returnValue: _i5.Future<_i6.GanttData>.value(
+              _FakeGanttData_49(
+                this,
+                Invocation.method(#getGanttData, [], {
+                  #startDate: startDate,
+                  #endDate: endDate,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.GanttData>);
+
+  @override
+  _i5.Future<_i6.TemplatesResponse> getQcTemplates({
+    int? page = 1,
+    int? limit = 20,
+    String? type,
+    String? modelId,
+    bool? isActive,
+    String? sortBy,
+    String? sortOrder,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getQcTemplates, [], {
+              #page: page,
+              #limit: limit,
+              #type: type,
+              #modelId: modelId,
+              #isActive: isActive,
+              #sortBy: sortBy,
+              #sortOrder: sortOrder,
+            }),
+            returnValue: _i5.Future<_i6.TemplatesResponse>.value(
+              _FakeTemplatesResponse_50(
+                this,
+                Invocation.method(#getQcTemplates, [], {
+                  #page: page,
+                  #limit: limit,
+                  #type: type,
+                  #modelId: modelId,
+                  #isActive: isActive,
+                  #sortBy: sortBy,
+                  #sortOrder: sortOrder,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.TemplatesResponse>);
+
+  @override
+  _i5.Future<_i6.QcTemplate> getQcTemplate(String? templateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getQcTemplate, [templateId]),
+            returnValue: _i5.Future<_i6.QcTemplate>.value(
+              _FakeQcTemplate_51(
+                this,
+                Invocation.method(#getQcTemplate, [templateId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcTemplate>);
+
+  @override
+  _i5.Future<_i6.QcTemplate> createQcTemplate({
+    required String? name,
+    required String? type,
+    String? description,
+    String? modelId,
+    required List<Map<String, dynamic>>? items,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createQcTemplate, [], {
+              #name: name,
+              #type: type,
+              #description: description,
+              #modelId: modelId,
+              #items: items,
+            }),
+            returnValue: _i5.Future<_i6.QcTemplate>.value(
+              _FakeQcTemplate_51(
+                this,
+                Invocation.method(#createQcTemplate, [], {
+                  #name: name,
+                  #type: type,
+                  #description: description,
+                  #modelId: modelId,
+                  #items: items,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcTemplate>);
+
+  @override
+  _i5.Future<_i6.QcTemplate> updateQcTemplate(
+    String? templateId, {
+    String? name,
+    String? description,
+    String? type,
+    String? modelId,
+    bool? isActive,
+    List<Map<String, dynamic>>? items,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateQcTemplate,
+              [templateId],
+              {
+                #name: name,
+                #description: description,
+                #type: type,
+                #modelId: modelId,
+                #isActive: isActive,
+                #items: items,
+              },
+            ),
+            returnValue: _i5.Future<_i6.QcTemplate>.value(
+              _FakeQcTemplate_51(
+                this,
+                Invocation.method(
+                  #updateQcTemplate,
+                  [templateId],
+                  {
+                    #name: name,
+                    #description: description,
+                    #type: type,
+                    #modelId: modelId,
+                    #isActive: isActive,
+                    #items: items,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcTemplate>);
+
+  @override
+  _i5.Future<void> deleteQcTemplate(String? templateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteQcTemplate, [templateId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.ChecksResponse> getQcChecks({
+    int? page = 1,
+    int? limit = 20,
+    String? status,
+    String? type,
+    String? orderId,
+    String? inspectorId,
+    String? dateFrom,
+    String? dateTo,
+    String? sortBy,
+    String? sortOrder,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getQcChecks, [], {
+              #page: page,
+              #limit: limit,
+              #status: status,
+              #type: type,
+              #orderId: orderId,
+              #inspectorId: inspectorId,
+              #dateFrom: dateFrom,
+              #dateTo: dateTo,
+              #sortBy: sortBy,
+              #sortOrder: sortOrder,
+            }),
+            returnValue: _i5.Future<_i6.ChecksResponse>.value(
+              _FakeChecksResponse_52(
+                this,
+                Invocation.method(#getQcChecks, [], {
+                  #page: page,
+                  #limit: limit,
+                  #status: status,
+                  #type: type,
+                  #orderId: orderId,
+                  #inspectorId: inspectorId,
+                  #dateFrom: dateFrom,
+                  #dateTo: dateTo,
+                  #sortBy: sortBy,
+                  #sortOrder: sortOrder,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ChecksResponse>);
+
+  @override
+  _i5.Future<_i6.ChecksResponse> getPendingQcChecks({
+    int? page = 1,
+    int? limit = 20,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPendingQcChecks, [], {
+              #page: page,
+              #limit: limit,
+            }),
+            returnValue: _i5.Future<_i6.ChecksResponse>.value(
+              _FakeChecksResponse_52(
+                this,
+                Invocation.method(#getPendingQcChecks, [], {
+                  #page: page,
+                  #limit: limit,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.ChecksResponse>);
+
+  @override
+  _i5.Future<_i6.QcCheck> getQcCheck(String? checkId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getQcCheck, [checkId]),
+            returnValue: _i5.Future<_i6.QcCheck>.value(
+              _FakeQcCheck_53(this, Invocation.method(#getQcCheck, [checkId])),
+            ),
+          )
+          as _i5.Future<_i6.QcCheck>);
+
+  @override
+  _i5.Future<_i6.QcCheck> createQcCheck({
+    required String? templateId,
+    String? orderId,
+    String? taskId,
+    String? inspectorId,
+    String? scheduledAt,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createQcCheck, [], {
+              #templateId: templateId,
+              #orderId: orderId,
+              #taskId: taskId,
+              #inspectorId: inspectorId,
+              #scheduledAt: scheduledAt,
+            }),
+            returnValue: _i5.Future<_i6.QcCheck>.value(
+              _FakeQcCheck_53(
+                this,
+                Invocation.method(#createQcCheck, [], {
+                  #templateId: templateId,
+                  #orderId: orderId,
+                  #taskId: taskId,
+                  #inspectorId: inspectorId,
+                  #scheduledAt: scheduledAt,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcCheck>);
+
+  @override
+  _i5.Future<_i6.QcCheck> startQcCheck(String? checkId) =>
+      (super.noSuchMethod(
+            Invocation.method(#startQcCheck, [checkId]),
+            returnValue: _i5.Future<_i6.QcCheck>.value(
+              _FakeQcCheck_53(
+                this,
+                Invocation.method(#startQcCheck, [checkId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcCheck>);
+
+  @override
+  _i5.Future<_i6.QcCheck> submitQcCheckResults(
+    String? checkId, {
+    required String? decision,
+    required List<Map<String, dynamic>>? results,
+    String? notes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #submitQcCheckResults,
+              [checkId],
+              {#decision: decision, #results: results, #notes: notes},
+            ),
+            returnValue: _i5.Future<_i6.QcCheck>.value(
+              _FakeQcCheck_53(
+                this,
+                Invocation.method(
+                  #submitQcCheckResults,
+                  [checkId],
+                  {#decision: decision, #results: results, #notes: notes},
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcCheck>);
+
+  @override
+  _i5.Future<_i6.QcCheck> cancelQcCheck(String? checkId) =>
+      (super.noSuchMethod(
+            Invocation.method(#cancelQcCheck, [checkId]),
+            returnValue: _i5.Future<_i6.QcCheck>.value(
+              _FakeQcCheck_53(
+                this,
+                Invocation.method(#cancelQcCheck, [checkId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcCheck>);
+
+  @override
+  _i5.Future<_i6.DefectsResponse> getDefects({
+    int? page = 1,
+    int? limit = 20,
+    String? status,
+    String? severity,
+    String? type,
+    String? orderId,
+    String? checkId,
+    String? assigneeId,
+    String? sortBy,
+    String? sortOrder,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getDefects, [], {
+              #page: page,
+              #limit: limit,
+              #status: status,
+              #severity: severity,
+              #type: type,
+              #orderId: orderId,
+              #checkId: checkId,
+              #assigneeId: assigneeId,
+              #sortBy: sortBy,
+              #sortOrder: sortOrder,
+            }),
+            returnValue: _i5.Future<_i6.DefectsResponse>.value(
+              _FakeDefectsResponse_54(
+                this,
+                Invocation.method(#getDefects, [], {
+                  #page: page,
+                  #limit: limit,
+                  #status: status,
+                  #severity: severity,
+                  #type: type,
+                  #orderId: orderId,
+                  #checkId: checkId,
+                  #assigneeId: assigneeId,
+                  #sortBy: sortBy,
+                  #sortOrder: sortOrder,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.DefectsResponse>);
+
+  @override
+  _i5.Future<_i6.DefectsResponse> getMyDefects({
+    int? page = 1,
+    int? limit = 20,
+    String? status,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMyDefects, [], {
+              #page: page,
+              #limit: limit,
+              #status: status,
+            }),
+            returnValue: _i5.Future<_i6.DefectsResponse>.value(
+              _FakeDefectsResponse_54(
+                this,
+                Invocation.method(#getMyDefects, [], {
+                  #page: page,
+                  #limit: limit,
+                  #status: status,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.DefectsResponse>);
+
+  @override
+  _i5.Future<_i6.Defect> getDefect(String? defectId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getDefect, [defectId]),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(this, Invocation.method(#getDefect, [defectId])),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> createDefect({
+    required String? title,
+    required String? type,
+    required String? severity,
+    String? description,
+    String? location,
+    String? orderId,
+    String? checkId,
+    String? assigneeId,
+    List<String>? photos,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createDefect, [], {
+              #title: title,
+              #type: type,
+              #severity: severity,
+              #description: description,
+              #location: location,
+              #orderId: orderId,
+              #checkId: checkId,
+              #assigneeId: assigneeId,
+              #photos: photos,
+            }),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(
+                this,
+                Invocation.method(#createDefect, [], {
+                  #title: title,
+                  #type: type,
+                  #severity: severity,
+                  #description: description,
+                  #location: location,
+                  #orderId: orderId,
+                  #checkId: checkId,
+                  #assigneeId: assigneeId,
+                  #photos: photos,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> updateDefect(
+    String? defectId, {
+    String? title,
+    String? description,
+    String? type,
+    String? severity,
+    String? location,
+    String? assigneeId,
+    List<String>? photos,
+    String? status,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateDefect,
+              [defectId],
+              {
+                #title: title,
+                #description: description,
+                #type: type,
+                #severity: severity,
+                #location: location,
+                #assigneeId: assigneeId,
+                #photos: photos,
+                #status: status,
+              },
+            ),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(
+                this,
+                Invocation.method(
+                  #updateDefect,
+                  [defectId],
+                  {
+                    #title: title,
+                    #description: description,
+                    #type: type,
+                    #severity: severity,
+                    #location: location,
+                    #assigneeId: assigneeId,
+                    #photos: photos,
+                    #status: status,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> assignDefect(String? defectId, String? assigneeId) =>
+      (super.noSuchMethod(
+            Invocation.method(#assignDefect, [defectId, assigneeId]),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(
+                this,
+                Invocation.method(#assignDefect, [defectId, assigneeId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> resolveDefect(String? defectId, String? resolution) =>
+      (super.noSuchMethod(
+            Invocation.method(#resolveDefect, [defectId, resolution]),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(
+                this,
+                Invocation.method(#resolveDefect, [defectId, resolution]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> closeDefect(String? defectId) =>
+      (super.noSuchMethod(
+            Invocation.method(#closeDefect, [defectId]),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(this, Invocation.method(#closeDefect, [defectId])),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> wontFixDefect(String? defectId, String? reason) =>
+      (super.noSuchMethod(
+            Invocation.method(#wontFixDefect, [defectId, reason]),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(
+                this,
+                Invocation.method(#wontFixDefect, [defectId, reason]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<_i6.Defect> reopenDefect(String? defectId) =>
+      (super.noSuchMethod(
+            Invocation.method(#reopenDefect, [defectId]),
+            returnValue: _i5.Future<_i6.Defect>.value(
+              _FakeDefect_55(
+                this,
+                Invocation.method(#reopenDefect, [defectId]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.Defect>);
+
+  @override
+  _i5.Future<void> deleteDefect(String? defectId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteDefect, [defectId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.QcStats> getQcStats({String? dateFrom, String? dateTo}) =>
+      (super.noSuchMethod(
+            Invocation.method(#getQcStats, [], {
+              #dateFrom: dateFrom,
+              #dateTo: dateTo,
+            }),
+            returnValue: _i5.Future<_i6.QcStats>.value(
+              _FakeQcStats_56(
+                this,
+                Invocation.method(#getQcStats, [], {
+                  #dateFrom: dateFrom,
+                  #dateTo: dateTo,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.QcStats>);
 }
 
 /// A class which mocks [ClientApiService].
@@ -1861,7 +4021,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
                 #isNetworkError: isNetworkError,
               },
             ),
-            returnValue: _FakeClientApiException_25(
+            returnValue: _FakeClientApiException_57(
               this,
               Invocation.method(
                 #createException,
@@ -1889,7 +4049,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #password: password,
             }),
             returnValue: _i5.Future<_i6.ClientAuthResponse>.value(
-              _FakeClientAuthResponse_26(
+              _FakeClientAuthResponse_58(
                 this,
                 Invocation.method(#login, [], {
                   #email: email,
@@ -1916,7 +4076,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #name: name,
             }),
             returnValue: _i5.Future<_i6.ClientAuthResponse>.value(
-              _FakeClientAuthResponse_26(
+              _FakeClientAuthResponse_58(
                 this,
                 Invocation.method(#register, [], {
                   #email: email,
@@ -1943,7 +4103,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
       (super.noSuchMethod(
             Invocation.method(#getProfile, []),
             returnValue: _i5.Future<_i6.ClientUser>.value(
-              _FakeClientUser_27(this, Invocation.method(#getProfile, [])),
+              _FakeClientUser_59(this, Invocation.method(#getProfile, [])),
             ),
           )
           as _i5.Future<_i6.ClientUser>);
@@ -1963,7 +4123,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
       (super.noSuchMethod(
             Invocation.method(#linkToTenant, [tenantId], {#name: name}),
             returnValue: _i5.Future<_i6.TenantLink>.value(
-              _FakeTenantLink_28(
+              _FakeTenantLink_60(
                 this,
                 Invocation.method(#linkToTenant, [tenantId], {#name: name}),
               ),
@@ -1996,7 +4156,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #status: status,
             }),
             returnValue: _i5.Future<_i6.ClientOrdersResponse>.value(
-              _FakeClientOrdersResponse_29(
+              _FakeClientOrdersResponse_61(
                 this,
                 Invocation.method(#getMyOrders, [], {
                   #tenantId: tenantId,
@@ -2014,7 +4174,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
       (super.noSuchMethod(
             Invocation.method(#getOrder, [orderId]),
             returnValue: _i5.Future<_i6.ClientOrder>.value(
-              _FakeClientOrder_30(
+              _FakeClientOrder_62(
                 this,
                 Invocation.method(#getOrder, [orderId]),
               ),
@@ -2037,7 +4197,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #dueDate: dueDate,
             }),
             returnValue: _i5.Future<_i6.ClientOrder>.value(
-              _FakeClientOrder_30(
+              _FakeClientOrder_62(
                 this,
                 Invocation.method(#createOrder, [], {
                   #tenantId: tenantId,
@@ -2065,7 +4225,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #dueDate: dueDate,
             }),
             returnValue: _i5.Future<_i6.ClientOrder>.value(
-              _FakeClientOrder_30(
+              _FakeClientOrder_62(
                 this,
                 Invocation.method(#updateOrder, [], {
                   #orderId: orderId,
@@ -2468,7 +4628,7 @@ class MockEmployeeApiService extends _i1.Mock
                 #isNetworkError: isNetworkError,
               },
             ),
-            returnValue: _FakeEmployeeApiException_31(
+            returnValue: _FakeEmployeeApiException_63(
               this,
               Invocation.method(
                 #createException,
@@ -2491,7 +4651,7 @@ class MockEmployeeApiService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#login, [], {#email: email, #password: password}),
             returnValue: _i5.Future<_i6.EmployeeAuthResponse>.value(
-              _FakeEmployeeAuthResponse_32(
+              _FakeEmployeeAuthResponse_64(
                 this,
                 Invocation.method(#login, [], {
                   #email: email,
@@ -2516,7 +4676,7 @@ class MockEmployeeApiService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getProfile, []),
             returnValue: _i5.Future<_i6.EmployeeUser>.value(
-              _FakeEmployeeUser_33(this, Invocation.method(#getProfile, [])),
+              _FakeEmployeeUser_65(this, Invocation.method(#getProfile, [])),
             ),
           )
           as _i5.Future<_i6.EmployeeUser>);
@@ -2534,7 +4694,7 @@ class MockEmployeeApiService extends _i1.Mock
               #includeCompleted: includeCompleted,
             }),
             returnValue: _i5.Future<_i6.EmployeeAssignmentsResponse>.value(
-              _FakeEmployeeAssignmentsResponse_34(
+              _FakeEmployeeAssignmentsResponse_66(
                 this,
                 Invocation.method(#getAssignments, [], {
                   #page: page,
@@ -2563,7 +4723,7 @@ class MockEmployeeApiService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#createWorkLog, [request]),
             returnValue: _i5.Future<_i6.EmployeeWorkLog>.value(
-              _FakeEmployeeWorkLog_35(
+              _FakeEmployeeWorkLog_67(
                 this,
                 Invocation.method(#createWorkLog, [request]),
               ),
@@ -2926,7 +5086,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
   _i2.TokenHandler<_i6.User> get managerTokens =>
       (super.noSuchMethod(
             Invocation.getter(#managerTokens),
-            returnValue: _FakeTokenHandler_36<_i6.User>(
+            returnValue: _FakeTokenHandler_68<_i6.User>(
               this,
               Invocation.getter(#managerTokens),
             ),
@@ -2937,7 +5097,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
   _i2.TokenHandler<_i6.ClientUser> get clientTokens =>
       (super.noSuchMethod(
             Invocation.getter(#clientTokens),
-            returnValue: _FakeTokenHandler_36<_i6.ClientUser>(
+            returnValue: _FakeTokenHandler_68<_i6.ClientUser>(
               this,
               Invocation.getter(#clientTokens),
             ),
@@ -2948,7 +5108,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
   _i2.TokenHandler<_i6.EmployeeUser> get employeeTokens =>
       (super.noSuchMethod(
             Invocation.getter(#employeeTokens),
-            returnValue: _FakeTokenHandler_36<_i6.EmployeeUser>(
+            returnValue: _FakeTokenHandler_68<_i6.EmployeeUser>(
               this,
               Invocation.getter(#employeeTokens),
             ),
@@ -2960,28 +5120,29 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
       (super.noSuchMethod(
             Invocation.getter(#prefs),
             returnValue: _i5.Future<_i9.SharedPreferences>.value(
-              _FakeSharedPreferences_37(this, Invocation.getter(#prefs)),
+              _FakeSharedPreferences_69(this, Invocation.getter(#prefs)),
             ),
           )
           as _i5.Future<_i9.SharedPreferences>);
 
   @override
-  set managerTokens(_i2.TokenHandler<_i6.User>? value) => super.noSuchMethod(
-    Invocation.setter(#managerTokens, value),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  set clientTokens(_i2.TokenHandler<_i6.ClientUser>? value) =>
+  set managerTokens(_i2.TokenHandler<_i6.User>? _managerTokens) =>
       super.noSuchMethod(
-        Invocation.setter(#clientTokens, value),
+        Invocation.setter(#managerTokens, _managerTokens),
         returnValueForMissingStub: null,
       );
 
   @override
-  set employeeTokens(_i2.TokenHandler<_i6.EmployeeUser>? value) =>
+  set clientTokens(_i2.TokenHandler<_i6.ClientUser>? _clientTokens) =>
       super.noSuchMethod(
-        Invocation.setter(#employeeTokens, value),
+        Invocation.setter(#clientTokens, _clientTokens),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set employeeTokens(_i2.TokenHandler<_i6.EmployeeUser>? _employeeTokens) =>
+      super.noSuchMethod(
+        Invocation.setter(#employeeTokens, _employeeTokens),
         returnValueForMissingStub: null,
       );
 

@@ -124,7 +124,7 @@ Map<String, dynamic> _$ChartDataPointToJson(ChartDataPoint instance) =>
     <String, dynamic>{
       'label': instance.label,
       'value': instance.value,
-      'date': ?instance.date?.toIso8601String(),
+      if (instance.date?.toIso8601String() case final value?) 'date': value,
     };
 
 RevenueData _$RevenueDataFromJson(Map<String, dynamic> json) => RevenueData(

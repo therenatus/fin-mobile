@@ -29,7 +29,7 @@ Tenant _$TenantFromJson(Map<String, dynamic> json) => Tenant(
 Map<String, dynamic> _$TenantToJson(Tenant instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'plan': ?instance.plan?.toJson(),
+  if (instance.plan?.toJson() case final value?) 'plan': value,
 };
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
@@ -54,13 +54,15 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
   'id': instance.id,
   'email': instance.email,
-  'name': ?instance.name,
-  'avatarUrl': ?instance.avatarUrl,
+  if (instance.name case final value?) 'name': value,
+  if (instance.avatarUrl case final value?) 'avatarUrl': value,
   'tenantId': instance.tenantId,
-  'tenant': ?instance.tenant?.toJson(),
+  if (instance.tenant?.toJson() case final value?) 'tenant': value,
   'roles': instance.roles,
-  'createdAt': ?instance.createdAt?.toIso8601String(),
-  'updatedAt': ?instance.updatedAt?.toIso8601String(),
+  if (instance.createdAt?.toIso8601String() case final value?)
+    'createdAt': value,
+  if (instance.updatedAt?.toIso8601String() case final value?)
+    'updatedAt': value,
 };
 
 AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(

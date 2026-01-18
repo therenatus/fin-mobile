@@ -1,97 +1,93 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/analytics.dart';
 import '../../core/widgets/widgets.dart';
 
-class AnalyticsScreen extends StatefulWidget {
+class AnalyticsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const AnalyticsScreen({super.key, this.onMenuPressed});
 
   @override
-  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+  ConsumerState<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
-class _AnalyticsScreenState extends State<AnalyticsScreen> {
+class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, provider, _) {
-        final stats = provider.dashboardStats;
-        final analytics = provider.analyticsDashboard;
-        final selectedPeriod = provider.analyticsPeriod;
+    final stats = ref.watch(dashboardStatsProvider);
+    final analytics = ref.watch(analyticsDashboardProvider);
+    final selectedPeriod = ref.watch(analyticsPeriodProvider);
 
-        return Scaffold(
-          backgroundColor: context.backgroundColor,
-          appBar: AppBar(
-            title: Text(context.l10n.analytics),
-            backgroundColor: context.surfaceColor,
-            surfaceTintColor: Colors.transparent,
-            leading: IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: widget.onMenuPressed,
-            ),
-            actions: [
-              // Period selector
-              PopupMenuButton<String>(
-                icon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _getPeriodLabel(context, selectedPeriod),
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                  ],
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      appBar: AppBar(
+        title: Text(context.l10n.analytics),
+        backgroundColor: context.surfaceColor,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: widget.onMenuPressed,
+        ),
+        actions: [
+          // Period selector
+          PopupMenuButton<String>(
+            icon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _getPeriodLabel(context, selectedPeriod),
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.primary,
+                  ),
                 ),
-                onSelected: (value) {
-                  provider.setAnalyticsPeriod(value);
-                },
-                itemBuilder: (ctx) => [
-                  _buildPeriodOption(ctx, selectedPeriod, 'week', context.l10n.periodWeek),
-                  _buildPeriodOption(ctx, selectedPeriod, 'month', context.l10n.periodMonth),
-                  _buildPeriodOption(ctx, selectedPeriod, 'quarter', context.l10n.periodQuarter),
-                  _buildPeriodOption(ctx, selectedPeriod, 'year', context.l10n.periodYear),
-                ],
-              ),
+                const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+              ],
+            ),
+            onSelected: (value) {
+              ref.read(dashboardNotifierProvider.notifier).setAnalyticsPeriod(value);
+            },
+            itemBuilder: (ctx) => [
+              _buildPeriodOption(ctx, selectedPeriod, 'week', context.l10n.periodWeek),
+              _buildPeriodOption(ctx, selectedPeriod, 'month', context.l10n.periodMonth),
+              _buildPeriodOption(ctx, selectedPeriod, 'quarter', context.l10n.periodQuarter),
+              _buildPeriodOption(ctx, selectedPeriod, 'year', context.l10n.periodYear),
             ],
           ),
-          body: RefreshIndicator(
-            onRefresh: () => provider.refreshDashboard(),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Summary cards
-                  _buildSummaryCards(stats),
-                  const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(dashboardNotifierProvider.notifier).refreshDashboard(),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Summary cards
+              _buildSummaryCards(stats),
+              const SizedBox(height: AppSpacing.xl),
 
-                  // Revenue chart
-                  _buildRevenueChart(analytics?.charts.revenueByDay ?? []),
-                  const SizedBox(height: AppSpacing.xl),
+              // Revenue chart
+              _buildRevenueChart(analytics?.charts.revenueByDay ?? []),
+              const SizedBox(height: AppSpacing.xl),
 
-                  // Orders by status
-                  _buildOrdersChart(analytics?.charts.ordersByStatus),
-                  const SizedBox(height: AppSpacing.xl),
+              // Orders by status
+              _buildOrdersChart(analytics?.charts.ordersByStatus),
+              const SizedBox(height: AppSpacing.xl),
 
-                  // Top clients
-                  _buildTopClients(analytics?.topClients ?? []),
-                  const SizedBox(height: AppSpacing.lg),
-                ],
-              ),
-            ),
+              // Top clients
+              _buildTopClients(analytics?.topClients ?? []),
+              const SizedBox(height: AppSpacing.lg),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

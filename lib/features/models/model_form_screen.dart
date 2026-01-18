@@ -1,25 +1,25 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/order.dart';
 import '../../core/services/api_service.dart';
 import '../../core/widgets/styled_dropdown.dart';
 import '../../core/widgets/image_picker_widget.dart';
 
-class ModelFormScreen extends StatefulWidget {
+class ModelFormScreen extends ConsumerStatefulWidget {
   final OrderModel? model; // null for create, not null for edit
 
   const ModelFormScreen({super.key, this.model});
 
   @override
-  State<ModelFormScreen> createState() => _ModelFormScreenState();
+  ConsumerState<ModelFormScreen> createState() => _ModelFormScreenState();
 }
 
-class _ModelFormScreenState extends State<ModelFormScreen> {
+class _ModelFormScreenState extends ConsumerState<ModelFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
@@ -29,8 +29,6 @@ class _ModelFormScreenState extends State<ModelFormScreen> {
   bool _isSubmitting = false;
   File? _selectedImage;
   bool _imageRemoved = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   List<String> _categories = [
     'Платье',
@@ -76,7 +74,7 @@ class _ModelFormScreenState extends State<ModelFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final price = double.tryParse(_priceController.text.trim()) ?? 0;
 
       OrderModel result;

@@ -1,43 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/subscription.dart';
-import '../../core/providers/subscription_provider.dart';
+import '../../core/riverpod/providers.dart';
 
-class SubscriptionScreen extends StatefulWidget {
+class SubscriptionScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const SubscriptionScreen({super.key, this.onMenuPressed});
 
   @override
-  State<SubscriptionScreen> createState() => _SubscriptionScreenState();
+  ConsumerState<SubscriptionScreen> createState() => _SubscriptionScreenState();
 }
 
-class _SubscriptionScreenState extends State<SubscriptionScreen> {
+class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<SubscriptionProvider>();
-      if (!provider.isInitialized) {
-        provider.init();
+      final state = ref.read(subscriptionNotifierProvider);
+      if (!state.isInitialized) {
+        ref.read(subscriptionNotifierProvider.notifier).init();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(subscriptionNotifierProvider);
+    final notifier = ref.read(subscriptionNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      body: Consumer<SubscriptionProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && !provider.isInitialized) {
+      body: Builder(
+        builder: (context) {
+          if (state.isLoading && !state.isInitialized) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (provider.error != null) {
-            return _buildErrorState(provider);
+          if (state.error != null) {
+            return _buildErrorState(state, notifier);
           }
 
           return CustomScrollView(
@@ -55,7 +58,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       )
                     : null,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: _buildHeaderBackground(provider.usage),
+                  background: _buildHeaderBackground(state.usage),
                 ),
                 backgroundColor: AppColors.primary,
               ),
@@ -63,19 +66,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               // Content
               SliverToBoxAdapter(
                 child: RefreshIndicator(
-                  onRefresh: provider.loadUsage,
+                  onRefresh: notifier.loadUsage,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (provider.usage != null) ...[
-                          _buildUsageSection(provider.usage!),
+                        if (state.usage != null) ...[
+                          _buildUsageSection(state.usage!),
                           const SizedBox(height: 24),
                         ],
-                        _buildPlansSection(provider),
+                        _buildPlansSection(state, notifier),
                         const SizedBox(height: 16),
-                        _buildRestoreButton(provider),
+                        _buildRestoreButton(state, notifier),
                         const SizedBox(height: 32),
                       ],
                     ),
@@ -203,7 +206,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return Icons.card_giftcard_rounded;
   }
 
-  Widget _buildErrorState(SubscriptionProvider provider) {
+  Widget _buildErrorState(SubscriptionStateData state, SubscriptionNotifier notifier) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -231,7 +234,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              provider.error ?? context.l10n.errorHappened,
+              state.error ?? context.l10n.errorHappened,
               textAlign: TextAlign.center,
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textSecondaryColor,
@@ -240,8 +243,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                provider.clearError();
-                provider.init();
+                notifier.clearError();
+                notifier.init();
               },
               icon: const Icon(Icons.refresh_rounded),
               label: Text(context.l10n.retry),
@@ -435,7 +438,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  Widget _buildPlansSection(SubscriptionProvider provider) {
+  Widget _buildPlansSection(SubscriptionStateData state, SubscriptionNotifier notifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -456,16 +459,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        if (provider.plans.isEmpty)
+        if (state.plans.isEmpty)
           _buildEmptyPlans()
         else
-          ...provider.plans.asMap().entries.map((entry) {
+          ...state.plans.asMap().entries.map((entry) {
             final index = entry.key;
             final plan = entry.value;
-            final isPopular = index == 1 && provider.plans.length > 2;
+            final isPopular = index == 1 && state.plans.length > 2;
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: _buildPlanCard(plan, provider, isPopular: isPopular),
+              child: _buildPlanCard(plan, state, notifier, isPopular: isPopular),
             );
           }),
       ],
@@ -501,11 +504,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildPlanCard(
     SubscriptionPlan plan,
-    SubscriptionProvider provider, {
+    SubscriptionStateData state,
+    SubscriptionNotifier notifier, {
     bool isPopular = false,
   }) {
-    final isCurrentPlan = provider.usage?.planName == plan.name;
-    final price = provider.getPlanPrice(plan);
+    final isCurrentPlan = state.usage?.planName == plan.name;
+    final price = notifier.getPlanPrice(plan);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -681,9 +685,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: isCurrentPlan || provider.isPurchasing
+                  onPressed: isCurrentPlan || state.isPurchasing
                       ? null
-                      : () => _handlePurchase(provider, plan),
+                      : () => _handlePurchase(notifier, plan),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isCurrentPlan
                         ? context.borderColor
@@ -698,7 +702,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: provider.isPurchasing
+                  child: state.isPurchasing
                       ? const SizedBox(
                           width: 20,
                           height: 20,
@@ -781,10 +785,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  Widget _buildRestoreButton(SubscriptionProvider provider) {
+  Widget _buildRestoreButton(SubscriptionStateData state, SubscriptionNotifier notifier) {
     return Center(
       child: TextButton.icon(
-        onPressed: provider.isLoading ? null : provider.restorePurchases,
+        onPressed: state.isLoading ? null : notifier.restorePurchases,
         icon: Icon(
           Icons.restore_rounded,
           size: 18,
@@ -802,10 +806,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Future<void> _handlePurchase(
-    SubscriptionProvider provider,
+    SubscriptionNotifier notifier,
     SubscriptionPlan plan,
   ) async {
-    await provider.purchase(plan);
+    await notifier.purchase(plan);
   }
 
   String _formatDate(DateTime date) {

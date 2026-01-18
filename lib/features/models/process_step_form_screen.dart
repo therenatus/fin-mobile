@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/process_step.dart';
 import '../../core/services/api_service.dart';
 import '../../core/widgets/styled_dropdown.dart';
 
-class ProcessStepFormScreen extends StatefulWidget {
+class ProcessStepFormScreen extends ConsumerStatefulWidget {
   final String modelId;
   final ProcessStep? step;
   final int? nextOrder;
@@ -21,10 +21,10 @@ class ProcessStepFormScreen extends StatefulWidget {
   });
 
   @override
-  State<ProcessStepFormScreen> createState() => _ProcessStepFormScreenState();
+  ConsumerState<ProcessStepFormScreen> createState() => _ProcessStepFormScreenState();
 }
 
-class _ProcessStepFormScreenState extends State<ProcessStepFormScreen> {
+class _ProcessStepFormScreenState extends ConsumerState<ProcessStepFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _timeController = TextEditingController();
@@ -32,8 +32,6 @@ class _ProcessStepFormScreenState extends State<ProcessStepFormScreen> {
 
   String _executorRole = 'tailor';
   bool _isLoading = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   bool get _isEditing => widget.step != null;
 
@@ -205,7 +203,7 @@ class _ProcessStepFormScreenState extends State<ProcessStepFormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final name = _nameController.text.trim();
       final estimatedTime = int.parse(_timeController.text);
       final rate = double.tryParse(_rateController.text);

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/client_user.dart';
 
-class ClientEditOrderScreen extends StatefulWidget {
+class ClientEditOrderScreen extends ConsumerStatefulWidget {
   final ClientOrder order;
 
   const ClientEditOrderScreen({super.key, required this.order});
 
   @override
-  State<ClientEditOrderScreen> createState() => _ClientEditOrderScreenState();
+  ConsumerState<ClientEditOrderScreen> createState() => _ClientEditOrderScreenState();
 }
 
-class _ClientEditOrderScreenState extends State<ClientEditOrderScreen> {
+class _ClientEditOrderScreenState extends ConsumerState<ClientEditOrderScreen> {
   late int _quantity;
   DateTime? _dueDate;
   bool _isSubmitting = false;
@@ -30,8 +30,8 @@ class _ClientEditOrderScreenState extends State<ClientEditOrderScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final provider = context.read<ClientProvider>();
-      await provider.updateOrder(
+      final notifier = ref.read(clientAuthNotifierProvider.notifier);
+      await notifier.updateOrder(
         orderId: widget.order.id,
         quantity: _quantity,
         dueDate: _dueDate?.toIso8601String(),

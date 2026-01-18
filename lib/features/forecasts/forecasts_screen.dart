@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
 
-class ForecastsScreen extends StatefulWidget {
+class ForecastsScreen extends ConsumerStatefulWidget {
   const ForecastsScreen({super.key});
 
   @override
-  State<ForecastsScreen> createState() => _ForecastsScreenState();
+  ConsumerState<ForecastsScreen> createState() => _ForecastsScreenState();
 }
 
-class _ForecastsScreenState extends State<ForecastsScreen> {
+class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
   bool _isLoading = true;
   String? _error;
   String? _limitError;
@@ -31,8 +31,6 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
   int _selectedDays = 7;
   bool _isGeneratingReport = false;
   String _selectedReportType = 'monthly_summary';
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   final List<Map<String, String>> _reportTypes = [
     {'value': 'monthly_summary', 'label': 'Месячный обзор'},
@@ -65,16 +63,17 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
 
     try {
       // First load usage info
-      final usageInfo = await _api.getMlUsageInfo();
+      final api = ref.read(apiServiceProvider);
+      final usageInfo = await api.getMlUsageInfo();
       setState(() => _usageInfo = usageInfo);
 
       // Load report history (doesn't count against limits)
-      final reportHistory = await _api.getReportHistory(limit: 5);
+      final reportHistory = await api.getReportHistory(limit: 5);
       setState(() => _reportHistory = reportHistory);
 
       // Try to load forecasts and insights (may fail due to limits)
       try {
-        final ordersForecast = await _api.getOrdersForecast(days: _selectedDays);
+        final ordersForecast = await api.getOrdersForecast(days: _selectedDays);
         setState(() => _ordersForecast = ordersForecast);
       } on ApiException catch (e) {
         if (e.statusCode == 403) {
@@ -83,7 +82,7 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
       }
 
       try {
-        final revenueForecast = await _api.getRevenueForecast(days: _selectedDays);
+        final revenueForecast = await api.getRevenueForecast(days: _selectedDays);
         setState(() => _revenueForecast = revenueForecast);
       } on ApiException catch (e) {
         if (e.statusCode == 403) {
@@ -92,7 +91,7 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
       }
 
       try {
-        final insights = await _api.getBusinessInsights();
+        final insights = await api.getBusinessInsights();
         setState(() => _insights = insights);
       } on ApiException catch (e) {
         if (e.statusCode == 403) {
@@ -116,7 +115,8 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
       final now = DateTime.now();
       final monthAgo = now.subtract(const Duration(days: 30));
 
-      await _api.generateMlReport(
+      final api = ref.read(apiServiceProvider);
+      await api.generateMlReport(
         type: _selectedReportType,
         periodStart: monthAgo.toIso8601String(),
         periodEnd: now.toIso8601String(),
@@ -124,8 +124,8 @@ class _ForecastsScreenState extends State<ForecastsScreen> {
 
       // Refresh report history and usage info
       final results = await Future.wait([
-        _api.getReportHistory(limit: 5),
-        _api.getMlUsageInfo(),
+        api.getReportHistory(limit: 5),
+        api.getMlUsageInfo(),
       ]);
       setState(() {
         _reportHistory = results[0] as List<MlReport>;

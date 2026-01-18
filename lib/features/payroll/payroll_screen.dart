@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/app_drawer.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/services/api_service.dart';
 
-class PayrollScreen extends StatefulWidget {
+class PayrollScreen extends ConsumerStatefulWidget {
   const PayrollScreen({super.key});
 
   @override
-  State<PayrollScreen> createState() => _PayrollScreenState();
+  ConsumerState<PayrollScreen> createState() => _PayrollScreenState();
 }
 
-class _PayrollScreenState extends State<PayrollScreen> {
+class _PayrollScreenState extends ConsumerState<PayrollScreen> {
   DateTime _periodStart = DateTime.now().subtract(const Duration(days: 30));
   DateTime _periodEnd = DateTime.now();
 
@@ -28,8 +28,6 @@ class _PayrollScreenState extends State<PayrollScreen> {
   List<Payroll> _payrollHistory = [];
   List<Employee> _employees = [];
   final Map<String, bool> _expandedCards = {};
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -59,7 +57,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   Future<void> _loadPayrollHistory() async {
     setState(() => _isLoadingHistory = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final payrolls = await api.getPayrolls();
       setState(() {
         _payrollHistory = payrolls..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -80,7 +78,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   Future<void> _loadEmployees() async {
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final employees = await api.getEmployees();
       setState(() {
         _employees = employees;
@@ -94,7 +92,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final payroll = await api.generatePayroll(
         periodStart: _periodStart,
         periodEnd: _periodEnd,
@@ -295,7 +293,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final description = context.l10n.salaryDescriptionFormat(period);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.createTransaction(
         date: DateTime.now(),
         type: 'expense',
@@ -604,7 +602,7 @@ class _DatePickerButton extends StatelessWidget {
   }
 }
 
-class _EmployeeSalaryCard extends StatelessWidget {
+class _EmployeeSalaryCard extends ConsumerWidget {
   final Employee? employee;
   final EmployeePayrollDetail detail;
   final bool isExpanded;
@@ -618,7 +616,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       elevation: 0,
       color: context.surfaceColor,
@@ -662,7 +660,7 @@ class _EmployeeSalaryCard extends StatelessWidget {
             ),
             subtitle: Text(
               employee != null
-                  ? context.read<AppProvider>().getRoleLabel(employee!.role)
+                  ? ref.read(dashboardNotifierProvider).getRoleLabel(employee!.role)
                   : context.l10n.unknownRole,
               style: AppTypography.bodySmall.copyWith(
                 color: context.textSecondaryColor,

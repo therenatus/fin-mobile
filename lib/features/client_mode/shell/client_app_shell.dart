@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
-import '../../../core/providers/app_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/services/storage_service.dart';
 import '../ateliers/my_ateliers_screen.dart';
 import '../../auth/login_screen.dart';
 
-class ClientAppShell extends StatefulWidget {
+class ClientAppShell extends ConsumerStatefulWidget {
   const ClientAppShell({super.key});
 
   @override
-  State<ClientAppShell> createState() => _ClientAppShellState();
+  ConsumerState<ClientAppShell> createState() => _ClientAppShellState();
 }
 
-class _ClientAppShellState extends State<ClientAppShell> {
+class _ClientAppShellState extends ConsumerState<ClientAppShell> {
   int _currentIndex = 0;
-  ClientProvider? _clientProvider;
 
   final List<Widget> _screens = const [
     MyAteliersScreen(),
@@ -25,39 +24,17 @@ class _ClientAppShellState extends State<ClientAppShell> {
   ];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Listen to auth state changes
-    final provider = context.read<ClientProvider>();
-    if (_clientProvider != provider) {
-      _clientProvider?.removeListener(_onAuthStateChanged);
-      _clientProvider = provider;
-      _clientProvider?.addListener(_onAuthStateChanged);
-    }
-  }
-
-  @override
-  void dispose() {
-    _clientProvider?.removeListener(_onAuthStateChanged);
-    super.dispose();
-  }
-
-  void _onAuthStateChanged() {
-    if (_clientProvider?.isAuthenticated == false) {
-      // Navigate to login and clear navigation stack
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-          );
-        }
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes - if unauthenticated, go to login
+    ref.listen<ClientAuthStateData>(clientAuthNotifierProvider, (previous, current) {
+      if (current.state == ClientAuthState.unauthenticated) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+    });
+
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
@@ -65,16 +42,16 @@ class _ClientAppShellState extends State<ClientAppShell> {
         onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.store_outlined),
-            selectedIcon: Icon(Icons.store),
-            label: 'Ателье',
+            icon: const Icon(Icons.store_outlined),
+            selectedIcon: const Icon(Icons.store),
+            label: context.l10n.ateliers,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Профиль',
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person),
+            label: context.l10n.profile,
           ),
         ],
       ),
@@ -82,24 +59,25 @@ class _ClientAppShellState extends State<ClientAppShell> {
   }
 }
 
-class _ClientProfileScreen extends StatelessWidget {
+class _ClientProfileScreen extends ConsumerWidget {
   const _ClientProfileScreen();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(clientAuthNotifierProvider);
+    final user = authState.user;
+    final currentTheme = ref.watch(themeNotifierProvider);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Профиль'),
+        title: Text(context.l10n.profile),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Consumer<ClientProvider>(
-        builder: (context, provider, _) {
-          final user = provider.user;
-          if (user == null) return const SizedBox.shrink();
-
-          return ListView(
+      body: user == null
+          ? const SizedBox.shrink()
+          : ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // User info card
@@ -156,26 +134,22 @@ class _ClientProfileScreen extends StatelessWidget {
 
               // Theme section
               Text(
-                'Внешний вид',
+                context.l10n.appearance,
                 style: AppTypography.labelLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
 
-              Consumer<AppProvider>(
-                builder: (context, appProvider, _) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                    ),
-                    child: _ThemeSelector(
-                      currentTheme: appProvider.themeMode,
-                      onChanged: (mode) => appProvider.setThemeMode(mode),
-                    ),
-                  );
-                },
+              Container(
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                ),
+                child: _ThemeSelector(
+                  currentTheme: currentTheme,
+                  onChanged: (mode) => ref.read(themeNotifierProvider.notifier).setThemeMode(mode),
+                ),
               ),
 
               const SizedBox(height: AppSpacing.xl),
@@ -183,7 +157,7 @@ class _ClientProfileScreen extends StatelessWidget {
               // Logout button
               OutlinedButton.icon(
                 onPressed: () async {
-                  await provider.logout();
+                  await ref.read(clientAuthNotifierProvider.notifier).logout();
                   await StorageService().clearAppMode();
                   if (context.mounted) {
                     Navigator.pushAndRemoveUntil(
@@ -196,7 +170,7 @@ class _ClientProfileScreen extends StatelessWidget {
                   }
                 },
                 icon: const Icon(Icons.logout),
-                label: const Text('Выйти'),
+                label: Text(context.l10n.logout),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
                   side: BorderSide(color: AppColors.error),
@@ -204,9 +178,7 @@ class _ClientProfileScreen extends StatelessWidget {
                 ),
               ),
             ],
-          );
-        },
-      ),
+          ),
     );
   }
 }
@@ -243,7 +215,7 @@ class _ThemeSelector extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Тема',
+                context.l10n.theme,
                 style: AppTypography.bodyLarge.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
@@ -255,21 +227,21 @@ class _ThemeSelector extends StatelessWidget {
             children: [
               _ThemeOption(
                 icon: Icons.light_mode_outlined,
-                label: 'Светлая',
+                label: context.l10n.themeLight,
                 isSelected: currentTheme == ThemeMode.light,
                 onTap: () => onChanged(ThemeMode.light),
               ),
               const SizedBox(width: AppSpacing.sm),
               _ThemeOption(
                 icon: Icons.dark_mode_outlined,
-                label: 'Тёмная',
+                label: context.l10n.themeDark,
                 isSelected: currentTheme == ThemeMode.dark,
                 onTap: () => onChanged(ThemeMode.dark),
               ),
               const SizedBox(width: AppSpacing.sm),
               _ThemeOption(
                 icon: Icons.settings_suggest_outlined,
-                label: 'Авто',
+                label: context.l10n.themeAuto,
                 isSelected: currentTheme == ThemeMode.system,
                 onTap: () => onChanged(ThemeMode.system),
               ),

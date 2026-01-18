@@ -1,31 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/client_user.dart';
 import '../../../core/widgets/infinite_scroll_list.dart';
 import 'client_create_order_screen.dart';
 import 'client_edit_order_screen.dart';
 
-class ClientOrdersScreen extends StatefulWidget {
+class ClientOrdersScreen extends ConsumerStatefulWidget {
   const ClientOrdersScreen({super.key});
 
   @override
-  State<ClientOrdersScreen> createState() => _ClientOrdersScreenState();
+  ConsumerState<ClientOrdersScreen> createState() => _ClientOrdersScreenState();
 }
 
-class _ClientOrdersScreenState extends State<ClientOrdersScreen> {
+class _ClientOrdersScreenState extends ConsumerState<ClientOrdersScreen> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ClientProvider>().refreshOrders();
+      ref.read(clientAuthNotifierProvider.notifier).refreshOrders();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(clientAuthNotifierProvider);
+    final notifier = ref.read(clientAuthNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -33,51 +36,47 @@ class _ClientOrdersScreenState extends State<ClientOrdersScreen> {
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Consumer<ClientProvider>(
-        builder: (context, provider, _) {
-          if (provider.tenants.isEmpty) {
+      body: Builder(
+        builder: (context) {
+          if (authState.tenants.isEmpty) {
             return _buildNoTenantsState();
           }
 
           return InfiniteScrollList<ClientOrder>(
-            items: provider.orders,
-            hasMore: provider.hasMoreOrders,
-            isLoading: provider.isLoadingMoreOrders,
-            onLoadMore: () => provider.loadMoreOrders(),
-            onRefresh: () => provider.refreshOrders(),
+            items: authState.orders,
+            hasMore: authState.hasMoreOrders,
+            isLoading: authState.isLoadingMoreOrders,
+            onLoadMore: () => notifier.loadMoreOrders(),
+            onRefresh: () => notifier.refreshOrders(),
             padding: const EdgeInsets.all(AppSpacing.md),
             separatorHeight: AppSpacing.sm,
-            emptyWidget: _buildEmptyState(provider),
+            emptyWidget: _buildEmptyState(),
             itemBuilder: (context, order, index) {
               return _OrderCard(order: order);
             },
           );
         },
       ),
-      floatingActionButton: Consumer<ClientProvider>(
-        builder: (context, provider, _) {
-          if (provider.tenants.isEmpty) return const SizedBox.shrink();
-
-          return FloatingActionButton.extended(
-            heroTag: 'client_orders_fab',
-            onPressed: () async {
-              final result = await Navigator.push<bool>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ClientCreateOrderScreen(),
-                ),
-              );
-              if (result == true) {
-                // Order created, will refresh via provider
-              }
-            },
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            icon: const Icon(Icons.add),
-            label: const Text('Новый заказ'),
-          );
-        },
-      ),
+      floatingActionButton: authState.tenants.isEmpty
+          ? const SizedBox.shrink()
+          : FloatingActionButton.extended(
+              heroTag: 'client_orders_fab',
+              onPressed: () async {
+                final result = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ClientCreateOrderScreen(),
+                  ),
+                );
+                if (result == true) {
+                  // Order created, will refresh via provider
+                }
+              },
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add),
+              label: const Text('Новый заказ'),
+            ),
     );
   }
 
@@ -126,7 +125,7 @@ class _ClientOrdersScreenState extends State<ClientOrdersScreen> {
     );
   }
 
-  Widget _buildEmptyState(ClientProvider provider) {
+  Widget _buildEmptyState() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -314,16 +313,16 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _OrderDetailsSheet extends StatefulWidget {
+class _OrderDetailsSheet extends ConsumerStatefulWidget {
   final ClientOrder order;
 
   const _OrderDetailsSheet({required this.order});
 
   @override
-  State<_OrderDetailsSheet> createState() => _OrderDetailsSheetState();
+  ConsumerState<_OrderDetailsSheet> createState() => _OrderDetailsSheetState();
 }
 
-class _OrderDetailsSheetState extends State<_OrderDetailsSheet> {
+class _OrderDetailsSheetState extends ConsumerState<_OrderDetailsSheet> {
   bool _isCancelling = false;
 
   ClientOrder get order => widget.order;
@@ -354,7 +353,7 @@ class _OrderDetailsSheetState extends State<_OrderDetailsSheet> {
     setState(() => _isCancelling = true);
 
     try {
-      await context.read<ClientProvider>().cancelOrder(order.id);
+      await ref.read(clientAuthNotifierProvider.notifier).cancelOrder(order.id);
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(

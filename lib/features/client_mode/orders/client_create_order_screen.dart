@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/client_user.dart';
 
-class ClientCreateOrderScreen extends StatefulWidget {
+class ClientCreateOrderScreen extends ConsumerStatefulWidget {
   final TenantLink? preselectedTenant;
 
   const ClientCreateOrderScreen({super.key, this.preselectedTenant});
 
   @override
-  State<ClientCreateOrderScreen> createState() => _ClientCreateOrderScreenState();
+  ConsumerState<ClientCreateOrderScreen> createState() => _ClientCreateOrderScreenState();
 }
 
-class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
+class _ClientCreateOrderScreenState extends ConsumerState<ClientCreateOrderScreen> {
   TenantLink? _selectedTenant;
   ClientOrderModel? _selectedModel;
   int _quantity = 1;
@@ -27,16 +27,18 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
   @override
   void initState() {
     super.initState();
-    final provider = context.read<ClientProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = ref.read(clientAuthNotifierProvider);
 
-    // Use preselected tenant if provided, otherwise first available
-    if (widget.preselectedTenant != null) {
-      _selectedTenant = widget.preselectedTenant;
-      _loadModels();
-    } else if (provider.tenants.isNotEmpty) {
-      _selectedTenant = provider.tenants.first;
-      _loadModels();
-    }
+      // Use preselected tenant if provided, otherwise first available
+      if (widget.preselectedTenant != null) {
+        _selectedTenant = widget.preselectedTenant;
+        _loadModels();
+      } else if (authState.tenants.isNotEmpty) {
+        _selectedTenant = authState.tenants.first;
+        _loadModels();
+      }
+    });
   }
 
   Future<void> _loadModels() async {
@@ -49,8 +51,8 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
     });
 
     try {
-      final provider = context.read<ClientProvider>();
-      final models = await provider.getTenantModels(_selectedTenant!.tenantId);
+      final notifier = ref.read(clientAuthNotifierProvider.notifier);
+      final models = await notifier.getTenantModels(_selectedTenant!.tenantId);
       setState(() {
         _models = models;
         _isLoadingModels = false;
@@ -79,8 +81,8 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final provider = context.read<ClientProvider>();
-      await provider.createOrder(
+      final notifier = ref.read(clientAuthNotifierProvider.notifier);
+      await notifier.createOrder(
         tenantId: _selectedTenant!.tenantId,
         modelId: _selectedModel!.id,
         quantity: _quantity,
@@ -114,6 +116,8 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(clientAuthNotifierProvider);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -121,9 +125,9 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Consumer<ClientProvider>(
-        builder: (context, provider, _) {
-          if (provider.tenants.isEmpty) {
+      body: Builder(
+        builder: (context) {
+          if (authState.tenants.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
@@ -154,7 +158,7 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
               if (widget.preselectedTenant == null) ...[
                 _buildSectionTitle('Ателье'),
                 const SizedBox(height: AppSpacing.sm),
-                _buildTenantSelector(provider),
+                _buildTenantSelector(authState),
                 const SizedBox(height: AppSpacing.lg),
               ] else ...[
                 // Show selected tenant as read-only
@@ -277,7 +281,7 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
     );
   }
 
-  Widget _buildTenantSelector(ClientProvider provider) {
+  Widget _buildTenantSelector(ClientAuthStateData authState) {
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -291,7 +295,7 @@ class _ClientCreateOrderScreenState extends State<ClientCreateOrderScreen> {
           border: InputBorder.none,
         ),
         isExpanded: true,
-        items: provider.tenants.map((tenant) {
+        items: authState.tenants.map((tenant) {
           return DropdownMenuItem<TenantLink>(
             value: tenant,
             child: Row(

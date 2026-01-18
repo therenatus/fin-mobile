@@ -50,3 +50,18 @@ class DateTimeConverter implements JsonConverter<DateTime, String> {
   @override
   String toJson(DateTime date) => date.toIso8601String();
 }
+
+// ============ Helper Functions for @JsonKey(fromJson:, toJson:) ============
+
+/// Parse DateTime from ISO8601 string
+DateTime dateTimeFromJson(String json) => DateTime.parse(json);
+
+/// Convert DateTime to ISO8601 string
+String dateTimeToJson(DateTime date) => date.toIso8601String();
+
+/// Parse nullable DateTime from ISO8601 string
+DateTime? nullableDateTimeFromJson(String? json) =>
+    json != null ? DateTime.parse(json) : null;
+
+/// Convert nullable DateTime to ISO8601 string
+String? nullableDateTimeToJson(DateTime? date) => date?.toIso8601String();

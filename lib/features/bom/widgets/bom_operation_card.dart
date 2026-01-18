@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/bom.dart';
-import '../../../core/providers/app_provider.dart';
+import '../../../core/riverpod/providers.dart';
 
 /// Карточка операции в BOM
-class BomOperationCard extends StatelessWidget {
+class BomOperationCard extends ConsumerWidget {
   final BomOperation operation;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -20,7 +20,7 @@ class BomOperationCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -80,7 +80,7 @@ class BomOperationCard extends StatelessWidget {
                           const SizedBox(width: AppSpacing.sm),
                           _InfoChip(
                             icon: Icons.person_outline,
-                            text: _getRoleLabel(context, operation.requiredRole!),
+                            text: _getRoleLabel(ref, operation.requiredRole!),
                             color: AppColors.info,
                           ),
                         ],
@@ -127,8 +127,8 @@ class BomOperationCard extends StatelessWidget {
     );
   }
 
-  String _getRoleLabel(BuildContext context, String role) {
-    return context.read<AppProvider>().getRoleLabel(role);
+  String _getRoleLabel(WidgetRef ref, String role) {
+    return ref.read(dashboardNotifierProvider).getRoleLabel(role);
   }
 }
 

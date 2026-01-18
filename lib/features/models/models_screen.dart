@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/models/order.dart';
@@ -14,14 +14,14 @@ import '../../core/services/api_service.dart';
 import 'model_form_screen.dart';
 import 'model_detail_screen.dart';
 
-class ModelsScreen extends StatefulWidget {
+class ModelsScreen extends ConsumerStatefulWidget {
   const ModelsScreen({super.key});
 
   @override
-  State<ModelsScreen> createState() => _ModelsScreenState();
+  ConsumerState<ModelsScreen> createState() => _ModelsScreenState();
 }
 
-class _ModelsScreenState extends State<ModelsScreen> {
+class _ModelsScreenState extends ConsumerState<ModelsScreen> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
   String _searchQuery = '';
@@ -29,8 +29,6 @@ class _ModelsScreenState extends State<ModelsScreen> {
   bool _isLoading = true;
   List<OrderModel> _models = [];
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   List<String> _getLocalizedCategories(BuildContext context) {
     return [
@@ -77,7 +75,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
   Future<void> _loadModels() async {
     setState(() => _isLoading = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final models = await api.getModels();
       setState(() {
         _models = models;
@@ -320,7 +318,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
               Navigator.pop(ctx); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
-                final api = _api;
+                final api = ref.read(apiServiceProvider);
                 await api.deleteModel(model.id);
                 _loadModels();
                 if (mounted) {

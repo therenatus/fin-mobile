@@ -24,9 +24,9 @@ Map<String, dynamic> _$OrderModelToJson(OrderModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'category': ?instance.category,
-      'description': ?instance.description,
-      'imageUrl': ?instance.imageUrl,
+      if (instance.category case final value?) 'category': value,
+      if (instance.description case final value?) 'description': value,
+      if (instance.imageUrl case final value?) 'imageUrl': value,
       'basePrice': instance.basePrice,
       'processSteps': instance.processSteps.map((e) => e.toJson()).toList(),
     };
@@ -44,7 +44,7 @@ Map<String, dynamic> _$OrderStatusLogToJson(OrderStatusLog instance) =>
       'id': instance.id,
       'status': instance.status,
       'timestamp': instance.timestamp.toIso8601String(),
-      'notes': ?instance.notes,
+      if (instance.notes case final value?) 'notes': value,
     };
 
 Order _$OrderFromJson(Map<String, dynamic> json) => Order(
@@ -77,11 +77,11 @@ Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
   'modelId': instance.modelId,
   'quantity': instance.quantity,
   'status': const OrderStatusConverter().toJson(instance.status),
-  'dueDate': ?instance.dueDate?.toIso8601String(),
+  if (instance.dueDate?.toIso8601String() case final value?) 'dueDate': value,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
-  'client': ?instance.client?.toJson(),
-  'model': ?instance.model?.toJson(),
+  if (instance.client?.toJson() case final value?) 'client': value,
+  if (instance.model?.toJson() case final value?) 'model': value,
   'statusLogs': instance.statusLogs.map((e) => e.toJson()).toList(),
 };
 

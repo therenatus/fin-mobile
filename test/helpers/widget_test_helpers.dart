@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:clothing_dashboard/core/models/models.dart';
 import 'package:clothing_dashboard/core/models/client_user.dart';
-import 'package:clothing_dashboard/core/providers/app_provider.dart';
 import 'package:clothing_dashboard/core/theme/app_theme.dart';
 
 /// Wrapper widget for testing individual widgets with proper theme and locale.
@@ -35,37 +34,31 @@ class TestWrapper extends StatelessWidget {
   }
 }
 
-/// Wrapper with Provider support for testing widgets that depend on providers.
+/// Wrapper with Riverpod support for testing widgets that depend on providers.
 class TestProviderWrapper extends StatelessWidget {
   final Widget child;
-  final AppProvider? appProvider;
+  final List<Override>? overrides;
   final ThemeMode themeMode;
 
   const TestProviderWrapper({
     super.key,
     required this.child,
-    this.appProvider,
+    this.overrides,
     this.themeMode = ThemeMode.light,
   });
 
   @override
   Widget build(BuildContext context) {
-    Widget wrappedChild = child;
-
-    if (appProvider != null) {
-      wrappedChild = ChangeNotifierProvider<AppProvider>.value(
-        value: appProvider!,
-        child: child,
-      );
-    }
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      locale: const Locale('ru', 'RU'),
-      home: Scaffold(body: wrappedChild),
+    return ProviderScope(
+      overrides: overrides ?? [],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        themeMode: themeMode,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        locale: const Locale('ru', 'RU'),
+        home: Scaffold(body: child),
+      ),
     );
   }
 }

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/bom.dart';
 import '../../core/models/material.dart' as mat;
-import '../../core/providers/bom_provider.dart';
-import '../../core/providers/materials_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/utils/toast.dart';
 
 /// Форма добавления/редактирования материала в BOM
-class BomItemFormScreen extends StatefulWidget {
+class BomItemFormScreen extends ConsumerStatefulWidget {
   final Bom bom;
   final BomItem? item; // null for create, not null for edit
 
@@ -21,10 +20,10 @@ class BomItemFormScreen extends StatefulWidget {
   });
 
   @override
-  State<BomItemFormScreen> createState() => _BomItemFormScreenState();
+  ConsumerState<BomItemFormScreen> createState() => _BomItemFormScreenState();
 }
 
-class _BomItemFormScreenState extends State<BomItemFormScreen> {
+class _BomItemFormScreenState extends ConsumerState<BomItemFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _wasteController = TextEditingController();
@@ -37,9 +36,6 @@ class _BomItemFormScreenState extends State<BomItemFormScreen> {
   bool _initialized = false;
 
   bool get _isEditing => widget.item != null;
-
-  BomProvider get _bomProvider => context.read<BomProvider>();
-  MaterialsProvider get _materialsProvider => context.read<MaterialsProvider>();
 
   @override
   void initState() {
@@ -73,8 +69,8 @@ class _BomItemFormScreenState extends State<BomItemFormScreen> {
   Future<void> _loadMaterials() async {
     setState(() => _isLoading = true);
     try {
-      await _materialsProvider.loadMaterials();
-      final materials = _materialsProvider.materials;
+      await ref.read(materialsNotifierProvider.notifier).loadMaterials();
+      final materials = ref.read(materialsListProvider);
       setState(() {
         _materials = materials;
         _isLoading = false;
@@ -473,7 +469,7 @@ class _BomItemFormScreenState extends State<BomItemFormScreen> {
         ];
       }
 
-      await _bomProvider.updateBom(
+      await ref.read(bomNotifierProvider.notifier).updateBom(
         widget.bom.id,
         items: updatedItems,
       );

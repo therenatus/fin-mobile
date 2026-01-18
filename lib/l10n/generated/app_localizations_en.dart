@@ -1125,4 +1125,146 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ofEmployees => 'employees';
+
+  @override
+  String get ateliers => 'Ateliers';
+
+  @override
+  String get myAteliers => 'My Ateliers';
+
+  @override
+  String get notLinkedToAtelier => 'You are not linked to any atelier yet';
+
+  @override
+  String get linkToAtelierHint => 'Link to an atelier to create orders';
+
+  @override
+  String get featureComingSoon => 'Feature coming soon';
+
+  @override
+  String get linkAtelier => 'Link Atelier';
+
+  @override
+  String get noOrdersLabel => 'No orders';
+
+  @override
+  String get oneOrder => '1 order';
+
+  @override
+  String fewOrders(int count) {
+    return '$count orders';
+  }
+
+  @override
+  String manyOrders(int count) {
+    return '$count orders';
+  }
+
+  @override
+  String get tasks => 'Tasks';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get myTasks => 'My Tasks';
+
+  @override
+  String get inWork => 'In Progress';
+
+  @override
+  String get ready => 'Completed';
+
+  @override
+  String get dateFilter => 'Filter by date';
+
+  @override
+  String tasksCount(int count) {
+    return '$count tasks';
+  }
+
+  @override
+  String get noActiveTasks => 'No active tasks';
+
+  @override
+  String get tasksWillAppearHere =>
+      'When the manager assigns an order to you, it will appear here';
+
+  @override
+  String get statusReady => 'Ready';
+
+  @override
+  String get works => 'Works';
+
+  @override
+  String get salary => 'Salary';
+
+  @override
+  String get noWorkRecords => 'No work records';
+
+  @override
+  String get workRecordsHint => 'Records will appear after you start working';
+
+  @override
+  String get noPayrollRecords => 'No payroll records';
+
+  @override
+  String get payrollRecordsHint =>
+      'When the manager calculates salary, information will appear here';
+
+  @override
+  String entriesCount(int count) {
+    return '$count entries';
+  }
+
+  @override
+  String get rub => 'RUB';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get hoursAbbr => 'h';
+
+  @override
+  String get contactInfo => 'Contact Information';
+
+  @override
+  String get phoneLabel => 'Phone';
+
+  @override
+  String get workplace => 'Workplace';
+
+  @override
+  String get atelierLabel => 'Atelier';
+
+  @override
+  String get activity => 'Activity';
+
+  @override
+  String get lastLogin => 'Last login';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(int minutes) {
+    return '$minutes min. ago';
+  }
+
+  @override
+  String hoursAgo(int hours) {
+    return '$hours h. ago';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days d. ago';
+  }
+
+  @override
+  String get logoutQuestion => 'Are you sure you want to log out?';
+
+  @override
+  String get appVersionEmployee => 'AteliePro Employee v1.0.0';
 }

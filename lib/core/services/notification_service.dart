@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'deep_link_service.dart';
 
 /// OneSignal push notification service
 class NotificationService {
@@ -7,6 +8,9 @@ class NotificationService {
   NotificationService._();
 
   bool _isInitialized = false;
+
+  /// Legacy callback for order tap (deprecated, use DeepLinkService instead)
+  @Deprecated('Use DeepLinkService for navigation')
   Function(String orderId)? onOrderTap;
 
   /// Initialize OneSignal with app ID
@@ -80,8 +84,16 @@ class NotificationService {
 
       debugPrint('NotificationService: type=$type, orderId=$orderId');
 
-      if (orderId != null && onOrderTap != null) {
-        onOrderTap!(orderId);
+      // Use DeepLinkService for navigation based on notification type
+      if (type != null) {
+        DeepLinkService.instance.handlePushNotification(Map<String, dynamic>.from(data));
+      } else if (orderId != null) {
+        // Fallback for legacy notifications without type
+        // ignore: deprecated_member_use_from_same_package
+        if (onOrderTap != null) {
+          // ignore: deprecated_member_use_from_same_package
+          onOrderTap!(orderId);
+        }
       }
     }
   }

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
 
-class WorkLogFormScreen extends StatefulWidget {
+class WorkLogFormScreen extends ConsumerStatefulWidget {
   const WorkLogFormScreen({super.key});
 
   @override
-  State<WorkLogFormScreen> createState() => _WorkLogFormScreenState();
+  ConsumerState<WorkLogFormScreen> createState() => _WorkLogFormScreenState();
 }
 
-class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
+class _WorkLogFormScreenState extends ConsumerState<WorkLogFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _hoursController = TextEditingController();
@@ -32,8 +32,6 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
   Employee? _selectedEmployee;
   ProcessStep? _selectedStep;
   DateTime _selectedDate = DateTime.now();
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -59,7 +57,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoadingData = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final ordersResponse = await api.getOrders(limit: 100);
       final employees = await api.getEmployees();
 
@@ -92,7 +90,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
 
   Future<void> _loadProcessSteps(String modelId) async {
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final steps = await api.getProcessSteps(modelId);
       setState(() {
         _processSteps = steps..sort((a, b) => a.stepOrder.compareTo(b.stepOrder));
@@ -642,7 +640,7 @@ class _WorkLogFormScreenState extends State<WorkLogFormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final quantity = int.tryParse(_quantityController.text) ?? 0;
       final hours = double.tryParse(_hoursController.text) ?? 0;
 

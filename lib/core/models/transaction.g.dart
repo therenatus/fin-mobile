@@ -24,8 +24,8 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
       'type': const TransactionTypeConverter().toJson(instance.type),
       'category': instance.category,
       'amount': instance.amount,
-      'description': ?instance.description,
-      'orderId': ?instance.orderId,
+      if (instance.description case final value?) 'description': value,
+      if (instance.orderId case final value?) 'orderId': value,
       'createdAt': instance.createdAt.toIso8601String(),
     };
 

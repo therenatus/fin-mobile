@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
-import '../../core/services/api_service.dart';
 import 'transaction_form_screen.dart';
 
-class FinanceScreen extends StatefulWidget {
+class FinanceScreen extends ConsumerStatefulWidget {
   const FinanceScreen({super.key});
 
   @override
-  State<FinanceScreen> createState() => _FinanceScreenState();
+  ConsumerState<FinanceScreen> createState() => _FinanceScreenState();
 }
 
-class _FinanceScreenState extends State<FinanceScreen> {
+class _FinanceScreenState extends ConsumerState<FinanceScreen> {
   bool _isLoading = true;
   String _period = 'month'; // week, month, quarter
   FinanceReport? _report;
   List<Transaction> _transactions = [];
   String? _typeFilter; // null = all, 'income', 'expense'
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -44,7 +41,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final now = DateTime.now();
       DateTime startDate;
 
@@ -311,7 +308,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
               Navigator.pop(ctx); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
-                final api = _api;
+                final api = ref.read(apiServiceProvider);
                 await api.deleteTransaction(transaction.id);
                 _loadData();
                 if (mounted) {

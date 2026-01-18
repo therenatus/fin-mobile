@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/materials_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/material.dart' as mat;
 import '../../core/widgets/material_card.dart';
 import '../../core/widgets/common.dart';
 import 'material_detail_screen.dart';
 import 'barcode_scan_screen.dart';
 
-class MaterialsScreen extends StatefulWidget {
+class MaterialsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const MaterialsScreen({super.key, this.onMenuPressed});
 
   @override
-  State<MaterialsScreen> createState() => _MaterialsScreenState();
+  ConsumerState<MaterialsScreen> createState() => _MaterialsScreenState();
 }
 
-class _MaterialsScreenState extends State<MaterialsScreen> {
+class _MaterialsScreenState extends ConsumerState<MaterialsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -27,10 +27,10 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<MaterialsProvider>();
-      provider.loadCategories();
-      provider.loadMaterials();
-      provider.loadLowStockMaterials();
+      final notifier = ref.read(materialsNotifierProvider.notifier);
+      notifier.loadCategories();
+      notifier.loadMaterials();
+      notifier.loadLowStockMaterials();
     });
   }
 
@@ -44,12 +44,12 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<MaterialsProvider>().loadMoreMaterials();
+      ref.read(materialsNotifierProvider.notifier).loadMoreMaterials();
     }
   }
 
   void _onSearch(String query) {
-    context.read<MaterialsProvider>().setSearchQuery(query);
+    ref.read(materialsNotifierProvider.notifier).setSearchQuery(query);
   }
 
   void _openMaterial(mat.Material material) {
@@ -96,207 +96,215 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
         children: [
           _buildSearchAndFilters(),
           Expanded(
-            child: Consumer<MaterialsProvider>(
-              builder: (context, provider, _) {
-                if (provider.state == MaterialsState.loading &&
-                    provider.materials.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (provider.state == MaterialsState.error) {
-                  return _buildError(provider);
-                }
-
-                if (provider.materials.isEmpty) {
-                  return _buildEmpty();
-                }
-
-                return RefreshIndicator(
-                  onRefresh: provider.refresh,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    itemCount: provider.materials.length +
-                        (provider.isLoadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == provider.materials.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(AppSpacing.md),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      final material = provider.materials[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        child: MaterialCard(
-                          material: material,
-                          onTap: () => _openMaterial(material),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
+            child: _buildMaterialsList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchAndFilters() {
-    return Consumer<MaterialsProvider>(
-      builder: (context, provider, _) {
-        return Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            border: Border(
-              bottom: BorderSide(color: context.borderColor),
+  Widget _buildMaterialsList() {
+    final materialsState = ref.watch(materialsNotifierProvider);
+    final materials = materialsState.materials;
+    final isLoading = materialsState.loadingState == MaterialsLoadingState.loading;
+    final isError = materialsState.loadingState == MaterialsLoadingState.error;
+    final isLoadingMore = materialsState.isLoadingMore;
+
+    if (isLoading && materials.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (isError) {
+      return _buildError();
+    }
+
+    if (materials.isEmpty) {
+      return _buildEmpty();
+    }
+
+    return RefreshIndicator(
+      onRefresh: ref.read(materialsNotifierProvider.notifier).refresh,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        itemCount: materials.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == materials.length) {
+            return const Padding(
+              padding: EdgeInsets.all(AppSpacing.md),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final material = materials[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: MaterialCard(
+              material: material,
+              onTap: () => _openMaterial(material),
             ),
-          ),
-          child: Column(
-            children: [
-              // Search bar
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Поиск по названию или SKU...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            _onSearch('');
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: context.surfaceVariantColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                ),
-                onChanged: _onSearch,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              // Filters row
-              Row(
-                children: [
-                  // Category dropdown
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: context.surfaceVariantColor,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String?>(
-                          value: provider.categoryId,
-                          isExpanded: true,
-                          hint: const Text('Все категории'),
-                          items: [
-                            const DropdownMenuItem<String?>(
-                              value: null,
-                              child: Text('Все категории'),
-                            ),
-                            ...provider.categories.map(
-                              (cat) => DropdownMenuItem<String?>(
-                                value: cat.id,
-                                child: Text(
-                                  cat.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            provider.setCategory(value);
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-
-                  // Low stock filter
-                  FilterChip(
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Мало'),
-                        if (provider.lowStockCount > 0) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.error,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '${provider.lowStockCount}',
-                              style: AppTypography.labelSmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    selected: provider.showLowStockOnly,
-                    onSelected: provider.setLowStockFilter,
-                    selectedColor: AppColors.error.withOpacity(0.2),
-                    checkmarkColor: AppColors.error,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildError(MaterialsProvider provider) {
+  Widget _buildSearchAndFilters() {
+    final materialsState = ref.watch(materialsNotifierProvider);
+    final categories = materialsState.categories;
+    final categoryId = materialsState.categoryId;
+    final lowStockCount = materialsState.lowStockCount;
+    final showLowStockOnly = materialsState.showLowStockOnly;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        border: Border(
+          bottom: BorderSide(color: context.borderColor),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Search bar
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Поиск по названию или SKU...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearch('');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: context.surfaceVariantColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+            ),
+            onChanged: _onSearch,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Filters row
+          Row(
+            children: [
+              // Category dropdown
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: context.surfaceVariantColor,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String?>(
+                      value: categoryId,
+                      isExpanded: true,
+                      hint: const Text('Все категории'),
+                      items: [
+                        const DropdownMenuItem<String?>(
+                          value: null,
+                          child: Text('Все категории'),
+                        ),
+                        ...categories.map(
+                          (cat) => DropdownMenuItem<String?>(
+                            value: cat.id,
+                            child: Text(
+                              cat.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        ref.read(materialsNotifierProvider.notifier).setCategory(value);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+
+              // Low stock filter
+              FilterChip(
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Мало'),
+                    if (lowStockCount > 0) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$lowStockCount',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                selected: showLowStockOnly,
+                onSelected: ref.read(materialsNotifierProvider.notifier).setLowStockFilter,
+                selectedColor: AppColors.error.withOpacity(0.2),
+                checkmarkColor: AppColors.error,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    final error = ref.read(materialsNotifierProvider).error;
     return EmptyState(
       icon: Icons.error_outline,
       title: 'Ошибка загрузки',
-      message: provider.error ?? 'Не удалось загрузить материалы',
+      subtitle: error ?? 'Не удалось загрузить материалы',
       actionLabel: 'Повторить',
       onAction: () {
-        provider.clearError();
-        provider.loadMaterials();
+        final notifier = ref.read(materialsNotifierProvider.notifier);
+        notifier.clearError();
+        notifier.loadMaterials();
       },
     );
   }
 
   Widget _buildEmpty() {
-    final provider = context.read<MaterialsProvider>();
-    final hasFilters = provider.searchQuery.isNotEmpty ||
-        provider.categoryId != null ||
-        provider.showLowStockOnly;
+    final materialsState = ref.read(materialsNotifierProvider);
+    final hasFilters = materialsState.searchQuery.isNotEmpty ||
+        materialsState.categoryId != null ||
+        materialsState.showLowStockOnly;
 
     return EmptyState(
       icon: Icons.inventory_2_outlined,
       title: hasFilters ? 'Ничего не найдено' : 'Нет материалов',
-      message: hasFilters
+      subtitle: hasFilters
           ? 'Попробуйте изменить параметры поиска'
           : 'Добавьте материалы для учёта на складе',
       actionLabel: hasFilters ? 'Сбросить фильтры' : null,
-      onAction: hasFilters ? provider.clearFilters : null,
+      onAction: hasFilters ? ref.read(materialsNotifierProvider.notifier).clearFilters : null,
     );
   }
 }

@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'json_converters.dart';
+
+part 'stock_movement.g.dart';
+
 enum MovementType {
   purchase,
   consumption,
@@ -47,6 +52,7 @@ enum MovementType {
   }
 }
 
+@JsonSerializable()
 class StockMovementMaterial {
   final String id;
   final String name;
@@ -60,16 +66,12 @@ class StockMovementMaterial {
     required this.unit,
   });
 
-  factory StockMovementMaterial.fromJson(Map<String, dynamic> json) {
-    return StockMovementMaterial(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      sku: json['sku'] as String,
-      unit: json['unit'] as String,
-    );
-  }
+  factory StockMovementMaterial.fromJson(Map<String, dynamic> json) =>
+      _$StockMovementMaterialFromJson(json);
+  Map<String, dynamic> toJson() => _$StockMovementMaterialToJson(this);
 }
 
+@JsonSerializable()
 class StockMovementOrder {
   final String id;
   final String? orderNumber;
@@ -79,14 +81,12 @@ class StockMovementOrder {
     this.orderNumber,
   });
 
-  factory StockMovementOrder.fromJson(Map<String, dynamic> json) {
-    return StockMovementOrder(
-      id: json['id'] as String,
-      orderNumber: json['orderNumber'] as String?,
-    );
-  }
+  factory StockMovementOrder.fromJson(Map<String, dynamic> json) =>
+      _$StockMovementOrderFromJson(json);
+  Map<String, dynamic> toJson() => _$StockMovementOrderToJson(this);
 }
 
+@JsonSerializable()
 class StockMovementPurchase {
   final String id;
   final String number;
@@ -96,17 +96,16 @@ class StockMovementPurchase {
     required this.number,
   });
 
-  factory StockMovementPurchase.fromJson(Map<String, dynamic> json) {
-    return StockMovementPurchase(
-      id: json['id'] as String,
-      number: json['number'] as String,
-    );
-  }
+  factory StockMovementPurchase.fromJson(Map<String, dynamic> json) =>
+      _$StockMovementPurchaseFromJson(json);
+  Map<String, dynamic> toJson() => _$StockMovementPurchaseToJson(this);
 }
 
+@JsonSerializable()
 class StockMovement {
   final String id;
   final String materialId;
+  @JsonKey(fromJson: _movementTypeFromJson, toJson: _movementTypeToJson)
   final MovementType type;
   final double quantity;
   final double balanceAfter;
@@ -118,6 +117,7 @@ class StockMovement {
   final StockMovementMaterial? material;
   final StockMovementOrder? order;
   final StockMovementPurchase? purchase;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
 
   StockMovement({
@@ -137,44 +137,36 @@ class StockMovement {
     required this.createdAt,
   });
 
-  factory StockMovement.fromJson(Map<String, dynamic> json) {
-    return StockMovement(
-      id: json['id'] as String,
-      materialId: json['materialId'] as String,
-      type: MovementType.fromString(json['type'] as String),
-      quantity: (json['quantity'] as num).toDouble(),
-      balanceAfter: (json['balanceAfter'] as num).toDouble(),
-      unitCost: (json['unitCost'] as num?)?.toDouble(),
-      orderId: json['orderId'] as String?,
-      purchaseId: json['purchaseId'] as String?,
-      reason: json['reason'] as String?,
-      performedBy: json['performedBy'] as String?,
-      material: json['material'] != null
-          ? StockMovementMaterial.fromJson(json['material'] as Map<String, dynamic>)
-          : null,
-      order: json['order'] != null
-          ? StockMovementOrder.fromJson(json['order'] as Map<String, dynamic>)
-          : null,
-      purchase: json['purchase'] != null
-          ? StockMovementPurchase.fromJson(json['purchase'] as Map<String, dynamic>)
-          : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
-
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get isIncoming => quantity > 0;
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedQuantity {
     final sign = quantity >= 0 ? '+' : '';
     return '$sign${quantity.toStringAsFixed(quantity.truncateToDouble() == quantity ? 0 : 2)}';
   }
+
+  factory StockMovement.fromJson(Map<String, dynamic> json) =>
+      _$StockMovementFromJson(json);
+  Map<String, dynamic> toJson() => _$StockMovementToJson(this);
 }
 
+// Helper functions for MovementType
+MovementType _movementTypeFromJson(String value) =>
+    MovementType.fromString(value);
+
+String _movementTypeToJson(MovementType type) => type.toJson();
+
+@JsonSerializable()
 class StockMovementsResponse {
   final List<StockMovement> movements;
+  @JsonKey(readValue: _readPage, defaultValue: 1)
   final int page;
+  @JsonKey(readValue: _readPerPage, defaultValue: 20)
   final int perPage;
+  @JsonKey(readValue: _readTotal, defaultValue: 0)
   final int total;
+  @JsonKey(readValue: _readTotalPages, defaultValue: 1)
   final int totalPages;
 
   StockMovementsResponse({
@@ -185,16 +177,17 @@ class StockMovementsResponse {
     required this.totalPages,
   });
 
-  factory StockMovementsResponse.fromJson(Map<String, dynamic> json) {
-    final meta = json['meta'] as Map<String, dynamic>?;
-    return StockMovementsResponse(
-      movements: (json['movements'] as List<dynamic>)
-          .map((e) => StockMovement.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      page: meta?['page'] as int? ?? 1,
-      perPage: meta?['per_page'] as int? ?? 20,
-      total: meta?['total'] as int? ?? 0,
-      totalPages: meta?['total_pages'] as int? ?? 1,
-    );
-  }
+  factory StockMovementsResponse.fromJson(Map<String, dynamic> json) =>
+      _$StockMovementsResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$StockMovementsResponseToJson(this);
 }
+
+// Helper functions for reading meta fields
+Object? _readPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['page'];
+Object? _readPerPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['per_page'];
+Object? _readTotal(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total'];
+Object? _readTotalPages(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total_pages'];

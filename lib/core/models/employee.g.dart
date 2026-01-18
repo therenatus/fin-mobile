@@ -19,8 +19,8 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee(
 Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
   'name': instance.name,
   'role': instance.role,
-  'phone': ?instance.phone,
-  'email': ?instance.email,
+  if (instance.phone case final value?) 'phone': value,
+  if (instance.email case final value?) 'email': value,
 };
 
 EmployeeRole _$EmployeeRoleFromJson(Map<String, dynamic> json) => EmployeeRole(

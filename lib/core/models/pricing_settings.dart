@@ -1,12 +1,21 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'json_converters.dart';
+
+part 'pricing_settings.g.dart';
+
 /// Настройки ценообразования
+@JsonSerializable()
 class PricingSettings {
   final String id;
   final String tenantId;
   final double defaultHourlyRate;
   final double overheadPct;
   final double defaultMarginPct;
+  @JsonKey(fromJson: _roleRatesFromJson, toJson: _roleRatesToJson)
   final Map<String, double> roleRates;
+  @JsonKey(fromJson: nullableDateTimeFromJson, toJson: nullableDateTimeToJson)
   final DateTime? createdAt;
+  @JsonKey(fromJson: nullableDateTimeFromJson, toJson: nullableDateTimeToJson)
   final DateTime? updatedAt;
 
   PricingSettings({
@@ -26,31 +35,8 @@ class PricingSettings {
     return roleRates[role] ?? defaultHourlyRate;
   }
 
-  factory PricingSettings.fromJson(Map<String, dynamic> json) {
-    // Parse roleRates - can be Map<String, num>
-    final rawRates = json['roleRates'];
-    Map<String, double> rates = {};
-    if (rawRates is Map) {
-      rawRates.forEach((key, value) {
-        rates[key as String] = (value as num).toDouble();
-      });
-    }
-
-    return PricingSettings(
-      id: json['id'] as String,
-      tenantId: json['tenantId'] as String,
-      defaultHourlyRate: (json['defaultHourlyRate'] as num).toDouble(),
-      overheadPct: (json['overheadPct'] as num).toDouble(),
-      defaultMarginPct: (json['defaultMarginPct'] as num).toDouble(),
-      roleRates: rates,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : null,
-    );
-  }
+  factory PricingSettings.fromJson(Map<String, dynamic> json) =>
+      _$PricingSettingsFromJson(json);
 
   Map<String, dynamic> toJson() => {
         'defaultHourlyRate': defaultHourlyRate,
@@ -60,7 +46,20 @@ class PricingSettings {
       };
 }
 
+Map<String, double> _roleRatesFromJson(dynamic value) {
+  if (value == null) return {};
+  if (value is! Map) return {};
+  final Map<String, double> result = {};
+  value.forEach((key, val) {
+    result[key as String] = (val as num).toDouble();
+  });
+  return result;
+}
+
+Map<String, dynamic> _roleRatesToJson(Map<String, double> rates) => rates;
+
 /// Рекомендация по цене
+@JsonSerializable()
 class PriceSuggestion {
   final double unitCost;
   final double totalCost;
@@ -79,27 +78,24 @@ class PriceSuggestion {
   });
 
   /// Форматированная рекомендованная цена
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedSuggestedPrice => '${suggestedTotal.toStringAsFixed(0)} ₽';
 
   /// Форматированная цена за единицу
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedUnitPrice => '${suggestedUnitPrice.toStringAsFixed(0)} ₽';
 
   /// Форматированная себестоимость
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedCost => '${totalCost.toStringAsFixed(0)} ₽';
 
-  factory PriceSuggestion.fromJson(Map<String, dynamic> json) {
-    return PriceSuggestion(
-      unitCost: (json['unitCost'] as num).toDouble(),
-      totalCost: (json['totalCost'] as num).toDouble(),
-      marginPct: (json['marginPct'] as num).toDouble(),
-      suggestedTotal: (json['suggestedTotal'] as num).toDouble(),
-      suggestedUnitPrice: (json['suggestedUnitPrice'] as num).toDouble(),
-      breakdown: PriceBreakdown.fromJson(json['breakdown'] as Map<String, dynamic>),
-    );
-  }
+  factory PriceSuggestion.fromJson(Map<String, dynamic> json) =>
+      _$PriceSuggestionFromJson(json);
+  Map<String, dynamic> toJson() => _$PriceSuggestionToJson(this);
 }
 
 /// Разбивка цены
+@JsonSerializable()
 class PriceBreakdown {
   final double materials;
   final double labor;
@@ -114,17 +110,14 @@ class PriceBreakdown {
   });
 
   /// Себестоимость (без наценки)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   double get cost => materials + labor + overhead;
 
   /// Полная цена (с наценкой)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   double get total => cost + margin;
 
-  factory PriceBreakdown.fromJson(Map<String, dynamic> json) {
-    return PriceBreakdown(
-      materials: (json['materials'] as num).toDouble(),
-      labor: (json['labor'] as num).toDouble(),
-      overhead: (json['overhead'] as num).toDouble(),
-      margin: (json['margin'] as num).toDouble(),
-    );
-  }
+  factory PriceBreakdown.fromJson(Map<String, dynamic> json) =>
+      _$PriceBreakdownFromJson(json);
+  Map<String, dynamic> toJson() => _$PriceBreakdownToJson(this);
 }

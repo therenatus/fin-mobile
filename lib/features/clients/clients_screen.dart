@@ -1,27 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/models/models.dart';
-import '../../core/services/api_service.dart';
 import '../orders/create_order_screen.dart';
 import 'client_form_screen.dart';
 
-class ClientsScreen extends StatefulWidget {
+class ClientsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const ClientsScreen({super.key, this.onMenuPressed});
 
   @override
-  State<ClientsScreen> createState() => _ClientsScreenState();
+  ConsumerState<ClientsScreen> createState() => _ClientsScreenState();
 }
 
-class _ClientsScreenState extends State<ClientsScreen> {
+class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
   String _searchQuery = '';
@@ -94,26 +93,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
           ),
         ),
       ),
-      body: Consumer<AppProvider>(
-        builder: (context, provider, _) {
-          return _buildClientsList(provider.clients, provider.user?.canEditClients ?? false);
-        },
-      ),
-      floatingActionButton: Consumer<AppProvider>(
-        builder: (context, provider, _) {
-          final canEdit = provider.user?.canEditClients ?? false;
-          if (!canEdit) return const SizedBox.shrink();
-
-          return FloatingActionButton.extended(
-            heroTag: 'clients_fab',
-            onPressed: () => _openClientForm(),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            icon: const Icon(Icons.person_add),
-            label: Text(context.l10n.newCustomer),
-          );
-        },
-      ),
+      body: _buildClientsList(),
+      floatingActionButton: _buildFab(),
     );
   }
 
@@ -140,8 +121,27 @@ class _ClientsScreenState extends State<ClientsScreen> {
     );
   }
 
-  Widget _buildClientsList(List<Client> clients, bool canEdit) {
-    var filteredClients = clients;
+  Widget? _buildFab() {
+    final user = ref.watch(currentUserProvider);
+    final canEdit = user?.canEditClients ?? false;
+    if (!canEdit) return null;
+
+    return FloatingActionButton.extended(
+      heroTag: 'clients_fab',
+      onPressed: () => _openClientForm(),
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      icon: const Icon(Icons.person_add),
+      label: Text(context.l10n.newCustomer),
+    );
+  }
+
+  Widget _buildClientsList() {
+    final clients = ref.watch(clientsProvider);
+    final user = ref.watch(currentUserProvider);
+    final canEdit = user?.canEditClients ?? false;
+
+    var filteredClients = clients.toList();
 
     // Search filter
     if (_searchQuery.isNotEmpty) {
@@ -184,7 +184,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: () => context.read<AppProvider>().refreshDashboard(),
+      onRefresh: () => ref.read(dashboardNotifierProvider.notifier).refreshDashboard(),
       child: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.md),
         itemCount: filteredClients.length,
@@ -201,14 +201,14 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 
   void _showClientDetails(Client client) {
-    final user = context.read<AppProvider>().user;
+    final user = ref.read(currentUserProvider);
     final canEdit = user?.canEditClients ?? false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ClientDetailsSheet(
+      builder: (ctx) => _ClientDetailsSheet(
         client: client,
         canEdit: canEdit,
         onEdit: () => _openClientForm(client: client),
@@ -240,7 +240,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 }
 
-class _ClientDetailsSheet extends StatefulWidget {
+class _ClientDetailsSheet extends ConsumerStatefulWidget {
   final Client client;
   final bool canEdit;
   final VoidCallback onEdit;
@@ -254,11 +254,10 @@ class _ClientDetailsSheet extends StatefulWidget {
   });
 
   @override
-  State<_ClientDetailsSheet> createState() => _ClientDetailsSheetState();
+  ConsumerState<_ClientDetailsSheet> createState() => _ClientDetailsSheetState();
 }
 
-class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
-  ApiService get _api => context.read<AppProvider>().api;
+class _ClientDetailsSheetState extends ConsumerState<_ClientDetailsSheet> {
 
   Client? _clientDetails;
   bool _isLoading = true;
@@ -275,7 +274,8 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
 
   Future<void> _loadClientDetails() async {
     try {
-      final client = await _api.getClient(widget.client.id);
+      final api = ref.read(apiServiceProvider);
+      final client = await api.getClient(widget.client.id);
       if (mounted) {
         setState(() {
           _clientDetails = client;
@@ -695,7 +695,7 @@ class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
 }
 
 // Dialog for selecting which models to assign to a client
-class _ModelAssignmentDialog extends StatefulWidget {
+class _ModelAssignmentDialog extends ConsumerStatefulWidget {
   final String clientId;
   final List<String> assignedModelIds;
 
@@ -705,12 +705,10 @@ class _ModelAssignmentDialog extends StatefulWidget {
   });
 
   @override
-  State<_ModelAssignmentDialog> createState() => _ModelAssignmentDialogState();
+  ConsumerState<_ModelAssignmentDialog> createState() => _ModelAssignmentDialogState();
 }
 
-class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
-  ApiService get _api => context.read<AppProvider>().api;
-
+class _ModelAssignmentDialogState extends ConsumerState<_ModelAssignmentDialog> {
   List<OrderModel> _allModels = [];
   Set<String> _selectedModelIds = {};
   bool _isLoading = true;
@@ -730,7 +728,8 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
 
   Future<void> _loadModels() async {
     try {
-      final models = await _api.getModels();
+      final api = ref.read(apiServiceProvider);
+      final models = await api.getModels();
       if (mounted) {
         setState(() {
           _allModels = models;
@@ -750,7 +749,8 @@ class _ModelAssignmentDialogState extends State<_ModelAssignmentDialog> {
   Future<void> _saveAssignments() async {
     setState(() => _isSaving = true);
     try {
-      await _api.setClientAssignedModels(widget.clientId, _selectedModelIds.toList());
+      final api = ref.read(apiServiceProvider);
+      await api.setClientAssignedModels(widget.clientId, _selectedModelIds.toList());
       if (mounted) {
         Navigator.pop(context, true);
       }

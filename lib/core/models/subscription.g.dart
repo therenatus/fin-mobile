@@ -24,19 +24,21 @@ SubscriptionPlan _$SubscriptionPlanFromJson(Map<String, dynamic> json) =>
           [],
     );
 
-Map<String, dynamic> _$SubscriptionPlanToJson(SubscriptionPlan instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'description': ?instance.description,
-      'price': instance.price,
-      'billingCycle': instance.billingCycle,
-      'clientLimit': instance.clientLimit,
-      'employeeLimit': instance.employeeLimit,
-      'googlePlayProductId': ?instance.googlePlayProductId,
-      'appStoreProductId': ?instance.appStoreProductId,
-      'features': instance.features,
-    };
+Map<String, dynamic> _$SubscriptionPlanToJson(
+  SubscriptionPlan instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  if (instance.description case final value?) 'description': value,
+  'price': instance.price,
+  'billingCycle': instance.billingCycle,
+  'clientLimit': instance.clientLimit,
+  'employeeLimit': instance.employeeLimit,
+  if (instance.googlePlayProductId case final value?)
+    'googlePlayProductId': value,
+  if (instance.appStoreProductId case final value?) 'appStoreProductId': value,
+  'features': instance.features,
+};
 
 SubscriptionLimits _$SubscriptionLimitsFromJson(Map<String, dynamic> json) =>
     SubscriptionLimits(
@@ -81,9 +83,10 @@ Map<String, dynamic> _$ResourceUsageToJson(ResourceUsage instance) =>
       'clientsRemaining': instance.clientsRemaining,
       'employeesRemaining': instance.employeesRemaining,
       'planName': instance.planName,
-      'planId': ?instance.planId,
+      if (instance.planId case final value?) 'planId': value,
       'status': instance.status,
-      'expiresAt': ?instance.expiresAt?.toIso8601String(),
+      if (instance.expiresAt?.toIso8601String() case final value?)
+        'expiresAt': value,
     };
 
 Subscription _$SubscriptionFromJson(Map<String, dynamic> json) => Subscription(
@@ -112,11 +115,14 @@ Map<String, dynamic> _$SubscriptionToJson(Subscription instance) =>
       'id': instance.id,
       'tenantId': instance.tenantId,
       'planId': instance.planId,
-      'plan': ?instance.plan?.toJson(),
+      if (instance.plan?.toJson() case final value?) 'plan': value,
       'status': instance.status,
       'startDate': instance.startDate.toIso8601String(),
-      'nextBillingDate': ?instance.nextBillingDate?.toIso8601String(),
-      'trialEndDate': ?instance.trialEndDate?.toIso8601String(),
-      'expiresAt': ?instance.expiresAt?.toIso8601String(),
-      'platform': ?instance.platform,
+      if (instance.nextBillingDate?.toIso8601String() case final value?)
+        'nextBillingDate': value,
+      if (instance.trialEndDate?.toIso8601String() case final value?)
+        'trialEndDate': value,
+      if (instance.expiresAt?.toIso8601String() case final value?)
+        'expiresAt': value,
+      if (instance.platform case final value?) 'platform': value,
     };

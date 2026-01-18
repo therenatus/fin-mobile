@@ -1,4 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'json_converters.dart';
 import 'material.dart' show MaterialUnit;
+
+part 'purchase.g.dart';
 
 enum PurchaseStatus {
   draft,
@@ -42,6 +46,7 @@ enum PurchaseStatus {
   String toJson() => name.toUpperCase();
 }
 
+@JsonSerializable()
 class PurchaseSupplier {
   final String id;
   final String name;
@@ -51,14 +56,12 @@ class PurchaseSupplier {
     required this.name,
   });
 
-  factory PurchaseSupplier.fromJson(Map<String, dynamic> json) {
-    return PurchaseSupplier(
-      id: json['id'] as String,
-      name: json['name'] as String,
-    );
-  }
+  factory PurchaseSupplier.fromJson(Map<String, dynamic> json) =>
+      _$PurchaseSupplierFromJson(json);
+  Map<String, dynamic> toJson() => _$PurchaseSupplierToJson(this);
 }
 
+@JsonSerializable()
 class PurchaseItemMaterial {
   final String id;
   final String name;
@@ -74,29 +77,28 @@ class PurchaseItemMaterial {
     this.quantity,
   });
 
-  factory PurchaseItemMaterial.fromJson(Map<String, dynamic> json) {
-    return PurchaseItemMaterial(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      sku: json['sku'] as String,
-      unit: json['unit'] as String,
-      quantity: (json['quantity'] as num?)?.toDouble(),
-    );
-  }
-
+  @JsonKey(includeFromJson: false, includeToJson: false)
   MaterialUnit get materialUnit => MaterialUnit.fromString(unit);
+
+  factory PurchaseItemMaterial.fromJson(Map<String, dynamic> json) =>
+      _$PurchaseItemMaterialFromJson(json);
+  Map<String, dynamic> toJson() => _$PurchaseItemMaterialToJson(this);
 }
 
+@JsonSerializable()
 class PurchaseItem {
   final String id;
   final String purchaseId;
   final String materialId;
   final double quantity;
+  @JsonKey(defaultValue: 0.0)
   final double receivedQty;
   final double unitPrice;
   final double totalPrice;
   final PurchaseItemMaterial? material;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime updatedAt;
 
   // Computed from backend
@@ -118,56 +120,59 @@ class PurchaseItem {
     this.isFullyReceived,
   });
 
-  factory PurchaseItem.fromJson(Map<String, dynamic> json) {
-    return PurchaseItem(
-      id: json['id'] as String,
-      purchaseId: json['purchaseId'] as String,
-      materialId: json['materialId'] as String,
-      quantity: (json['quantity'] as num).toDouble(),
-      receivedQty: (json['receivedQty'] as num?)?.toDouble() ?? 0,
-      unitPrice: (json['unitPrice'] as num).toDouble(),
-      totalPrice: (json['totalPrice'] as num).toDouble(),
-      material: json['material'] != null
-          ? PurchaseItemMaterial.fromJson(json['material'] as Map<String, dynamic>)
-          : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      remainingQty: (json['remainingQty'] as num?)?.toDouble(),
-      isFullyReceived: json['isFullyReceived'] as bool?,
-    );
-  }
-
+  @JsonKey(includeFromJson: false, includeToJson: false)
   double get computedRemainingQty => remainingQty ?? (quantity - receivedQty);
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get computedIsFullyReceived => isFullyReceived ?? (receivedQty >= quantity);
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedQuantity {
     final unit = material?.materialUnit.label ?? '';
     return '${quantity.toStringAsFixed(quantity.truncateToDouble() == quantity ? 0 : 2)} $unit';
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedReceivedQty {
     final unit = material?.materialUnit.label ?? '';
     return '${receivedQty.toStringAsFixed(receivedQty.truncateToDouble() == receivedQty ? 0 : 2)} $unit';
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedUnitPrice => '${unitPrice.toStringAsFixed(2)} ₽';
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedTotalPrice => '${totalPrice.toStringAsFixed(2)} ₽';
+
+  factory PurchaseItem.fromJson(Map<String, dynamic> json) =>
+      _$PurchaseItemFromJson(json);
+  Map<String, dynamic> toJson() => _$PurchaseItemToJson(this);
 }
 
+@JsonSerializable()
 class Purchase {
   final String id;
   final String number;
+  @JsonKey(fromJson: _purchaseStatusFromJson, toJson: _purchaseStatusToJson)
   final PurchaseStatus status;
   final String? supplierId;
   final PurchaseSupplier? supplier;
+  @JsonKey(fromJson: nullableDateTimeFromJson, toJson: nullableDateTimeToJson)
   final DateTime? orderDate;
+  @JsonKey(fromJson: nullableDateTimeFromJson, toJson: nullableDateTimeToJson)
   final DateTime? expectedDate;
+  @JsonKey(fromJson: nullableDateTimeFromJson, toJson: nullableDateTimeToJson)
   final DateTime? receivedDate;
+  @JsonKey(defaultValue: 0.0)
   final double totalAmount;
   final String? notes;
+  @JsonKey(defaultValue: [])
   final List<PurchaseItem> items;
+  @JsonKey(readValue: _readItemsCount, defaultValue: 0)
   final int itemsCount;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime updatedAt;
 
   // Computed from backend
@@ -191,49 +196,47 @@ class Purchase {
     this.isFullyReceived,
   });
 
-  factory Purchase.fromJson(Map<String, dynamic> json) {
-    return Purchase(
-      id: json['id'] as String,
-      number: json['number'] as String,
-      status: PurchaseStatus.fromString(json['status'] as String),
-      supplierId: json['supplierId'] as String?,
-      supplier: json['supplier'] != null
-          ? PurchaseSupplier.fromJson(json['supplier'] as Map<String, dynamic>)
-          : null,
-      orderDate: json['orderDate'] != null
-          ? DateTime.parse(json['orderDate'] as String)
-          : null,
-      expectedDate: json['expectedDate'] != null
-          ? DateTime.parse(json['expectedDate'] as String)
-          : null,
-      receivedDate: json['receivedDate'] != null
-          ? DateTime.parse(json['receivedDate'] as String)
-          : null,
-      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
-      notes: json['notes'] as String?,
-      items: (json['items'] as List<dynamic>?)
-              ?.map((e) => PurchaseItem.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      itemsCount: (json['_count']?['items'] as int?) ?? (json['items'] as List<dynamic>?)?.length ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      isFullyReceived: json['isFullyReceived'] as bool?,
-    );
-  }
-
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedTotalAmount => '${totalAmount.toStringAsFixed(2)} ₽';
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get canEdit => status == PurchaseStatus.draft;
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get canReceive => status == PurchaseStatus.ordered || status == PurchaseStatus.partial;
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get isFinal => status == PurchaseStatus.received || status == PurchaseStatus.cancelled;
+
+  factory Purchase.fromJson(Map<String, dynamic> json) =>
+      _$PurchaseFromJson(json);
+  Map<String, dynamic> toJson() => _$PurchaseToJson(this);
 }
 
+// Helper functions
+PurchaseStatus _purchaseStatusFromJson(String value) =>
+    PurchaseStatus.fromString(value);
+
+String _purchaseStatusToJson(PurchaseStatus status) => status.toJson();
+
+Object? _readItemsCount(Map<dynamic, dynamic> json, String key) {
+  // Try _count.items first, then items.length
+  final count = (json['_count'] as Map<String, dynamic>?)?['items'];
+  if (count != null) return count;
+  final items = json['items'] as List<dynamic>?;
+  return items?.length ?? 0;
+}
+
+@JsonSerializable()
 class PurchasesResponse {
   final List<Purchase> purchases;
+  @JsonKey(readValue: _readPage, defaultValue: 1)
   final int page;
+  @JsonKey(readValue: _readPerPage, defaultValue: 20)
   final int perPage;
+  @JsonKey(readValue: _readTotal, defaultValue: 0)
   final int total;
+  @JsonKey(readValue: _readTotalPages, defaultValue: 1)
   final int totalPages;
 
   PurchasesResponse({
@@ -244,16 +247,17 @@ class PurchasesResponse {
     required this.totalPages,
   });
 
-  factory PurchasesResponse.fromJson(Map<String, dynamic> json) {
-    final meta = json['meta'] as Map<String, dynamic>?;
-    return PurchasesResponse(
-      purchases: (json['purchases'] as List<dynamic>)
-          .map((e) => Purchase.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      page: meta?['page'] as int? ?? 1,
-      perPage: meta?['per_page'] as int? ?? 20,
-      total: meta?['total'] as int? ?? 0,
-      totalPages: meta?['total_pages'] as int? ?? 1,
-    );
-  }
+  factory PurchasesResponse.fromJson(Map<String, dynamic> json) =>
+      _$PurchasesResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$PurchasesResponseToJson(this);
 }
+
+// Helper functions for reading meta fields
+Object? _readPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['page'];
+Object? _readPerPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['per_page'];
+Object? _readTotal(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total'];
+Object? _readTotalPages(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total_pages'];

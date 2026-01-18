@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
 
-class TransactionFormScreen extends StatefulWidget {
+class TransactionFormScreen extends ConsumerStatefulWidget {
   const TransactionFormScreen({super.key});
 
   @override
-  State<TransactionFormScreen> createState() => _TransactionFormScreenState();
+  ConsumerState<TransactionFormScreen> createState() => _TransactionFormScreenState();
 }
 
-class _TransactionFormScreenState extends State<TransactionFormScreen> {
+class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -23,8 +23,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   String? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   bool _isSubmitting = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   List<String> get _categories {
     return _type == TransactionType.income
@@ -78,7 +76,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final amount = double.tryParse(_amountController.text.trim()) ?? 0;
 
       await api.createTransaction(

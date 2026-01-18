@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/date_range_picker_button.dart';
-import '../../core/services/api_service.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 
-class EmployeeWorklogsScreen extends StatefulWidget {
+class EmployeeWorklogsScreen extends ConsumerStatefulWidget {
   final Employee employee;
 
   const EmployeeWorklogsScreen({super.key, required this.employee});
 
   @override
-  State<EmployeeWorklogsScreen> createState() => _EmployeeWorklogsScreenState();
+  ConsumerState<EmployeeWorklogsScreen> createState() => _EmployeeWorklogsScreenState();
 }
 
-class _EmployeeWorklogsScreenState extends State<EmployeeWorklogsScreen> {
+class _EmployeeWorklogsScreenState extends ConsumerState<EmployeeWorklogsScreen> {
   DateTimeRange? _dateRange;
   bool _isLoading = true;
   List<Map<String, dynamic>> _workLogs = [];
   int _totalQuantity = 0;
   double _totalHours = 0;
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void didChangeDependencies() {
@@ -39,7 +36,8 @@ class _EmployeeWorklogsScreenState extends State<EmployeeWorklogsScreen> {
   Future<void> _loadWorkLogs() async {
     setState(() => _isLoading = true);
     try {
-      final workLogs = await _api.getEmployeeWorkLogs(
+      final api = ref.read(apiServiceProvider);
+      final workLogs = await api.getEmployeeWorkLogs(
         widget.employee.id,
         dateFrom: _dateRange?.start.toIso8601String().split('T')[0],
         dateTo: _dateRange?.end.toIso8601String().split('T')[0],

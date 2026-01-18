@@ -1,24 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/client_user.dart';
 import '../orders/client_create_order_screen.dart';
 import '../orders/client_order_detail_screen.dart';
 
-class AtelierDetailScreen extends StatefulWidget {
+class AtelierDetailScreen extends ConsumerStatefulWidget {
   final TenantLink tenant;
 
   const AtelierDetailScreen({super.key, required this.tenant});
 
   @override
-  State<AtelierDetailScreen> createState() => _AtelierDetailScreenState();
+  ConsumerState<AtelierDetailScreen> createState() => _AtelierDetailScreenState();
 }
 
-class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
+class _AtelierDetailScreenState extends ConsumerState<AtelierDetailScreen> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
 
@@ -32,7 +33,7 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ClientProvider>().refreshOrders(tenantId: widget.tenant.tenantId);
+      ref.read(clientAuthNotifierProvider.notifier).refreshOrders(tenantId: widget.tenant.tenantId);
     });
   }
 
@@ -94,6 +95,11 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(clientAuthNotifierProvider);
+    final notifier = ref.read(clientAuthNotifierProvider.notifier);
+    final filteredOrders = _getFilteredOrders(authState.orders);
+    final total = _calculateTotal(filteredOrders);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -104,134 +110,127 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
           IconButton(
             icon: const Icon(Icons.sort),
             onPressed: _showSortDialog,
-            tooltip: 'Сортировка',
+            tooltip: context.l10n.sortLabel,
           ),
         ],
       ),
-      body: Consumer<ClientProvider>(
-        builder: (context, provider, _) {
-          final filteredOrders = _getFilteredOrders(provider.orders);
-          final total = _calculateTotal(filteredOrders);
-
-          return Column(
-            children: [
-              // Header with stats and filters
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                color: context.surfaceColor,
-                child: Column(
+      body: Column(
+        children: [
+          // Header with stats and filters
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            color: context.surfaceColor,
+            child: Column(
+              children: [
+                // Summary row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Summary row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _ordersLabel(filteredOrders.length),
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                        Text(
-                          'Итого: ${_formatPrice(total)}',
-                          style: AppTypography.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    // Search bar
-                    TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Поиск по названию модели...',
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _searchDebounce?.cancel();
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: context.surfaceVariantColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
+                    Text(
+                      _ordersLabel(filteredOrders.length),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: context.textSecondaryColor,
                       ),
-                      onChanged: _onSearchChanged,
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    // Status filter chips
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _FilterChip(
-                            label: 'Все',
-                            isSelected: _statusFilter == null,
-                            onTap: () => setState(() => _statusFilter = null),
-                          ),
-                          _FilterChip(
-                            label: 'Ожидают',
-                            isSelected: _statusFilter == 'pending',
-                            onTap: () => setState(() => _statusFilter = 'pending'),
-                          ),
-                          _FilterChip(
-                            label: 'В работе',
-                            isSelected: _statusFilter == 'in_progress',
-                            onTap: () => setState(() => _statusFilter = 'in_progress'),
-                          ),
-                          _FilterChip(
-                            label: 'Готово',
-                            isSelected: _statusFilter == 'completed',
-                            onTap: () => setState(() => _statusFilter = 'completed'),
-                          ),
-                          _FilterChip(
-                            label: 'Отменены',
-                            isSelected: _statusFilter == 'cancelled',
-                            onTap: () => setState(() => _statusFilter = 'cancelled'),
-                          ),
-                        ],
+                    Text(
+                      '${context.l10n.spent}: ${_formatPrice(total)}',
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
                 ),
-              ),
-              // Orders list
-              Expanded(
-                child: filteredOrders.isEmpty
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: () => provider.refreshOrders(
-                          tenantId: widget.tenant.tenantId,
-                        ),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          itemCount: filteredOrders.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                          itemBuilder: (context, index) {
-                            final order = filteredOrders[index];
-                            return _OrderCard(
-                              order: order,
-                              onTap: () => _openOrderDetail(order),
-                            );
-                          },
-                        ),
+                const SizedBox(height: AppSpacing.sm),
+                // Search bar
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.searchModels,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchDebounce?.cancel();
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: context.surfaceVariantColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                  ),
+                  onChanged: _onSearchChanged,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Status filter chips
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _FilterChip(
+                        label: context.l10n.all,
+                        isSelected: _statusFilter == null,
+                        onTap: () => setState(() => _statusFilter = null),
                       ),
-              ),
-            ],
-          );
-        },
+                      _FilterChip(
+                        label: context.l10n.tabPending,
+                        isSelected: _statusFilter == 'pending',
+                        onTap: () => setState(() => _statusFilter = 'pending'),
+                      ),
+                      _FilterChip(
+                        label: context.l10n.statusInWork,
+                        isSelected: _statusFilter == 'in_progress',
+                        onTap: () => setState(() => _statusFilter = 'in_progress'),
+                      ),
+                      _FilterChip(
+                        label: context.l10n.tabCompleted,
+                        isSelected: _statusFilter == 'completed',
+                        onTap: () => setState(() => _statusFilter = 'completed'),
+                      ),
+                      _FilterChip(
+                        label: context.l10n.tabCancelled,
+                        isSelected: _statusFilter == 'cancelled',
+                        onTap: () => setState(() => _statusFilter = 'cancelled'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Orders list
+          Expanded(
+            child: filteredOrders.isEmpty
+                ? _buildEmptyState()
+                : RefreshIndicator(
+                    onRefresh: () => notifier.refreshOrders(
+                      tenantId: widget.tenant.tenantId,
+                    ),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      itemCount: filteredOrders.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, index) {
+                        final order = filteredOrders[index];
+                        return _OrderCard(
+                          order: order,
+                          onTap: () => _openOrderDetail(order),
+                        );
+                      },
+                    ),
+                  ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'atelier_detail_fab',
@@ -239,7 +238,7 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Новый заказ'),
+        label: Text(context.l10n.newOrder),
       ),
     );
   }
@@ -279,15 +278,15 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              hasFilters ? 'Ничего не найдено' : 'Нет заказов',
+              hasFilters ? context.l10n.nothingFound : context.l10n.noOrders,
               style: AppTypography.h3,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               hasFilters
-                  ? 'Попробуйте изменить фильтры'
-                  : 'Создайте первый заказ в этом ателье',
+                  ? context.l10n.tryChangeFilters
+                  : context.l10n.createFirstOrder,
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -303,14 +302,14 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
                     _statusFilter = null;
                   });
                 },
-                child: const Text('Сбросить фильтры'),
+                child: Text(context.l10n.reset),
               ),
             ] else ...[
               const SizedBox(height: AppSpacing.lg),
               ElevatedButton.icon(
                 onPressed: _createOrder,
                 icon: const Icon(Icons.add),
-                label: const Text('Создать заказ'),
+                label: Text(context.l10n.createOrder),
               ),
             ],
           ],
@@ -327,7 +326,7 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
       ),
     );
     if (result == true && mounted) {
-      context.read<ClientProvider>().refreshOrders(
+      ref.read(clientAuthNotifierProvider.notifier).refreshOrders(
         tenantId: widget.tenant.tenantId,
       );
     }
@@ -343,17 +342,17 @@ class _AtelierDetailScreenState extends State<AtelierDetailScreen> {
       ),
     );
     if (result == true && mounted) {
-      context.read<ClientProvider>().refreshOrders(
+      ref.read(clientAuthNotifierProvider.notifier).refreshOrders(
         tenantId: widget.tenant.tenantId,
       );
     }
   }
 
   String _ordersLabel(int count) {
-    if (count == 0) return 'Нет заказов';
-    if (count == 1) return '1 заказ';
-    if (count >= 2 && count <= 4) return '$count заказа';
-    return '$count заказов';
+    if (count == 0) return context.l10n.noOrdersLabel;
+    if (count == 1) return context.l10n.oneOrder;
+    if (count >= 2 && count <= 4) return context.l10n.fewOrders(count);
+    return context.l10n.manyOrders(count);
   }
 
   String _formatPrice(double price) {
@@ -458,7 +457,7 @@ class _OrderCard extends StatelessWidget {
                         _StatusBadge(status: order.status, label: order.statusLabel),
                         const Spacer(),
                         Text(
-                          '${order.quantity} шт.',
+                          context.l10n.quantityItems(order.quantity),
                           style: AppTypography.bodyMedium.copyWith(
                             color: context.textSecondaryColor,
                           ),
@@ -583,10 +582,10 @@ class _SortSheetState extends State<_SortSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Сортировка', style: AppTypography.h4),
+          Text(context.l10n.sortLabel, style: AppTypography.h4),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Сортировать по',
+            context.l10n.sortLabel,
             style: AppTypography.labelMedium.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -596,17 +595,17 @@ class _SortSheetState extends State<_SortSheet> {
             spacing: AppSpacing.sm,
             children: [
               ChoiceChip(
-                label: const Text('Дате создания'),
+                label: Text(context.l10n.sortByCreatedDate),
                 selected: _sortBy == 'createdAt',
                 onSelected: (_) => setState(() => _sortBy = 'createdAt'),
               ),
               ChoiceChip(
-                label: const Text('Сроку'),
+                label: Text(context.l10n.sortByDueDate),
                 selected: _sortBy == 'dueDate',
                 onSelected: (_) => setState(() => _sortBy = 'dueDate'),
               ),
               ChoiceChip(
-                label: const Text('Цене'),
+                label: Text(context.l10n.price),
                 selected: _sortBy == 'price',
                 onSelected: (_) => setState(() => _sortBy = 'price'),
               ),
@@ -614,7 +613,7 @@ class _SortSheetState extends State<_SortSheet> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Порядок',
+            context.l10n.sortLabel,
             style: AppTypography.labelMedium.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -624,12 +623,12 @@ class _SortSheetState extends State<_SortSheet> {
             spacing: AppSpacing.sm,
             children: [
               ChoiceChip(
-                label: const Text('По убыванию'),
+                label: Text(context.l10n.sortDescending),
                 selected: !_sortAsc,
                 onSelected: (_) => setState(() => _sortAsc = false),
               ),
               ChoiceChip(
-                label: const Text('По возрастанию'),
+                label: Text(context.l10n.sortAscending),
                 selected: _sortAsc,
                 onSelected: (_) => setState(() => _sortAsc = true),
               ),
@@ -640,7 +639,7 @@ class _SortSheetState extends State<_SortSheet> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => widget.onApply(_sortBy, _sortAsc),
-              child: const Text('Применить'),
+              child: Text(context.l10n.apply),
             ),
           ),
           SizedBox(height: MediaQuery.of(context).padding.bottom),

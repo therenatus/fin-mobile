@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/order_cost.dart';
-import '../../../core/providers/bom_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/utils/toast.dart';
 
 /// Карточка себестоимости заказа
-class OrderCostCard extends StatefulWidget {
+class OrderCostCard extends ConsumerStatefulWidget {
   final String orderId;
 
   const OrderCostCard({
@@ -16,17 +16,15 @@ class OrderCostCard extends StatefulWidget {
   });
 
   @override
-  State<OrderCostCard> createState() => _OrderCostCardState();
+  ConsumerState<OrderCostCard> createState() => _OrderCostCardState();
 }
 
-class _OrderCostCardState extends State<OrderCostCard> {
+class _OrderCostCardState extends ConsumerState<OrderCostCard> {
   OrderCost? _cost;
   bool _isLoading = true;
   bool _isRecalculating = false;
   String? _error;
   bool _initialized = false;
-
-  BomProvider get _bomProvider => context.read<BomProvider>();
 
   @override
   void didChangeDependencies() {
@@ -44,7 +42,7 @@ class _OrderCostCardState extends State<OrderCostCard> {
     });
 
     try {
-      final cost = await _bomProvider.getOrderCost(widget.orderId);
+      final cost = await ref.read(bomNotifierProvider.notifier).getOrderCost(widget.orderId);
       setState(() {
         _cost = cost;
         _isLoading = false;
@@ -61,7 +59,7 @@ class _OrderCostCardState extends State<OrderCostCard> {
     setState(() => _isRecalculating = true);
 
     try {
-      final cost = await _bomProvider.recalculateOrderCost(widget.orderId);
+      final cost = await ref.read(bomNotifierProvider.notifier).recalculateOrderCost(widget.orderId);
       setState(() {
         _cost = cost;
         _isRecalculating = false;

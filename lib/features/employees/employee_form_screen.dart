@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 
-class EmployeeFormScreen extends StatefulWidget {
+class EmployeeFormScreen extends ConsumerStatefulWidget {
   final Employee? employee; // null for create, not null for edit
 
   const EmployeeFormScreen({super.key, this.employee});
 
   @override
-  State<EmployeeFormScreen> createState() => _EmployeeFormScreenState();
+  ConsumerState<EmployeeFormScreen> createState() => _EmployeeFormScreenState();
 }
 
-class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
+class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -25,8 +25,6 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   bool _isSubmitting = false;
 
   bool get isEditMode => widget.employee != null;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -62,8 +60,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      final api = ref.read(apiServiceProvider);
       if (isEditMode) {
-        await _api.updateEmployee(
+        await api.updateEmployee(
           id: widget.employee!.id,
           name: _nameController.text.trim(),
           role: _selectedRoleCode!,
@@ -75,7 +74,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
               : null,
         );
       } else {
-        await _api.createEmployee(
+        await api.createEmployee(
           name: _nameController.text.trim(),
           role: _selectedRoleCode!,
           phone: _phoneController.text.trim().isNotEmpty
@@ -162,35 +161,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
             // Role
             _buildSectionTitle('Роль *'),
             const SizedBox(height: AppSpacing.sm),
-            Consumer<AppProvider>(
-              builder: (context, provider, _) {
-                final roles = provider.employeeRoles;
-                return DropdownButtonFormField<String>(
-                  value: _selectedRoleCode,
-                  decoration: _inputDecoration(
-                    hint: 'Выберите роль',
-                    icon: Icons.work_outline,
-                  ),
-                  items: roles.map((role) {
-                    return DropdownMenuItem(
-                      value: role.code,
-                      child: Text(role.label),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedRoleCode = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Выберите роль';
-                    }
-                    return null;
-                  },
-                );
-              },
-            ),
+            _buildRoleDropdown(),
 
             const SizedBox(height: AppSpacing.lg),
 
@@ -250,6 +221,34 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRoleDropdown() {
+    final roles = ref.watch(employeeRolesProvider);
+    return DropdownButtonFormField<String>(
+      value: _selectedRoleCode,
+      decoration: _inputDecoration(
+        hint: 'Выберите роль',
+        icon: Icons.work_outline,
+      ),
+      items: roles.map((role) {
+        return DropdownMenuItem(
+          value: role.code,
+          child: Text(role.label),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedRoleCode = value;
+        });
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Выберите роль';
+        }
+        return null;
+      },
     );
   }
 

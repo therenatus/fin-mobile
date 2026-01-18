@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/materials_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/material.dart' as mat;
 import '../../core/widgets/stock_indicator.dart';
 
-class StockAdjustmentScreen extends StatefulWidget {
+class StockAdjustmentScreen extends ConsumerStatefulWidget {
   final mat.Material material;
 
   const StockAdjustmentScreen({
@@ -15,10 +15,10 @@ class StockAdjustmentScreen extends StatefulWidget {
   });
 
   @override
-  State<StockAdjustmentScreen> createState() => _StockAdjustmentScreenState();
+  ConsumerState<StockAdjustmentScreen> createState() => _StockAdjustmentScreenState();
 }
 
-class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
+class _StockAdjustmentScreenState extends ConsumerState<StockAdjustmentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _reasonController = TextEditingController();
@@ -48,8 +48,8 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final provider = context.read<MaterialsProvider>();
-      final updated = await provider.adjustStock(
+      final notifier = ref.read(materialsNotifierProvider.notifier);
+      final updated = await notifier.adjustStock(
         widget.material.id,
         quantity: _adjustmentQuantity,
         reason: _reasonController.text.isNotEmpty

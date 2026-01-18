@@ -1,3 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'json_converters.dart';
+
+part 'supplier.g.dart';
+
+@JsonSerializable()
 class Supplier {
   final String id;
   final String name;
@@ -7,10 +13,15 @@ class Supplier {
   final String? address;
   final String? inn;
   final String? notes;
+  @JsonKey(defaultValue: true)
   final bool isActive;
+  @JsonKey(readValue: _readMaterialsCount, defaultValue: 0)
   final int materialsCount;
+  @JsonKey(readValue: _readPurchasesCount, defaultValue: 0)
   final int purchasesCount;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime updatedAt;
 
   Supplier({
@@ -29,24 +40,7 @@ class Supplier {
     required this.updatedAt,
   });
 
-  factory Supplier.fromJson(Map<String, dynamic> json) {
-    return Supplier(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      contactName: json['contactName'] as String?,
-      phone: json['phone'] as String?,
-      email: json['email'] as String?,
-      address: json['address'] as String?,
-      inn: json['inn'] as String?,
-      notes: json['notes'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      materialsCount: (json['_count']?['materials'] as int?) ?? 0,
-      purchasesCount: (json['_count']?['purchases'] as int?) ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
-  }
-
+  /// Custom toJson for create/update (only includes editable fields)
   Map<String, dynamic> toJson() => {
         'name': name,
         'contactName': contactName,
@@ -57,6 +51,7 @@ class Supplier {
         'notes': notes,
       };
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get initials {
     final parts = name.split(' ');
     if (parts.length >= 2) {
@@ -65,14 +60,29 @@ class Supplier {
     return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get hasContact => contactName != null || phone != null || email != null;
+
+  factory Supplier.fromJson(Map<String, dynamic> json) =>
+      _$SupplierFromJson(json);
 }
 
+// Helper functions for reading _count fields
+Object? _readMaterialsCount(Map<dynamic, dynamic> json, String key) =>
+    (json['_count'] as Map<String, dynamic>?)?['materials'];
+Object? _readPurchasesCount(Map<dynamic, dynamic> json, String key) =>
+    (json['_count'] as Map<String, dynamic>?)?['purchases'];
+
+@JsonSerializable()
 class SuppliersResponse {
   final List<Supplier> suppliers;
+  @JsonKey(readValue: _readPage, defaultValue: 1)
   final int page;
+  @JsonKey(readValue: _readPerPage, defaultValue: 20)
   final int perPage;
+  @JsonKey(readValue: _readTotal, defaultValue: 0)
   final int total;
+  @JsonKey(readValue: _readTotalPages, defaultValue: 1)
   final int totalPages;
 
   SuppliersResponse({
@@ -83,16 +93,17 @@ class SuppliersResponse {
     required this.totalPages,
   });
 
-  factory SuppliersResponse.fromJson(Map<String, dynamic> json) {
-    final meta = json['meta'] as Map<String, dynamic>?;
-    return SuppliersResponse(
-      suppliers: (json['suppliers'] as List<dynamic>)
-          .map((e) => Supplier.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      page: meta?['page'] as int? ?? 1,
-      perPage: meta?['per_page'] as int? ?? 20,
-      total: meta?['total'] as int? ?? 0,
-      totalPages: meta?['total_pages'] as int? ?? 1,
-    );
-  }
+  factory SuppliersResponse.fromJson(Map<String, dynamic> json) =>
+      _$SuppliersResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$SuppliersResponseToJson(this);
 }
+
+// Helper functions for reading meta fields
+Object? _readPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['page'];
+Object? _readPerPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['per_page'];
+Object? _readTotal(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total'];
+Object? _readTotalPages(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total_pages'];

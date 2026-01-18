@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
-import '../../core/services/api_service.dart';
 import '../../core/utils/toast.dart';
 import 'widgets/order_acceptance_sheet.dart';
 import 'widgets/order_cost_card.dart';
 
-class OrderDetailScreen extends StatefulWidget {
+class OrderDetailScreen extends ConsumerStatefulWidget {
   final Order order;
 
   const OrderDetailScreen({super.key, required this.order});
 
   @override
-  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+  ConsumerState<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
-class _OrderDetailScreenState extends State<OrderDetailScreen> {
+class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   late Order _order;
   List<ProcessStep> _processSteps = [];
   List<Employee> _employees = [];
@@ -29,8 +28,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool _isLoading = true;
   bool _isUpdatingStatus = false;
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -50,7 +47,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
 
       // Load process steps for this model
       if (_order.model != null) {
@@ -584,7 +581,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     setState(() => _isUpdatingStatus = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.updateOrderStatus(_order.id, newStatus.value);
 
       if (mounted) {
@@ -593,7 +590,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           _order = updatedOrder;
         });
 
-        context.read<AppProvider>().refreshDashboard();
+        ref.read(dashboardNotifierProvider.notifier).refreshDashboard();
 
         AppToast.success(context, 'Статус изменён на "${_getStatusLabel(newStatus)}"');
 
@@ -647,14 +644,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => OrderAcceptanceSheet(
+      builder: (ctx) => OrderAcceptanceSheet(
         order: _order,
         processSteps: _processSteps,
         employees: _employees,
         onAccepted: () {
-          Navigator.pop(context);
+          Navigator.pop(ctx);
           _loadData();
-          context.read<AppProvider>().refreshDashboard();
+          ref.read(dashboardNotifierProvider.notifier).refreshDashboard();
         },
       ),
     );
@@ -834,7 +831,7 @@ class _MetricItem extends StatelessWidget {
   }
 }
 
-class _WorkStepCard extends StatefulWidget {
+class _WorkStepCard extends ConsumerStatefulWidget {
   final ProcessStep step;
   final List<Employee> employees;
   final Order order;
@@ -852,10 +849,10 @@ class _WorkStepCard extends StatefulWidget {
   });
 
   @override
-  State<_WorkStepCard> createState() => _WorkStepCardState();
+  ConsumerState<_WorkStepCard> createState() => _WorkStepCardState();
 }
 
-class _WorkStepCardState extends State<_WorkStepCard> {
+class _WorkStepCardState extends ConsumerState<_WorkStepCard> {
   bool _isAdding = false;
 
   List<Employee> get _filteredEmployees {
@@ -1047,11 +1044,11 @@ class _WorkStepCardState extends State<_WorkStepCard> {
   }
 
   String _getRoleLabel(String role) {
-    return context.read<AppProvider>().getRoleLabel(role);
+    return ref.read(dashboardNotifierProvider).getRoleLabel(role);
   }
 }
 
-class _AssignedEmployeeRow extends StatefulWidget {
+class _AssignedEmployeeRow extends ConsumerStatefulWidget {
   final OrderAssignment assignment;
   final WorkLog? workLog;
   final String orderId;
@@ -1073,16 +1070,14 @@ class _AssignedEmployeeRow extends StatefulWidget {
   });
 
   @override
-  State<_AssignedEmployeeRow> createState() => _AssignedEmployeeRowState();
+  ConsumerState<_AssignedEmployeeRow> createState() => _AssignedEmployeeRowState();
 }
 
-class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
+class _AssignedEmployeeRowState extends ConsumerState<_AssignedEmployeeRow> {
   bool _isDeleting = false;
   bool _isEditing = false;
   final _quantityController = TextEditingController();
   bool _isSaving = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   /// Max quantity this employee can log (remaining + their current log)
   int get _maxQuantity {
@@ -1283,7 +1278,7 @@ class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
     setState(() => _isSaving = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.createWorkLog(
         employeeId: widget.assignment.employeeId,
         orderId: widget.orderId,
@@ -1317,7 +1312,7 @@ class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
     setState(() => _isDeleting = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.deleteOrderAssignment(widget.orderId, widget.assignment.id);
       widget.onDataChanged();
     } catch (e) {
@@ -1329,7 +1324,7 @@ class _AssignedEmployeeRowState extends State<_AssignedEmployeeRow> {
   }
 }
 
-class _AddEmployeeForm extends StatefulWidget {
+class _AddEmployeeForm extends ConsumerStatefulWidget {
   final List<Employee> employees;
   final String orderId;
   final String stepName;
@@ -1347,14 +1342,12 @@ class _AddEmployeeForm extends StatefulWidget {
   });
 
   @override
-  State<_AddEmployeeForm> createState() => _AddEmployeeFormState();
+  ConsumerState<_AddEmployeeForm> createState() => _AddEmployeeFormState();
 }
 
-class _AddEmployeeFormState extends State<_AddEmployeeForm> {
+class _AddEmployeeFormState extends ConsumerState<_AddEmployeeForm> {
   Employee? _selectedEmployee;
   bool _isSaving = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   Widget build(BuildContext context) {
@@ -1371,7 +1364,7 @@ class _AddEmployeeFormState extends State<_AddEmployeeForm> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Нет доступных сотрудников с ролью "${context.read<AppProvider>().getRoleLabel(widget.executorRole)}"',
+                'Нет доступных сотрудников с ролью "${ref.read(dashboardNotifierProvider).getRoleLabel(widget.executorRole)}"',
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.warning,
                 ),
@@ -1450,7 +1443,7 @@ class _AddEmployeeFormState extends State<_AddEmployeeForm> {
                           ),
                         ),
                         Text(
-                          context.read<AppProvider>().getRoleLabel(_selectedEmployee!.role),
+                          ref.read(dashboardNotifierProvider).getRoleLabel(_selectedEmployee!.role),
                           style: AppTypography.bodySmall.copyWith(
                             color: context.textSecondaryColor,
                           ),
@@ -1610,7 +1603,7 @@ class _AddEmployeeFormState extends State<_AddEmployeeForm> {
     setState(() => _isSaving = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.createOrderAssignment(
         orderId: widget.orderId,
         stepName: widget.stepName,
@@ -1626,7 +1619,7 @@ class _AddEmployeeFormState extends State<_AddEmployeeForm> {
   }
 }
 
-class _EmployeeListTile extends StatelessWidget {
+class _EmployeeListTile extends ConsumerWidget {
   final Employee employee;
   final bool isSelected;
   final VoidCallback onTap;
@@ -1638,7 +1631,7 @@ class _EmployeeListTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -1686,7 +1679,7 @@ class _EmployeeListTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    context.read<AppProvider>().getRoleLabel(employee.role),
+                    ref.read(dashboardNotifierProvider).getRoleLabel(employee.role),
                     style: AppTypography.bodySmall.copyWith(
                       color: context.textSecondaryColor,
                     ),

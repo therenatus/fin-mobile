@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
-import '../../core/services/api_service.dart';
 import 'worklog_form_screen.dart';
 
-class WorkLogScreen extends StatefulWidget {
+class WorkLogScreen extends ConsumerStatefulWidget {
   const WorkLogScreen({super.key});
 
   @override
-  State<WorkLogScreen> createState() => _WorkLogScreenState();
+  ConsumerState<WorkLogScreen> createState() => _WorkLogScreenState();
 }
 
-class _WorkLogScreenState extends State<WorkLogScreen> {
+class _WorkLogScreenState extends ConsumerState<WorkLogScreen> {
   bool _isLoading = true;
   List<WorkLog> _workLogs = [];
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -39,7 +36,7 @@ class _WorkLogScreenState extends State<WorkLogScreen> {
   Future<void> _loadWorkLogs() async {
     setState(() => _isLoading = true);
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final logs = await api.getWorkLogs();
       setState(() {
         _workLogs = logs..sort((a, b) => b.date.compareTo(a.date));

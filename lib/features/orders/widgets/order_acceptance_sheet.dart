@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/app_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/models.dart';
-import '../../../core/services/api_service.dart';
 import '../../../core/utils/toast.dart';
 
-class OrderAcceptanceSheet extends StatefulWidget {
+class OrderAcceptanceSheet extends ConsumerStatefulWidget {
   final Order order;
   final List<ProcessStep> processSteps;
   final List<Employee> employees;
@@ -23,13 +22,11 @@ class OrderAcceptanceSheet extends StatefulWidget {
   });
 
   @override
-  State<OrderAcceptanceSheet> createState() => _OrderAcceptanceSheetState();
+  ConsumerState<OrderAcceptanceSheet> createState() => _OrderAcceptanceSheetState();
 }
 
-class _OrderAcceptanceSheetState extends State<OrderAcceptanceSheet> {
+class _OrderAcceptanceSheetState extends ConsumerState<OrderAcceptanceSheet> {
   bool _isSubmitting = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   /// Calculate total estimated hours for the order
   double get _totalEstimatedHours {
@@ -45,7 +42,7 @@ class _OrderAcceptanceSheetState extends State<OrderAcceptanceSheet> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
 
       // Update order status to in_progress
       await api.updateOrderStatus(widget.order.id, 'in_progress');

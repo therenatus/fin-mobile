@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/employee_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/employee_user.dart';
 import '../../../core/widgets/date_range_picker_button.dart';
 import '../../../core/widgets/infinite_scroll_list.dart';
 import 'record_work_screen.dart';
 
-class MyTasksScreen extends StatefulWidget {
+class MyTasksScreen extends ConsumerStatefulWidget {
   const MyTasksScreen({super.key});
 
   @override
-  State<MyTasksScreen> createState() => _MyTasksScreenState();
+  ConsumerState<MyTasksScreen> createState() => _MyTasksScreenState();
 }
 
-class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProviderStateMixin {
+class _MyTasksScreenState extends ConsumerState<MyTasksScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   DateTimeRange? _dateRange;
 
@@ -30,7 +31,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EmployeeProvider>().refreshAssignments();
+      ref.read(employeeAuthNotifierProvider.notifier).refreshAssignments();
     });
   }
 
@@ -41,7 +42,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
   }
 
   Future<void> _onRefresh() async {
-    await context.read<EmployeeProvider>().refreshAssignments();
+    await ref.read(employeeAuthNotifierProvider.notifier).refreshAssignments();
   }
 
   List<EmployeeAssignment> _filterAssignments(List<EmployeeAssignment> assignments) {
@@ -70,20 +71,23 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(employeeAuthNotifierProvider);
+    final notifier = ref.read(employeeAuthNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Мои задачи'),
+        title: Text(context.l10n.myTasks),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: TabBar(
             controller: _tabController,
-            tabs: const [
-              Tab(text: 'Все'),
-              Tab(text: 'В работе'),
-              Tab(text: 'Готовые'),
+            tabs: [
+              Tab(text: context.l10n.all),
+              Tab(text: context.l10n.inWork),
+              Tab(text: context.l10n.ready),
             ],
             labelColor: AppColors.primary,
             unselectedLabelColor: context.textSecondaryColor,
@@ -91,13 +95,13 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
           ),
         ),
       ),
-      body: Consumer<EmployeeProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && provider.assignments.isEmpty) {
+      body: Builder(
+        builder: (context) {
+          if (authState.isLoading && authState.assignments.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final filtered = _filterAssignments(provider.assignments);
+          final filtered = _filterAssignments(authState.assignments);
 
           return Column(
             children: [
@@ -109,11 +113,11 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
                     DateRangePickerButton(
                       dateRange: _dateRange,
                       onChanged: (range) => setState(() => _dateRange = range),
-                      placeholder: 'Фильтр по дате',
+                      placeholder: context.l10n.dateFilter,
                     ),
                     const Spacer(),
                     Text(
-                      '${filtered.length} задач',
+                      context.l10n.tasksCount(filtered.length),
                       style: AppTypography.bodySmall.copyWith(
                         color: context.textSecondaryColor,
                       ),
@@ -124,9 +128,9 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
               Expanded(
                 child: InfiniteScrollList<EmployeeAssignment>(
                   items: filtered,
-                  hasMore: provider.hasMoreAssignments,
-                  isLoading: provider.isLoadingMoreAssignments,
-                  onLoadMore: () => provider.loadMoreAssignments(
+                  hasMore: authState.hasMoreAssignments,
+                  isLoading: authState.isLoadingMoreAssignments,
+                  onLoadMore: () => notifier.loadMoreAssignments(
                     includeCompleted: _tabController.index == 2,
                   ),
                   onRefresh: _onRefresh,
@@ -136,7 +140,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
                   itemBuilder: (context, assignment, index) {
                     return _AssignmentCard(
                       assignment: assignment,
-                      roleLabel: provider.getRoleLabel(provider.user?.role ?? ''),
+                      roleLabel: notifier.getRoleLabel(authState.user?.role ?? ''),
                     );
                   },
                 ),
@@ -167,7 +171,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Нет активных задач',
+            context.l10n.noActiveTasks,
             style: AppTypography.h3.copyWith(
               color: context.textSecondaryColor,
             ),
@@ -176,7 +180,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              'Когда менеджер назначит вам заказ, он появится здесь',
+              context.l10n.tasksWillAppearHere,
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textTertiaryColor,
               ),
@@ -329,9 +333,9 @@ class _AssignmentCard extends StatelessWidget {
 
   Widget _buildStatusBadge(BuildContext context, String status) {
     final (color, label) = switch (status) {
-      'in_progress' => (AppColors.info, 'В работе'),
-      'completed' => (AppColors.success, 'Готов'),
-      'pending' => (AppColors.warning, 'Ожидает'),
+      'in_progress' => (AppColors.info, context.l10n.statusInWork),
+      'completed' => (AppColors.success, context.l10n.statusReady),
+      'pending' => (AppColors.warning, context.l10n.statusWaiting),
       _ => (context.textSecondaryColor, status),
     };
 

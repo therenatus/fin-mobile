@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/client_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/client_user.dart';
 import 'client_edit_order_screen.dart';
 
-class ClientOrderDetailScreen extends StatefulWidget {
+class ClientOrderDetailScreen extends ConsumerStatefulWidget {
   final ClientOrder order;
 
   const ClientOrderDetailScreen({super.key, required this.order});
 
   @override
-  State<ClientOrderDetailScreen> createState() => _ClientOrderDetailScreenState();
+  ConsumerState<ClientOrderDetailScreen> createState() => _ClientOrderDetailScreenState();
 }
 
-class _ClientOrderDetailScreenState extends State<ClientOrderDetailScreen> {
+class _ClientOrderDetailScreenState extends ConsumerState<ClientOrderDetailScreen> {
   bool _isCancelling = false;
 
   ClientOrder get order => widget.order;
@@ -46,7 +46,7 @@ class _ClientOrderDetailScreenState extends State<ClientOrderDetailScreen> {
     setState(() => _isCancelling = true);
 
     try {
-      await context.read<ClientProvider>().cancelOrder(order.id);
+      await ref.read(clientAuthNotifierProvider.notifier).cancelOrder(order.id);
       if (mounted) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(

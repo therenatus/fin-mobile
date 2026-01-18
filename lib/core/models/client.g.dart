@@ -16,10 +16,10 @@ ClientContact _$ClientContactFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$ClientContactToJson(ClientContact instance) =>
     <String, dynamic>{
-      'email': ?instance.email,
-      'phone': ?instance.phone,
-      'telegram': ?instance.telegram,
-      'whatsapp': ?instance.whatsapp,
+      if (instance.email case final value?) 'email': value,
+      if (instance.phone case final value?) 'phone': value,
+      if (instance.telegram case final value?) 'telegram': value,
+      if (instance.whatsapp case final value?) 'whatsapp': value,
     };
 
 ClientAssignedModel _$ClientAssignedModelFromJson(Map<String, dynamic> json) =>
@@ -35,7 +35,7 @@ Map<String, dynamic> _$ClientAssignedModelToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'category': ?instance.category,
+  if (instance.category case final value?) 'category': value,
   'basePrice': instance.basePrice,
 };
 
@@ -65,12 +65,12 @@ Map<String, dynamic> _$ClientToJson(Client instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'contacts': instance.contacts.toJson(),
-  'notes': ?instance.notes,
-  'preferences': ?instance.preferences,
+  if (instance.notes case final value?) 'notes': value,
+  if (instance.preferences case final value?) 'preferences': value,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
-  'ordersCount': ?instance.ordersCount,
-  'totalSpent': ?instance.totalSpent,
+  if (instance.ordersCount case final value?) 'ordersCount': value,
+  if (instance.totalSpent case final value?) 'totalSpent': value,
   'assignedModelIds': instance.assignedModelIds,
   'assignedModels': instance.assignedModels.map((e) => e.toJson()).toList(),
 };

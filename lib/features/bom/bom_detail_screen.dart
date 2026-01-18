@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/bom.dart';
 import '../../core/models/order.dart';
-import '../../core/providers/bom_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/utils/toast.dart';
 import 'widgets/widgets.dart';
 import 'bom_item_form_screen.dart';
 import 'bom_operation_form_screen.dart';
 
 /// Экран просмотра и редактирования BOM модели
-class BomDetailScreen extends StatefulWidget {
+class BomDetailScreen extends ConsumerStatefulWidget {
   final OrderModel model;
   final Bom? initialBom;
 
@@ -22,18 +22,16 @@ class BomDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<BomDetailScreen> createState() => _BomDetailScreenState();
+  ConsumerState<BomDetailScreen> createState() => _BomDetailScreenState();
 }
 
-class _BomDetailScreenState extends State<BomDetailScreen>
+class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Bom? _bom;
   bool _isLoading = true;
   bool _isRecalculating = false;
   bool _initialized = false;
-
-  BomProvider get _bomProvider => context.read<BomProvider>();
 
   @override
   void initState() {
@@ -60,7 +58,7 @@ class _BomDetailScreenState extends State<BomDetailScreen>
   Future<void> _loadBom() async {
     setState(() => _isLoading = true);
     try {
-      final bom = await _bomProvider.loadModelBom(widget.model.id);
+      final bom = await ref.read(bomNotifierProvider.notifier).loadModelBom(widget.model.id);
       setState(() {
         _bom = bom;
         _isLoading = false;
@@ -78,7 +76,7 @@ class _BomDetailScreenState extends State<BomDetailScreen>
 
     setState(() => _isRecalculating = true);
     try {
-      final bom = await _bomProvider.recalculateBom(_bom!.id);
+      final bom = await ref.read(bomNotifierProvider.notifier).recalculateBom(_bom!.id);
       setState(() {
         _bom = bom;
         _isRecalculating = false;
@@ -368,7 +366,7 @@ class _BomDetailScreenState extends State<BomDetailScreen>
   Future<void> _createBom() async {
     // Create empty BOM first, then add items/operations
     try {
-      final bom = await _bomProvider.createBom(
+      final bom = await ref.read(bomNotifierProvider.notifier).createBom(
         modelId: widget.model.id,
         items: [],
         operations: [],
@@ -447,7 +445,7 @@ class _BomDetailScreenState extends State<BomDetailScreen>
           .map((i) => i.toJson())
           .toList();
 
-      await _bomProvider.updateBom(
+      await ref.read(bomNotifierProvider.notifier).updateBom(
         _bom!.id,
         items: updatedItems,
       );
@@ -536,7 +534,7 @@ class _BomDetailScreenState extends State<BomDetailScreen>
           .map((o) => o.toJson())
           .toList();
 
-      await _bomProvider.updateBom(
+      await ref.read(bomNotifierProvider.notifier).updateBom(
         _bom!.id,
         operations: updatedOperations,
       );

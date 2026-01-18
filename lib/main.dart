@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -8,16 +8,19 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/l10n/l10n.dart';
 
 import 'core/theme/app_theme.dart';
-import 'core/providers/app_provider.dart';
-import 'core/providers/client_provider.dart';
-import 'core/providers/employee_provider.dart';
-import 'core/providers/materials_provider.dart';
-import 'core/providers/subscription_provider.dart';
-import 'core/providers/theme_provider.dart';
-import 'core/providers/bom_provider.dart';
+// Client is now managed by Riverpod - see core/riverpod/client_auth_provider.dart
+// Employee is now managed by Riverpod - see core/riverpod/employee_auth_provider.dart
+// Subscription is now managed by Riverpod - see core/riverpod/subscription_provider.dart
+// Theme is now managed by Riverpod - see core/riverpod/theme_provider.dart
+// BOM is now managed by Riverpod - see core/riverpod/bom_provider.dart
+// Materials is now managed by Riverpod - see core/riverpod/materials_provider.dart
+// Production is now managed by Riverpod - see core/riverpod/production_provider.dart
+// AppProvider (auth) is now managed by Riverpod - see core/riverpod/auth_provider.dart
+import 'core/riverpod/providers.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/local_notification_service.dart';
+import 'core/services/deep_link_service.dart';
 
 import 'features/auth/login_screen.dart';
 import 'features/shell/app_shell.dart';
@@ -73,61 +76,35 @@ void main() async {
 
 void _runApp(StorageService storageService) {
   runApp(
-    MultiProvider(
-      providers: [
-        // Core services
-        Provider<StorageService>.value(value: storageService),
-
-        // Theme provider (standalone)
-        ChangeNotifierProvider(create: (_) => ThemeProvider(storageService)),
-
-        // Main app provider (backward compatible)
-        ChangeNotifierProvider(create: (_) => AppProvider(storageService)),
-
-        // Mode-specific providers
-        ChangeNotifierProvider(create: (_) => ClientProvider(storageService)..init()),
-        ChangeNotifierProvider(create: (_) => EmployeeProvider(storageService)..init()),
-
-        // Providers that depend on AppProvider.api
-        ChangeNotifierProxyProvider<AppProvider, SubscriptionProvider>(
-          create: (context) => SubscriptionProvider(
-            context.read<AppProvider>().api,
-          ),
-          update: (context, appProvider, previous) =>
-              previous ?? SubscriptionProvider(appProvider.api),
-        ),
-
-        // Materials provider
-        ChangeNotifierProxyProvider<AppProvider, MaterialsProvider>(
-          create: (context) => MaterialsProvider(
-            context.read<AppProvider>().api,
-          ),
-          update: (context, appProvider, previous) =>
-              previous ?? MaterialsProvider(appProvider.api),
-        ),
-
-        // BOM provider
-        ChangeNotifierProxyProvider<AppProvider, BomProvider>(
-          create: (context) => BomProvider(
-            context.read<AppProvider>().api,
-          ),
-          update: (context, appProvider, previous) =>
-              previous ?? BomProvider(appProvider.api),
-        ),
+    // Riverpod ProviderScope wraps everything
+    // All state management is now handled by Riverpod:
+    // - Storage: storageServiceProvider
+    // - Theme: themeNotifierProvider
+    // - Auth: authNotifierProvider
+    // - Client: clientAuthNotifierProvider
+    // - Employee: employeeAuthNotifierProvider
+    // - Subscription: subscriptionNotifierProvider
+    // - Production: productionNotifierProvider
+    // - BOM: bomNotifierProvider
+    // - Materials: materialsNotifierProvider
+    ProviderScope(
+      overrides: [
+        // Override storage provider with actual instance
+        storageServiceProvider.overrideWithValue(storageService),
       ],
       child: const AtelieProApp(),
     ),
   );
 }
 
-class AtelieProApp extends StatefulWidget {
+class AtelieProApp extends ConsumerStatefulWidget {
   const AtelieProApp({super.key});
 
   @override
-  State<AtelieProApp> createState() => _AtelieProAppState();
+  ConsumerState<AtelieProApp> createState() => _AtelieProAppState();
 }
 
-class _AtelieProAppState extends State<AtelieProApp> {
+class _AtelieProAppState extends ConsumerState<AtelieProApp> {
   String? _appMode;
   bool _isCheckingMode = true;
   bool _initialized = false;
@@ -147,7 +124,7 @@ class _AtelieProAppState extends State<AtelieProApp> {
   }
 
   Future<void> _checkAppMode() async {
-    final storage = context.read<StorageService>();
+    final storage = ref.read(storageServiceProvider);
     // Migrate tokens to secure storage if needed (one-time)
     await storage.migrateToSecureStorage();
     final mode = await storage.getAppMode();
@@ -159,32 +136,32 @@ class _AtelieProAppState extends State<AtelieProApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, _) {
-        return MaterialApp(
-          title: 'AteliePro',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: appProvider.themeMode,
-          locale: const Locale('ru', 'RU'),
-          supportedLocales: const [
-            Locale('ru', 'RU'),
-            Locale('en', 'US'),
-          ],
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          home: _buildHome(appProvider),
-        );
-      },
+    // Use Riverpod for theme mode
+    final themeMode = ref.watch(themeNotifierProvider);
+
+    return MaterialApp(
+      title: 'AteliePro',
+      debugShowCheckedModeBanner: false,
+      navigatorKey: DeepLinkService.navigatorKey, // For deep linking
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode, // Now using Riverpod
+      locale: const Locale('ru', 'RU'),
+      supportedLocales: const [
+        Locale('ru', 'RU'),
+        Locale('en', 'US'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: _buildHome(),
     );
   }
 
-  Widget _buildHome(AppProvider appProvider) {
+  Widget _buildHome() {
     // Show maintenance screen if backend is down
     if (kMaintenanceMode) {
       return const MaintenanceScreen();
@@ -194,53 +171,61 @@ class _AtelieProAppState extends State<AtelieProApp> {
       return const SplashScreen();
     }
 
-    // Client mode - check if authenticated
+    // Client mode - check if authenticated (using Riverpod)
     if (_appMode == 'client') {
-      return Consumer<ClientProvider>(
-        builder: (context, clientProvider, _) {
-          if (clientProvider.isAuthenticated) {
-            return const ClientAppShell();
-          }
-          return const LoginScreen();
-        },
-      );
-    }
-
-    // Employee mode - check if authenticated
-    if (_appMode == 'employee') {
-      return Consumer<EmployeeProvider>(
-        builder: (context, employeeProvider, _) {
-          if (employeeProvider.isAuthenticated) {
-            return const EmployeeAppShell();
-          }
-          return const LoginScreen();
-        },
-      );
-    }
-
-    // Manager mode - check if authenticated
-    if (_appMode == 'manager') {
-      switch (appProvider.state) {
-        case AppState.initial:
-        case AppState.loading:
+      final clientAuthState = ref.watch(clientAuthNotifierProvider);
+      switch (clientAuthState.state) {
+        case ClientAuthState.initial:
+        case ClientAuthState.loading:
           return const SplashScreen();
-        case AppState.authenticated:
-          return const AppShell();
-        case AppState.unauthenticated:
-        case AppState.error:
+        case ClientAuthState.authenticated:
+          return const ClientAppShell();
+        case ClientAuthState.unauthenticated:
+        case ClientAuthState.error:
           return const LoginScreen();
       }
     }
 
-    // No mode - show login with tabs
-    switch (appProvider.state) {
-      case AppState.initial:
-      case AppState.loading:
+    // Employee mode - check if authenticated (using Riverpod)
+    if (_appMode == 'employee') {
+      final employeeAuthState = ref.watch(employeeAuthNotifierProvider);
+      switch (employeeAuthState.state) {
+        case EmployeeAuthState.initial:
+        case EmployeeAuthState.loading:
+          return const SplashScreen();
+        case EmployeeAuthState.authenticated:
+          return const EmployeeAppShell();
+        case EmployeeAuthState.unauthenticated:
+        case EmployeeAuthState.error:
+          return const LoginScreen();
+      }
+    }
+
+    // Manager mode - check if authenticated (using Riverpod)
+    if (_appMode == 'manager') {
+      final authState = ref.watch(authNotifierProvider);
+      switch (authState.state) {
+        case AuthState.initial:
+        case AuthState.loading:
+          return const SplashScreen();
+        case AuthState.authenticated:
+          return const AppShell();
+        case AuthState.unauthenticated:
+        case AuthState.error:
+          return const LoginScreen();
+      }
+    }
+
+    // No mode - show login with tabs (using Riverpod for auth)
+    final authState = ref.watch(authNotifierProvider);
+    switch (authState.state) {
+      case AuthState.initial:
+      case AuthState.loading:
         return const SplashScreen();
-      case AppState.authenticated:
+      case AuthState.authenticated:
         return const AppShell();
-      case AppState.unauthenticated:
-      case AppState.error:
+      case AuthState.unauthenticated:
+      case AuthState.error:
         return const LoginScreen();
     }
   }

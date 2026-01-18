@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
-import '../../core/services/api_service.dart';
 import '../../core/services/base_api_service.dart';
-import '../../core/services/storage_service.dart';
 
-class CreateOrderScreen extends StatefulWidget {
+class CreateOrderScreen extends ConsumerStatefulWidget {
   const CreateOrderScreen({super.key});
 
   @override
-  State<CreateOrderScreen> createState() => _CreateOrderScreenState();
+  ConsumerState<CreateOrderScreen> createState() => _CreateOrderScreenState();
 }
 
-class _CreateOrderScreenState extends State<CreateOrderScreen> {
+class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController(text: '1');
 
@@ -34,8 +32,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   bool _isLoadingModels = false;
   String? _error;
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
@@ -65,9 +61,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     });
 
     try {
+      final api = ref.read(apiServiceProvider);
       final results = await Future.wait([
-        _api.getClients(limit: 100),
-        _api.getModels(limit: 100),
+        api.getClients(limit: 100),
+        api.getModels(limit: 100),
       ]);
 
       setState(() {
@@ -83,7 +80,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       // If session expired, redirect to login
       if (e.statusCode == 401) {
         if (mounted) {
-          final storage = context.read<StorageService>();
+          final storage = ref.read(storageServiceProvider);
           await storage.clearAll();
           Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
         }
@@ -118,7 +115,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     setState(() => _isLoadingModels = true);
 
     try {
-      final clientDetails = await _api.getClient(client.id);
+      final api = ref.read(apiServiceProvider);
+      final clientDetails = await api.getClient(client.id);
 
       if (mounted) {
         setState(() {
@@ -159,7 +157,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      await _api.createOrder(
+      final api = ref.read(apiServiceProvider);
+      await api.createOrder(
         clientId: _selectedClient!.id,
         modelId: _selectedModel!.id,
         quantity: _quantity,
@@ -167,7 +166,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       );
 
       if (mounted) {
-        await context.read<AppProvider>().refreshDashboard();
+        await ref.read(dashboardNotifierProvider.notifier).refreshDashboard();
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

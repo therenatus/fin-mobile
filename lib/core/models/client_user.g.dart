@@ -22,8 +22,8 @@ ClientUser _$ClientUserFromJson(Map<String, dynamic> json) => ClientUser(
 Map<String, dynamic> _$ClientUserToJson(ClientUser instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'email': ?instance.email,
-      'phone': ?instance.phone,
+      if (instance.email case final value?) 'email': value,
+      if (instance.phone case final value?) 'phone': value,
       'name': instance.name,
       'isVerified': instance.isVerified,
       'tenants': instance.tenants.map((e) => e.toJson()).toList(),
@@ -41,7 +41,7 @@ Map<String, dynamic> _$TenantLinkToJson(TenantLink instance) =>
       'clientId': instance.clientId,
       'tenantId': instance.tenantId,
       'tenantName': instance.tenantName,
-      'tenantDomain': ?instance.tenantDomain,
+      if (instance.tenantDomain case final value?) 'tenantDomain': value,
     };
 
 ClientAuthResponse _$ClientAuthResponseFromJson(Map<String, dynamic> json) =>
@@ -71,17 +71,18 @@ ClientOrder _$ClientOrderFromJson(Map<String, dynamic> json) => ClientOrder(
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 
-Map<String, dynamic> _$ClientOrderToJson(ClientOrder instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'tenantId': instance.tenantId,
-      'tenantName': instance.tenantName,
-      'model': instance.model.toJson(),
-      'quantity': instance.quantity,
-      'status': instance.status,
-      'dueDate': ?instance.dueDate?.toIso8601String(),
-      'createdAt': instance.createdAt.toIso8601String(),
-    };
+Map<String, dynamic> _$ClientOrderToJson(
+  ClientOrder instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'tenantId': instance.tenantId,
+  'tenantName': instance.tenantName,
+  'model': instance.model.toJson(),
+  'quantity': instance.quantity,
+  'status': instance.status,
+  if (instance.dueDate?.toIso8601String() case final value?) 'dueDate': value,
+  'createdAt': instance.createdAt.toIso8601String(),
+};
 
 ClientOrderModel _$ClientOrderModelFromJson(Map<String, dynamic> json) =>
     ClientOrderModel(
@@ -96,9 +97,9 @@ Map<String, dynamic> _$ClientOrderModelToJson(ClientOrderModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'category': ?instance.category,
-      'imageUrl': ?instance.imageUrl,
-      'basePrice': ?instance.basePrice,
+      if (instance.category case final value?) 'category': value,
+      if (instance.imageUrl case final value?) 'imageUrl': value,
+      if (instance.basePrice case final value?) 'basePrice': value,
     };
 
 ClientOrdersResponse _$ClientOrdersResponseFromJson(

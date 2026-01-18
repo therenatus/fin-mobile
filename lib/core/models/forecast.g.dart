@@ -58,8 +58,10 @@ Map<String, dynamic> _$MlReportToJson(MlReport instance) => <String, dynamic>{
   'id': instance.id,
   'type': instance.type,
   'content': instance.content,
-  'periodStart': ?instance.periodStart?.toIso8601String(),
-  'periodEnd': ?instance.periodEnd?.toIso8601String(),
+  if (instance.periodStart?.toIso8601String() case final value?)
+    'periodStart': value,
+  if (instance.periodEnd?.toIso8601String() case final value?)
+    'periodEnd': value,
   'createdAt': instance.createdAt.toIso8601String(),
 };
 

@@ -1,23 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
-import '../../core/providers/app_provider.dart';
-import '../../core/services/api_service.dart';
+import '../../core/riverpod/providers.dart';
 
-class ClientFormScreen extends StatefulWidget {
+class ClientFormScreen extends ConsumerStatefulWidget {
   final Client? client; // null for create, not null for edit
 
   const ClientFormScreen({super.key, this.client});
 
   @override
-  State<ClientFormScreen> createState() => _ClientFormScreenState();
+  ConsumerState<ClientFormScreen> createState() => _ClientFormScreenState();
 }
 
-class _ClientFormScreenState extends State<ClientFormScreen> {
-  ApiService get _api => context.read<AppProvider>().api;
+class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -60,7 +58,8 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       setState(() => _isSearchingUser = true);
 
       try {
-        final user = await _api.searchClientUserByEmail(email.trim());
+        final api = ref.read(apiServiceProvider);
+        final user = await api.searchClientUserByEmail(email.trim());
 
         if (mounted) {
           setState(() {
@@ -99,18 +98,19 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      final api = ref.read(apiServiceProvider);
       if (isEditMode) {
-        await _api.updateClient(id: widget.client!.id);
+        await api.updateClient(id: widget.client!.id);
       } else {
         // Create client linked to found ClientUser
-        await _api.createClient(
+        await api.createClient(
           name: _foundUser!['name'],
           email: _emailController.text.trim(),
         );
       }
 
       if (mounted) {
-        await context.read<AppProvider>().refreshDashboard();
+        await ref.read(dashboardNotifierProvider.notifier).refreshDashboard();
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

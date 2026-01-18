@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/materials_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/material.dart' as mat;
 
-class BarcodeScanScreen extends StatefulWidget {
+class BarcodeScanScreen extends ConsumerStatefulWidget {
   const BarcodeScanScreen({super.key});
 
   @override
-  State<BarcodeScanScreen> createState() => _BarcodeScanScreenState();
+  ConsumerState<BarcodeScanScreen> createState() => _BarcodeScanScreenState();
 }
 
-class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
+class _BarcodeScanScreenState extends ConsumerState<BarcodeScanScreen> {
   MobileScannerController? _controller;
   bool _isProcessing = false;
   String? _lastScannedCode;
@@ -55,8 +55,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
     await _controller?.stop();
 
     try {
-      final provider = context.read<MaterialsProvider>();
-      final material = await provider.findByBarcode(code);
+      final notifier = ref.read(materialsNotifierProvider.notifier);
+      final material = await notifier.findByBarcode(code);
 
       if (material != null && mounted) {
         Navigator.pop(context, material);

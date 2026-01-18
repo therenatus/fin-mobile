@@ -1,26 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
-import '../../core/services/api_service.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import 'employee_form_screen.dart';
 import 'employee_worklogs_screen.dart';
 
-class EmployeesScreen extends StatefulWidget {
+class EmployeesScreen extends ConsumerStatefulWidget {
   const EmployeesScreen({super.key});
 
   @override
-  State<EmployeesScreen> createState() => _EmployeesScreenState();
+  ConsumerState<EmployeesScreen> createState() => _EmployeesScreenState();
 }
 
-class _EmployeesScreenState extends State<EmployeesScreen> {
+class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
   String _searchQuery = '';
@@ -29,8 +28,6 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   bool _isLoading = true;
   List<Employee> _employees = [];
   bool _initialized = false;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void didChangeDependencies() {
@@ -60,7 +57,8 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   Future<void> _loadEmployees() async {
     setState(() => _isLoading = true);
     try {
-      final employees = await _api.getEmployees();
+      final api = ref.read(apiServiceProvider);
+      final employees = await api.getEmployees();
       setState(() {
         _employees = employees;
         _isLoading = false;
@@ -94,26 +92,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
           ),
         ),
         actions: [
-          Consumer<AppProvider>(
-            builder: (context, provider, _) {
-              final roles = provider.employeeRoles;
-              return PopupMenuButton<String?>(
-                icon: Badge(
-                  isLabelVisible: _roleFilter != null,
-                  child: const Icon(Icons.filter_list),
-                ),
-                tooltip: context.l10n.filterByRole,
-                onSelected: (value) {
-                  setState(() => _roleFilter = value);
-                },
-                itemBuilder: (ctx) => [
-                  _buildFilterOption(ctx, null, context.l10n.allRoles),
-                  const PopupMenuDivider(),
-                  ...roles.map((role) => _buildFilterOption(ctx, role.code, role.label)),
-                ],
-              );
-            },
-          ),
+          _buildRoleFilterButton(),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(108),
@@ -178,6 +157,25 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         icon: const Icon(Icons.person_add),
         label: Text(context.l10n.add),
       ),
+    );
+  }
+
+  Widget _buildRoleFilterButton() {
+    final roles = ref.watch(employeeRolesProvider);
+    return PopupMenuButton<String?>(
+      icon: Badge(
+        isLabelVisible: _roleFilter != null,
+        child: const Icon(Icons.filter_list),
+      ),
+      tooltip: context.l10n.filterByRole,
+      onSelected: (value) {
+        setState(() => _roleFilter = value);
+      },
+      itemBuilder: (ctx) => [
+        _buildFilterOption(ctx, null, context.l10n.allRoles),
+        const PopupMenuDivider(),
+        ...roles.map((role) => _buildFilterOption(ctx, role.code, role.label)),
+      ],
     );
   }
 
@@ -322,7 +320,8 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               Navigator.pop(dialogContext); // Close dialog
               Navigator.pop(context); // Close bottom sheet
               try {
-                await _api.deleteEmployee(employee.id);
+                final api = ref.read(apiServiceProvider);
+                await api.deleteEmployee(employee.id);
                 _loadEmployees();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -358,7 +357,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   }
 }
 
-class _EmployeeCard extends StatelessWidget {
+class _EmployeeCard extends ConsumerWidget {
   final Employee employee;
   final VoidCallback onTap;
 
@@ -368,8 +367,9 @@ class _EmployeeCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final roleLabel = context.read<AppProvider>().getRoleLabel(employee.role);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardState = ref.watch(dashboardNotifierProvider);
+    final roleLabel = dashboardState.getRoleLabel(employee.role);
 
     return Card(
       elevation: 0,
@@ -445,7 +445,7 @@ class _EmployeeCard extends StatelessWidget {
   }
 }
 
-class _EmployeeDetailsSheet extends StatelessWidget {
+class _EmployeeDetailsSheet extends ConsumerWidget {
   final Employee employee;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -459,8 +459,9 @@ class _EmployeeDetailsSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final roleLabel = context.read<AppProvider>().getRoleLabel(employee.role);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardState = ref.watch(dashboardNotifierProvider);
+    final roleLabel = dashboardState.getRoleLabel(employee.role);
 
     return Container(
       constraints: BoxConstraints(

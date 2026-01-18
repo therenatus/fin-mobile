@@ -1,37 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/employee_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/employee_user.dart';
 
-class WorkHistoryScreen extends StatefulWidget {
+class WorkHistoryScreen extends ConsumerStatefulWidget {
   const WorkHistoryScreen({super.key});
 
   @override
-  State<WorkHistoryScreen> createState() => _WorkHistoryScreenState();
+  ConsumerState<WorkHistoryScreen> createState() => _WorkHistoryScreenState();
 }
 
-class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
+class _WorkHistoryScreenState extends ConsumerState<WorkHistoryScreen> {
   int _selectedSegment = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<EmployeeProvider>();
-      provider.refreshWorkLogs();
-      provider.refreshPayrolls();
+      final notifier = ref.read(employeeAuthNotifierProvider.notifier);
+      notifier.refreshWorkLogs();
+      notifier.refreshPayrolls();
     });
   }
 
   Future<void> _onRefresh() async {
-    final provider = context.read<EmployeeProvider>();
+    final notifier = ref.read(employeeAuthNotifierProvider.notifier);
     if (_selectedSegment == 0) {
-      await provider.refreshWorkLogs();
+      await notifier.refreshWorkLogs();
     } else {
-      await provider.refreshPayrolls();
+      await notifier.refreshPayrolls();
     }
   }
 
@@ -40,7 +41,7 @@ class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('История'),
+        title: Text(context.l10n.history),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
       ),
@@ -51,9 +52,9 @@ class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             color: context.surfaceColor,
             child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, label: Text('Работы'), icon: Icon(Icons.work_outline)),
-                ButtonSegment(value: 1, label: Text('Зарплата'), icon: Icon(Icons.payments_outlined)),
+              segments: [
+                ButtonSegment(value: 0, label: Text(context.l10n.works), icon: const Icon(Icons.work_outline)),
+                ButtonSegment(value: 1, label: Text(context.l10n.salary), icon: const Icon(Icons.payments_outlined)),
               ],
               selected: {_selectedSegment},
               onSelectionChanged: (selection) {
@@ -68,12 +69,13 @@ class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
 
           // Content
           Expanded(
-            child: Consumer<EmployeeProvider>(
-              builder: (context, provider, _) {
+            child: Builder(
+              builder: (context) {
+                final authState = ref.watch(employeeAuthNotifierProvider);
                 if (_selectedSegment == 0) {
-                  return _buildWorkLogsTab(context, provider);
+                  return _buildWorkLogsTab(context, authState);
                 } else {
-                  return _buildPayrollsTab(context, provider);
+                  return _buildPayrollsTab(context, authState);
                 }
               },
             ),
@@ -83,22 +85,23 @@ class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
     );
   }
 
-  Widget _buildWorkLogsTab(BuildContext context, EmployeeProvider provider) {
-    if (provider.isLoading && provider.workLogs.isEmpty) {
+  Widget _buildWorkLogsTab(BuildContext context, EmployeeAuthStateData authState) {
+    if (authState.isLoading && authState.workLogs.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.workLogs.isEmpty) {
+    if (authState.workLogs.isEmpty) {
       return _buildEmptyState(
+        context,
         icon: Icons.work_outline,
-        title: 'Нет записей о работе',
-        subtitle: 'Записи появятся после того, как вы начнёте работать',
+        title: context.l10n.noWorkRecords,
+        subtitle: context.l10n.workRecordsHint,
       );
     }
 
     // Group by date
     final grouped = <String, List<EmployeeWorkLog>>{};
-    for (final log in provider.workLogs) {
+    for (final log in authState.workLogs) {
       final key = DateFormat('d MMMM yyyy', 'ru').format(log.date);
       grouped.putIfAbsent(key, () => []).add(log);
     }
@@ -135,16 +138,17 @@ class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
     );
   }
 
-  Widget _buildPayrollsTab(BuildContext context, EmployeeProvider provider) {
-    if (provider.isLoading && provider.payrolls.isEmpty) {
+  Widget _buildPayrollsTab(BuildContext context, EmployeeAuthStateData authState) {
+    if (authState.isLoading && authState.payrolls.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.payrolls.isEmpty) {
+    if (authState.payrolls.isEmpty) {
       return _buildEmptyState(
+        context,
         icon: Icons.payments_outlined,
-        title: 'Нет расчётов',
-        subtitle: 'Когда менеджер рассчитает зарплату, информация появится здесь',
+        title: context.l10n.noPayrollRecords,
+        subtitle: context.l10n.payrollRecordsHint,
       );
     }
 
@@ -152,15 +156,16 @@ class _WorkHistoryScreenState extends State<WorkHistoryScreen> {
       onRefresh: _onRefresh,
       child: ListView.builder(
         padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: provider.payrolls.length,
+        itemCount: authState.payrolls.length,
         itemBuilder: (context, index) {
-          return _PayrollCard(payroll: provider.payrolls[index]);
+          return _PayrollCard(payroll: authState.payrolls[index]);
         },
       ),
     );
   }
 
-  Widget _buildEmptyState({
+  Widget _buildEmptyState(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
@@ -291,7 +296,7 @@ class _WorkLogCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${log.hours.toStringAsFixed(1)}ч',
+                    '${log.hours.toStringAsFixed(1)}${context.l10n.hoursAbbr}',
                     style: AppTypography.labelSmall.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -377,7 +382,7 @@ class _PayrollCardState extends State<_PayrollCard> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${payroll.workLogs.length} записей',
+                          context.l10n.entriesCount(payroll.workLogs.length),
                           style: AppTypography.bodySmall.copyWith(
                             color: context.textSecondaryColor,
                           ),
@@ -386,7 +391,7 @@ class _PayrollCardState extends State<_PayrollCard> {
                     ),
                   ),
                   Text(
-                    '${_formatCurrency(payroll.totalPayout)} руб',
+                    '${_formatCurrency(payroll.totalPayout)} ${context.l10n.rub}',
                     style: AppTypography.h4.copyWith(
                       color: AppColors.success,
                     ),
@@ -410,7 +415,7 @@ class _PayrollCardState extends State<_PayrollCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Детализация',
+                    context.l10n.details,
                     style: AppTypography.labelMedium.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -478,7 +483,7 @@ class _PayrollWorkLogItem extends StatelessWidget {
           ),
           if (log.hours > 0)
             Text(
-              '${log.hours.toStringAsFixed(1)}ч',
+              '${log.hours.toStringAsFixed(1)}${context.l10n.hoursAbbr}',
               style: AppTypography.bodySmall.copyWith(
                 color: context.textSecondaryColor,
               ),

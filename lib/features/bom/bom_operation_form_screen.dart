@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/models/bom.dart';
-import '../../core/providers/bom_provider.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/utils/toast.dart';
 
 /// Форма добавления/редактирования операции в BOM
-class BomOperationFormScreen extends StatefulWidget {
+class BomOperationFormScreen extends ConsumerStatefulWidget {
   final Bom bom;
   final BomOperation? operation; // null for create, not null for edit
   final int? nextSequence; // For new operation
@@ -22,10 +21,10 @@ class BomOperationFormScreen extends StatefulWidget {
   });
 
   @override
-  State<BomOperationFormScreen> createState() => _BomOperationFormScreenState();
+  ConsumerState<BomOperationFormScreen> createState() => _BomOperationFormScreenState();
 }
 
-class _BomOperationFormScreenState extends State<BomOperationFormScreen> {
+class _BomOperationFormScreenState extends ConsumerState<BomOperationFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _sequenceController = TextEditingController();
@@ -37,8 +36,6 @@ class _BomOperationFormScreenState extends State<BomOperationFormScreen> {
   bool _isSaving = false;
 
   bool get _isEditing => widget.operation != null;
-
-  BomProvider get _bomProvider => context.read<BomProvider>();
 
   // Available roles
   static const _roles = [
@@ -389,7 +386,7 @@ class _BomOperationFormScreenState extends State<BomOperationFormScreen> {
         ];
       }
 
-      await _bomProvider.updateBom(
+      await ref.read(bomNotifierProvider.notifier).updateBom(
         widget.bom.id,
         operations: updatedOperations,
       );

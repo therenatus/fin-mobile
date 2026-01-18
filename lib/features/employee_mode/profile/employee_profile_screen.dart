@@ -1,31 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/employee_provider.dart';
-import '../../../core/providers/app_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/services/storage_service.dart';
 import '../../auth/login_screen.dart';
 
-class EmployeeProfileScreen extends StatelessWidget {
+class EmployeeProfileScreen extends ConsumerWidget {
   const EmployeeProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Профиль'),
+        title: Text(context.l10n.profile),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Consumer<EmployeeProvider>(
-        builder: (context, provider, _) {
-          final user = provider.user;
-          if (user == null) return const SizedBox.shrink();
+      body: _buildBody(context, ref),
+    );
+  }
 
-          return ListView(
+  Widget _buildBody(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(employeeAuthNotifierProvider);
+    final notifier = ref.read(employeeAuthNotifierProvider.notifier);
+    final user = authState.user;
+    if (user == null) return const SizedBox.shrink();
+
+    // Get theme from Riverpod
+    final currentTheme = ref.watch(themeNotifierProvider);
+
+    return ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // User info card
@@ -71,7 +79,7 @@ class EmployeeProfileScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppRadius.full),
                       ),
                       child: Text(
-                        provider.getRoleLabel(user.role),
+                        notifier.getRoleLabel(user.role),
                         style: AppTypography.labelMedium.copyWith(
                           color: AppColors.primary,
                         ),
@@ -85,7 +93,7 @@ class EmployeeProfileScreen extends StatelessWidget {
 
               // Contact info section
               Text(
-                'Контактная информация',
+                context.l10n.contactInfo,
                 style: AppTypography.labelLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -101,14 +109,14 @@ class EmployeeProfileScreen extends StatelessWidget {
                   children: [
                     _ProfileInfoTile(
                       icon: Icons.email_outlined,
-                      label: 'Email',
+                      label: context.l10n.email,
                       value: user.email,
                     ),
                     if (user.phone != null) ...[
                       Divider(height: 1, color: context.dividerColor),
                       _ProfileInfoTile(
                         icon: Icons.phone_outlined,
-                        label: 'Телефон',
+                        label: context.l10n.phoneLabel,
                         value: user.phone!,
                       ),
                     ],
@@ -120,7 +128,7 @@ class EmployeeProfileScreen extends StatelessWidget {
 
               // Workplace section
               Text(
-                'Место работы',
+                context.l10n.workplace,
                 style: AppTypography.labelLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -147,7 +155,7 @@ class EmployeeProfileScreen extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    'Ателье',
+                    context.l10n.atelierLabel,
                     style: AppTypography.bodySmall.copyWith(
                       color: context.textSecondaryColor,
                     ),
@@ -160,7 +168,7 @@ class EmployeeProfileScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
 
                 Text(
-                  'Активность',
+                  context.l10n.activity,
                   style: AppTypography.labelLarge.copyWith(
                     color: context.textSecondaryColor,
                   ),
@@ -174,8 +182,8 @@ class EmployeeProfileScreen extends StatelessWidget {
                   ),
                   child: _ProfileInfoTile(
                     icon: Icons.access_time,
-                    label: 'Последний вход',
-                    value: _formatLastLogin(user.lastLoginAt!),
+                    label: context.l10n.lastLogin,
+                    value: _formatLastLogin(context, user.lastLoginAt!),
                   ),
                 ),
               ],
@@ -184,35 +192,31 @@ class EmployeeProfileScreen extends StatelessWidget {
 
               // Theme section
               Text(
-                'Внешний вид',
+                context.l10n.appearance,
                 style: AppTypography.labelLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
 
-              Consumer<AppProvider>(
-                builder: (context, appProvider, _) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                    ),
-                    child: _ThemeSelector(
-                      currentTheme: appProvider.themeMode,
-                      onChanged: (mode) => appProvider.setThemeMode(mode),
-                    ),
-                  );
-                },
+              Container(
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                ),
+                child: _ThemeSelector(
+                  currentTheme: currentTheme,
+                  onChanged: (mode) => ref.read(themeNotifierProvider.notifier).setThemeMode(mode),
+                ),
               ),
 
               const SizedBox(height: AppSpacing.xl),
 
               // Logout button
               OutlinedButton.icon(
-                onPressed: () => _logout(context, provider),
+                onPressed: () => _logout(context, notifier),
                 icon: const Icon(Icons.logout),
-                label: const Text('Выйти'),
+                label: Text(context.l10n.logout),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
                   side: const BorderSide(color: AppColors.error),
@@ -225,7 +229,7 @@ class EmployeeProfileScreen extends StatelessWidget {
               // App version
               Center(
                 child: Text(
-                  'AteliePro Employee v1.0.0',
+                  context.l10n.appVersionEmployee,
                   style: AppTypography.bodySmall.copyWith(
                     color: context.textTertiaryColor,
                   ),
@@ -233,9 +237,6 @@ class EmployeeProfileScreen extends StatelessWidget {
               ),
             ],
           );
-        },
-      ),
-    );
   }
 
   String _getInitials(String name) {
@@ -246,45 +247,45 @@ class EmployeeProfileScreen extends StatelessWidget {
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
 
-  String _formatLastLogin(DateTime dateTime) {
+  String _formatLastLogin(BuildContext context, DateTime dateTime) {
     final now = DateTime.now();
     final diff = now.difference(dateTime);
 
     if (diff.inMinutes < 1) {
-      return 'Только что';
+      return context.l10n.justNow;
     } else if (diff.inHours < 1) {
-      return '${diff.inMinutes} мин. назад';
+      return context.l10n.minutesAgo(diff.inMinutes);
     } else if (diff.inDays < 1) {
-      return '${diff.inHours} ч. назад';
+      return context.l10n.hoursAgo(diff.inHours);
     } else if (diff.inDays < 7) {
-      return '${diff.inDays} дн. назад';
+      return context.l10n.daysAgo(diff.inDays);
     } else {
       return DateFormat('d MMMM', 'ru').format(dateTime);
     }
   }
 
-  Future<void> _logout(BuildContext context, EmployeeProvider provider) async {
+  Future<void> _logout(BuildContext context, EmployeeAuthNotifier notifier) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Выход'),
-        content: const Text('Вы уверены, что хотите выйти?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.logoutTitle),
+        content: Text(context.l10n.logoutQuestion),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Отмена'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Выйти'),
+            child: Text(context.l10n.logout),
           ),
         ],
       ),
     );
 
     if (confirmed == true && context.mounted) {
-      await provider.logout();
+      await notifier.logout();
       await StorageService().clearAppMode();
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
@@ -370,7 +371,7 @@ class _ThemeSelector extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Тема',
+                context.l10n.theme,
                 style: AppTypography.bodyLarge.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
@@ -382,21 +383,21 @@ class _ThemeSelector extends StatelessWidget {
             children: [
               _ThemeOption(
                 icon: Icons.light_mode_outlined,
-                label: 'Светлая',
+                label: context.l10n.themeLight,
                 isSelected: currentTheme == ThemeMode.light,
                 onTap: () => onChanged(ThemeMode.light),
               ),
               const SizedBox(width: AppSpacing.sm),
               _ThemeOption(
                 icon: Icons.dark_mode_outlined,
-                label: 'Тёмная',
+                label: context.l10n.themeDark,
                 isSelected: currentTheme == ThemeMode.dark,
                 onTap: () => onChanged(ThemeMode.dark),
               ),
               const SizedBox(width: AppSpacing.sm),
               _ThemeOption(
                 icon: Icons.settings_suggest_outlined,
-                label: 'Авто',
+                label: context.l10n.themeAuto,
                 isSelected: currentTheme == ThemeMode.system,
                 onTap: () => onChanged(ThemeMode.system),
               ),

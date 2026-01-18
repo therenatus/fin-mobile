@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/providers/employee_provider.dart';
+import '../../../core/riverpod/providers.dart';
 import '../../../core/models/employee_user.dart';
 
-class RecordWorkScreen extends StatefulWidget {
+class RecordWorkScreen extends ConsumerStatefulWidget {
   final EmployeeAssignment assignment;
 
   const RecordWorkScreen({
@@ -16,10 +16,10 @@ class RecordWorkScreen extends StatefulWidget {
   });
 
   @override
-  State<RecordWorkScreen> createState() => _RecordWorkScreenState();
+  ConsumerState<RecordWorkScreen> createState() => _RecordWorkScreenState();
 }
 
-class _RecordWorkScreenState extends State<RecordWorkScreen> {
+class _RecordWorkScreenState extends ConsumerState<RecordWorkScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _hoursController = TextEditingController();
@@ -51,8 +51,8 @@ class _RecordWorkScreenState extends State<RecordWorkScreen> {
     setState(() => _isLoadingExisting = true);
 
     try {
-      final provider = context.read<EmployeeProvider>();
-      final existing = await provider.getWorkLogByDate(assignment.id, date);
+      final notifier = ref.read(employeeAuthNotifierProvider.notifier);
+      final existing = await notifier.getWorkLogByDate(assignment.id, date);
 
       if (mounted) {
         setState(() {
@@ -100,7 +100,7 @@ class _RecordWorkScreenState extends State<RecordWorkScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final provider = context.read<EmployeeProvider>();
+      final notifier = ref.read(employeeAuthNotifierProvider.notifier);
       final request = CreateWorkLogRequest(
         assignmentId: assignment.id,
         quantity: int.parse(_quantityController.text),
@@ -110,7 +110,7 @@ class _RecordWorkScreenState extends State<RecordWorkScreen> {
         date: _selectedDate.toIso8601String().split('T')[0],
       );
 
-      await provider.createWorkLog(request);
+      await notifier.createWorkLog(request);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

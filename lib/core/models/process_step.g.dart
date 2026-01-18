@@ -27,8 +27,8 @@ Map<String, dynamic> _$ProcessStepToJson(ProcessStep instance) =>
       'name': instance.name,
       'estimatedTime': instance.estimatedTime,
       'executorRole': instance.executorRole,
-      'rate': ?instance.rate,
-      'rateType': ?instance.rateType,
+      if (instance.rate case final value?) 'rate': value,
+      if (instance.rateType case final value?) 'rateType': value,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

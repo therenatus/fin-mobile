@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'json_converters.dart';
+
+part 'material.g.dart';
+
 enum MaterialUnit {
   meter,
   kilogram,
@@ -55,16 +60,22 @@ enum MaterialUnit {
   String toJson() => name.toUpperCase();
 }
 
+@JsonSerializable()
 class MaterialCategory {
   final String id;
   final String name;
   final String? description;
   final String? parentId;
   final MaterialCategory? parent;
+  @JsonKey(defaultValue: [])
   final List<MaterialCategory> children;
+  @JsonKey(readValue: _readMaterialsCount, defaultValue: 0)
   final int materialsCount;
+  @JsonKey(readValue: _readChildrenCount, defaultValue: 0)
   final int childrenCount;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime updatedAt;
 
   MaterialCategory({
@@ -80,25 +91,7 @@ class MaterialCategory {
     required this.updatedAt,
   });
 
-  factory MaterialCategory.fromJson(Map<String, dynamic> json) {
-    return MaterialCategory(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      parentId: json['parentId'] as String?,
-      parent: json['parent'] != null
-          ? MaterialCategory.fromJson(json['parent'] as Map<String, dynamic>)
-          : null,
-      children: (json['children'] as List<dynamic>?)
-              ?.map((e) => MaterialCategory.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      materialsCount: (json['_count']?['materials'] as int?) ?? 0,
-      childrenCount: (json['_count']?['children'] as int?) ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
-  }
+  factory MaterialCategory.fromJson(Map<String, dynamic> json) => _$MaterialCategoryFromJson(json);
 
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -107,8 +100,19 @@ class MaterialCategory {
       };
 }
 
+// Helper functions for reading _count fields
+Object? _readMaterialsCount(Map<dynamic, dynamic> json, String key) {
+  return (json['_count'] as Map<String, dynamic>?)?['materials'];
+}
+
+Object? _readChildrenCount(Map<dynamic, dynamic> json, String key) {
+  return (json['_count'] as Map<String, dynamic>?)?['children'];
+}
+
+@JsonSerializable()
 class MaterialCategoriesResponse {
   final List<MaterialCategory> categories;
+  @JsonKey(defaultValue: [])
   final List<MaterialCategory> flat;
 
   MaterialCategoriesResponse({
@@ -116,27 +120,22 @@ class MaterialCategoriesResponse {
     required this.flat,
   });
 
-  factory MaterialCategoriesResponse.fromJson(Map<String, dynamic> json) {
-    return MaterialCategoriesResponse(
-      categories: (json['categories'] as List<dynamic>)
-          .map((e) => MaterialCategory.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      flat: (json['flat'] as List<dynamic>?)
-              ?.map((e) => MaterialCategory.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-    );
-  }
+  factory MaterialCategoriesResponse.fromJson(Map<String, dynamic> json) =>
+      _$MaterialCategoriesResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$MaterialCategoriesResponseToJson(this);
 }
 
+@JsonSerializable()
 class Material {
   final String id;
   final String sku;
   final String name;
   final String? description;
   final String? barcode;
+  @JsonKey(fromJson: _materialUnitFromJson, toJson: _materialUnitToJson)
   final MaterialUnit unit;
   final double quantity;
+  @JsonKey(defaultValue: 0.0)
   final double reservedQty;
   final double? minStockLevel;
   final double? costPrice;
@@ -145,10 +144,13 @@ class Material {
   final double? width;
   final String? composition;
   final String? imageUrl;
+  @JsonKey(defaultValue: true)
   final bool isActive;
   final MaterialCategory? category;
   final MaterialSupplier? supplier;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
+  @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime updatedAt;
 
   // Computed fields from backend
@@ -180,45 +182,22 @@ class Material {
     this.isLowStock,
   });
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   double get computedAvailableQty => availableQty ?? (quantity - reservedQty);
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   bool get computedIsLowStock =>
       isLowStock ?? (minStockLevel != null && quantity <= minStockLevel!);
 
-  String get formattedQuantity => '${quantity.toStringAsFixed(quantity.truncateToDouble() == quantity ? 0 : 2)} ${unit.label}';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  String get formattedQuantity =>
+      '${quantity.toStringAsFixed(quantity.truncateToDouble() == quantity ? 0 : 2)} ${unit.label}';
 
-  String get formattedAvailableQty => '${computedAvailableQty.toStringAsFixed(computedAvailableQty.truncateToDouble() == computedAvailableQty ? 0 : 2)} ${unit.label}';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  String get formattedAvailableQty =>
+      '${computedAvailableQty.toStringAsFixed(computedAvailableQty.truncateToDouble() == computedAvailableQty ? 0 : 2)} ${unit.label}';
 
-  factory Material.fromJson(Map<String, dynamic> json) {
-    return Material(
-      id: json['id'] as String,
-      sku: json['sku'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      barcode: json['barcode'] as String?,
-      unit: MaterialUnit.fromString(json['unit'] as String? ?? 'METER'),
-      quantity: (json['quantity'] as num).toDouble(),
-      reservedQty: (json['reservedQty'] as num?)?.toDouble() ?? 0,
-      minStockLevel: (json['minStockLevel'] as num?)?.toDouble(),
-      costPrice: (json['costPrice'] as num?)?.toDouble(),
-      sellPrice: (json['sellPrice'] as num?)?.toDouble(),
-      color: json['color'] as String?,
-      width: (json['width'] as num?)?.toDouble(),
-      composition: json['composition'] as String?,
-      imageUrl: json['imageUrl'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      category: json['category'] != null
-          ? MaterialCategory.fromJson(json['category'] as Map<String, dynamic>)
-          : null,
-      supplier: json['supplier'] != null
-          ? MaterialSupplier.fromJson(json['supplier'] as Map<String, dynamic>)
-          : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      availableQty: (json['availableQty'] as num?)?.toDouble(),
-      isLowStock: json['isLowStock'] as bool?,
-    );
-  }
+  factory Material.fromJson(Map<String, dynamic> json) => _$MaterialFromJson(json);
 
   Map<String, dynamic> toJson() => {
         'sku': sku,
@@ -239,6 +218,12 @@ class Material {
       };
 }
 
+MaterialUnit _materialUnitFromJson(String? value) =>
+    MaterialUnit.fromString(value ?? 'METER');
+
+String _materialUnitToJson(MaterialUnit unit) => unit.toJson();
+
+@JsonSerializable()
 class MaterialSupplier {
   final String id;
   final String name;
@@ -248,19 +233,21 @@ class MaterialSupplier {
     required this.name,
   });
 
-  factory MaterialSupplier.fromJson(Map<String, dynamic> json) {
-    return MaterialSupplier(
-      id: json['id'] as String,
-      name: json['name'] as String,
-    );
-  }
+  factory MaterialSupplier.fromJson(Map<String, dynamic> json) =>
+      _$MaterialSupplierFromJson(json);
+  Map<String, dynamic> toJson() => _$MaterialSupplierToJson(this);
 }
 
+@JsonSerializable()
 class MaterialsResponse {
   final List<Material> materials;
+  @JsonKey(readValue: _readPage, defaultValue: 1)
   final int page;
+  @JsonKey(readValue: _readPerPage, defaultValue: 20)
   final int perPage;
+  @JsonKey(readValue: _readTotal, defaultValue: 0)
   final int total;
+  @JsonKey(readValue: _readTotalPages, defaultValue: 1)
   final int totalPages;
 
   MaterialsResponse({
@@ -271,22 +258,25 @@ class MaterialsResponse {
     required this.totalPages,
   });
 
-  factory MaterialsResponse.fromJson(Map<String, dynamic> json) {
-    final meta = json['meta'] as Map<String, dynamic>?;
-    return MaterialsResponse(
-      materials: (json['materials'] as List<dynamic>)
-          .map((e) => Material.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      page: meta?['page'] as int? ?? 1,
-      perPage: meta?['per_page'] as int? ?? 20,
-      total: meta?['total'] as int? ?? 0,
-      totalPages: meta?['total_pages'] as int? ?? 1,
-    );
-  }
+  factory MaterialsResponse.fromJson(Map<String, dynamic> json) =>
+      _$MaterialsResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$MaterialsResponseToJson(this);
 }
 
+// Helper functions for reading meta fields
+Object? _readPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['page'];
+Object? _readPerPage(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['per_page'];
+Object? _readTotal(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total'];
+Object? _readTotalPages(Map<dynamic, dynamic> json, String key) =>
+    (json['meta'] as Map<String, dynamic>?)?['total_pages'];
+
+@JsonSerializable()
 class LowStockResponse {
   final List<Material> materials;
+  @JsonKey(defaultValue: 0)
   final int total;
 
   LowStockResponse({
@@ -294,12 +284,7 @@ class LowStockResponse {
     required this.total,
   });
 
-  factory LowStockResponse.fromJson(Map<String, dynamic> json) {
-    return LowStockResponse(
-      materials: (json['materials'] as List<dynamic>)
-          .map((e) => Material.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      total: json['total'] as int? ?? 0,
-    );
-  }
+  factory LowStockResponse.fromJson(Map<String, dynamic> json) =>
+      _$LowStockResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$LowStockResponseToJson(this);
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
-import '../providers/app_provider.dart';
+import '../riverpod/providers.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/forecasts/forecasts_screen.dart';
 import '../../features/workload/workload_screen.dart';
@@ -12,15 +12,15 @@ import '../../features/finance/finance_screen.dart';
 import '../../features/employees/employees_screen.dart';
 import '../../features/payroll/payroll_screen.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   final String? currentRoute;
 
   const AppDrawer({super.key, this.currentRoute});
 
   @override
-  Widget build(BuildContext context) {
-    final appProvider = context.watch<AppProvider>();
-    final user = appProvider.user;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+    final user = authState.user;
 
     return Drawer(
       backgroundColor: context.surfaceColor,
@@ -183,7 +183,7 @@ class AppDrawer extends StatelessWidget {
               ),
               onTap: () async {
                 Navigator.pop(context);
-                await context.read<AppProvider>().logout();
+                await ref.read(authNotifierProvider.notifier).logout();
               },
             ),
           ),

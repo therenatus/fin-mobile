@@ -1439,7 +1439,7 @@ abstract class AppLocalizations {
   /// Waiting status label
   ///
   /// In ru, this message translates to:
-  /// **'Ожидают'**
+  /// **'Ожидает'**
   String get statusWaiting;
 
   /// Cancelled status short label
@@ -2191,6 +2191,258 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'сотрудников'**
   String get ofEmployees;
+
+  /// No description provided for @ateliers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ателье'**
+  String get ateliers;
+
+  /// No description provided for @myAteliers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мои ателье'**
+  String get myAteliers;
+
+  /// No description provided for @notLinkedToAtelier.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы ещё не привязаны к ателье'**
+  String get notLinkedToAtelier;
+
+  /// No description provided for @linkToAtelierHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Привяжитесь к ателье, чтобы создавать заказы'**
+  String get linkToAtelierHint;
+
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In ru, this message translates to:
+  /// **'Функция скоро будет доступна'**
+  String get featureComingSoon;
+
+  /// No description provided for @linkAtelier.
+  ///
+  /// In ru, this message translates to:
+  /// **'Привязать ателье'**
+  String get linkAtelier;
+
+  /// No description provided for @noOrdersLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет заказов'**
+  String get noOrdersLabel;
+
+  /// No description provided for @oneOrder.
+  ///
+  /// In ru, this message translates to:
+  /// **'1 заказ'**
+  String get oneOrder;
+
+  /// No description provided for @fewOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} заказа'**
+  String fewOrders(int count);
+
+  /// No description provided for @manyOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} заказов'**
+  String manyOrders(int count);
+
+  /// No description provided for @tasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задачи'**
+  String get tasks;
+
+  /// No description provided for @history.
+  ///
+  /// In ru, this message translates to:
+  /// **'История'**
+  String get history;
+
+  /// No description provided for @myTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мои задачи'**
+  String get myTasks;
+
+  /// No description provided for @inWork.
+  ///
+  /// In ru, this message translates to:
+  /// **'В работе'**
+  String get inWork;
+
+  /// No description provided for @ready.
+  ///
+  /// In ru, this message translates to:
+  /// **'Готовые'**
+  String get ready;
+
+  /// No description provided for @dateFilter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтр по дате'**
+  String get dateFilter;
+
+  /// No description provided for @tasksCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} задач'**
+  String tasksCount(int count);
+
+  /// No description provided for @noActiveTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет активных задач'**
+  String get noActiveTasks;
+
+  /// No description provided for @tasksWillAppearHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Когда менеджер назначит вам заказ, он появится здесь'**
+  String get tasksWillAppearHere;
+
+  /// No description provided for @statusReady.
+  ///
+  /// In ru, this message translates to:
+  /// **'Готов'**
+  String get statusReady;
+
+  /// No description provided for @works.
+  ///
+  /// In ru, this message translates to:
+  /// **'Работы'**
+  String get works;
+
+  /// No description provided for @salary.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зарплата'**
+  String get salary;
+
+  /// No description provided for @noWorkRecords.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет записей о работе'**
+  String get noWorkRecords;
+
+  /// No description provided for @workRecordsHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Записи появятся после того, как вы начнёте работать'**
+  String get workRecordsHint;
+
+  /// No description provided for @noPayrollRecords.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет расчётов'**
+  String get noPayrollRecords;
+
+  /// No description provided for @payrollRecordsHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Когда менеджер рассчитает зарплату, информация появится здесь'**
+  String get payrollRecordsHint;
+
+  /// No description provided for @entriesCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} записей'**
+  String entriesCount(int count);
+
+  /// No description provided for @rub.
+  ///
+  /// In ru, this message translates to:
+  /// **'руб'**
+  String get rub;
+
+  /// No description provided for @details.
+  ///
+  /// In ru, this message translates to:
+  /// **'Детализация'**
+  String get details;
+
+  /// No description provided for @hoursAbbr.
+  ///
+  /// In ru, this message translates to:
+  /// **'ч'**
+  String get hoursAbbr;
+
+  /// No description provided for @contactInfo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Контактная информация'**
+  String get contactInfo;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Телефон'**
+  String get phoneLabel;
+
+  /// No description provided for @workplace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Место работы'**
+  String get workplace;
+
+  /// No description provided for @atelierLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ателье'**
+  String get atelierLabel;
+
+  /// No description provided for @activity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Активность'**
+  String get activity;
+
+  /// No description provided for @lastLogin.
+  ///
+  /// In ru, this message translates to:
+  /// **'Последний вход'**
+  String get lastLogin;
+
+  /// No description provided for @justNow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Только что'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{minutes} мин. назад'**
+  String minutesAgo(int minutes);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{hours} ч. назад'**
+  String hoursAgo(int hours);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{days} дн. назад'**
+  String daysAgo(int days);
+
+  /// No description provided for @logoutQuestion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы уверены, что хотите выйти?'**
+  String get logoutQuestion;
+
+  /// No description provided for @appVersionEmployee.
+  ///
+  /// In ru, this message translates to:
+  /// **'AteliePro Employee v1.0.0'**
+  String get appVersionEmployee;
 }
 
 class _AppLocalizationsDelegate

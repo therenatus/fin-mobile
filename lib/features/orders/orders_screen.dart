@@ -1,27 +1,27 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/date_range_picker_button.dart';
 import '../../core/models/models.dart';
 import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
 
-class OrdersScreen extends StatefulWidget {
+class OrdersScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const OrdersScreen({super.key, this.onMenuPressed});
 
   @override
-  State<OrdersScreen> createState() => _OrdersScreenState();
+  ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderStateMixin {
+class _OrdersScreenState extends ConsumerState<OrdersScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
@@ -46,7 +46,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppProvider>().refreshOrders();
+      ref.read(dashboardNotifierProvider.notifier).refreshOrders();
     });
   }
 
@@ -129,15 +129,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           ),
         ),
       ),
-      body: Consumer<AppProvider>(
-        builder: (context, provider, _) {
-          return TabBarView(
-            controller: _tabController,
-            children: _statusFilters.map((status) {
-              return _buildOrdersList(provider.recentOrders, status);
-            }).toList(),
-          );
-        },
+      body: TabBarView(
+        controller: _tabController,
+        children: _statusFilters.map((status) {
+          return _buildOrdersList(status);
+        }).toList(),
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'orders_fab',
@@ -182,8 +178,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildOrdersList(List<Order> orders, OrderStatus? statusFilter) {
-    var filteredOrders = orders;
+  Widget _buildOrdersList(OrderStatus? statusFilter) {
+    final orders = ref.watch(recentOrdersProvider);
+    final hasMoreOrders = ref.watch(hasMoreOrdersProvider);
+    final isLoadingMoreOrders = ref.watch(isLoadingMoreOrdersProvider);
+
+    var filteredOrders = orders.toList();
 
     // Filter by status
     if (statusFilter != null) {
@@ -237,7 +237,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       return _sortAsc ? cmp : -cmp;
     });
 
-    final provider = context.read<AppProvider>();
+    final dashboardNotifier = ref.read(dashboardNotifierProvider.notifier);
     final emptyWidget = EmptyState(
       icon: Icons.receipt_long_outlined,
       title: _searchQuery.isNotEmpty
@@ -254,10 +254,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
     return InfiniteScrollList<Order>(
       items: filteredOrders,
-      hasMore: provider.hasMoreOrders,
-      isLoading: provider.isLoadingMoreOrders,
-      onLoadMore: () => provider.loadMoreOrders(),
-      onRefresh: () => provider.refreshOrders(),
+      hasMore: hasMoreOrders,
+      isLoading: isLoadingMoreOrders,
+      onLoadMore: () => dashboardNotifier.loadMoreOrders(),
+      onRefresh: () => dashboardNotifier.refreshOrders(),
       padding: const EdgeInsets.all(AppSpacing.md),
       separatorHeight: AppSpacing.sm,
       emptyWidget: emptyWidget,
@@ -279,7 +279,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     );
     // Refresh after returning from detail screen
     if (mounted) {
-      context.read<AppProvider>().refreshDashboard();
+      ref.read(dashboardNotifierProvider.notifier).refreshDashboard();
     }
   }
 

@@ -1,44 +1,42 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
-import '../../core/providers/subscription_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/services/api_service.dart';
 import '../subscription/subscription_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
 
   const ProfileScreen({super.key, this.onMenuPressed});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isUploadingAvatar = false;
   final _picker = ImagePicker();
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<SubscriptionProvider>();
-      if (!provider.isInitialized) {
-        provider.init();
+      final state = ref.read(subscriptionNotifierProvider);
+      if (!state.isInitialized) {
+        ref.read(subscriptionNotifierProvider.notifier).init();
       }
     });
   }
 
-  void _showAvatarOptions(AppProvider provider) {
-    final hasAvatar = provider.user?.avatarUrl != null;
+  void _showAvatarOptions() {
+    final user = ref.read(currentUserProvider);
+    final hasAvatar = user?.avatarUrl != null;
 
     showModalBottomSheet(
       context: context,
@@ -73,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: Text(context.l10n.camera),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickAndUploadAvatar(provider, ImageSource.camera);
+                  _pickAndUploadAvatar(ImageSource.camera);
                 },
               ),
               ListTile(
@@ -88,7 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: Text(context.l10n.gallery),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickAndUploadAvatar(provider, ImageSource.gallery);
+                  _pickAndUploadAvatar(ImageSource.gallery);
                 },
               ),
               if (hasAvatar)
@@ -104,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: Text(context.l10n.delete),
                   onTap: () {
                     Navigator.pop(context);
-                    _deleteAvatar(provider);
+                    _deleteAvatar();
                   },
                 ),
             ],
@@ -114,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _pickAndUploadAvatar(AppProvider provider, ImageSource source) async {
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
     try {
       final pickedFile = await _picker.pickImage(
         source: source,
@@ -127,9 +125,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() => _isUploadingAvatar = true);
 
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final updatedUser = await api.uploadAvatar(File(pickedFile.path));
-      provider.updateUser(updatedUser);
+      ref.read(authNotifierProvider.notifier).updateUser(updatedUser);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -159,13 +157,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _deleteAvatar(AppProvider provider) async {
+  Future<void> _deleteAvatar() async {
     try {
       setState(() => _isUploadingAvatar = true);
 
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       final updatedUser = await api.deleteAvatar();
-      provider.updateUser(updatedUser);
+      ref.read(authNotifierProvider.notifier).updateUser(updatedUser);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -197,6 +195,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final themeMode = ref.watch(themeNotifierProvider);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -208,144 +209,139 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onPressed: widget.onMenuPressed,
         ),
       ),
-      body: Consumer<AppProvider>(
-        builder: (context, provider, _) {
-          final user = provider.user;
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          children: [
+            // Profile header
+            _buildProfileHeader(user),
+            const SizedBox(height: AppSpacing.xl),
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
+            // Account section
+            _buildSection(
+              context,
+              title: context.l10n.account,
               children: [
-                // Profile header
-                _buildProfileHeader(user, provider),
-                const SizedBox(height: AppSpacing.xl),
-
-                // Account section
-                _buildSection(
-                  context,
-                  title: context.l10n.account,
-                  children: [
-                    _SettingsItem(
-                      icon: Icons.person_outline,
-                      title: context.l10n.personalData,
-                      subtitle: context.l10n.nameEmailPhone,
-                      onTap: () => _showComingSoon(context),
-                    ),
-                    _SettingsItem(
-                      icon: Icons.store_outlined,
-                      title: context.l10n.atelierData,
-                      subtitle: user?.tenant?.name ?? context.l10n.myAtelierHint,
-                      onTap: () => _showComingSoon(context),
-                    ),
-                    _SettingsItem(
-                      icon: Icons.lock_outline,
-                      title: context.l10n.changePassword,
-                      subtitle: context.l10n.changeCurrentPassword,
-                      onTap: () => _showChangePasswordDialog(context),
-                    ),
-                  ],
+                _SettingsItem(
+                  icon: Icons.person_outline,
+                  title: context.l10n.personalData,
+                  subtitle: context.l10n.nameEmailPhone,
+                  onTap: () => _showComingSoon(context),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Appearance section
-                _buildSection(
-                  context,
-                  title: context.l10n.appearance,
-                  children: [
-                    _ThemeSelector(
-                      currentTheme: provider.themeMode,
-                      onChanged: (mode) => provider.setThemeMode(mode),
-                    ),
-                  ],
+                _SettingsItem(
+                  icon: Icons.store_outlined,
+                  title: context.l10n.atelierData,
+                  subtitle: user?.tenant?.name ?? context.l10n.myAtelierHint,
+                  onTap: () => _showComingSoon(context),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Subscription section
-                Consumer<SubscriptionProvider>(
-                  builder: (context, subProvider, _) {
-                    final usage = subProvider.usage;
-                    return _buildSection(
-                      context,
-                      title: context.l10n.subscription,
-                      children: [
-                        _SubscriptionCardNew(
-                          planName: usage?.planName ?? 'Free',
-                          status: usage?.status ?? 'free',
-                          expiresAt: usage?.expiresAt,
-                          currentClients: usage?.currentClients ?? 0,
-                          clientLimit: usage?.limits.clientLimit ?? 1,
-                          currentEmployees: usage?.currentEmployees ?? 0,
-                          employeeLimit: usage?.limits.employeeLimit ?? 10,
-                          onUpgrade: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SubscriptionScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  },
+                _SettingsItem(
+                  icon: Icons.lock_outline,
+                  title: context.l10n.changePassword,
+                  subtitle: context.l10n.changeCurrentPassword,
+                  onTap: () => _showChangePasswordDialog(context),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Other section
-                _buildSection(
-                  context,
-                  title: context.l10n.other,
-                  children: [
-                    _SettingsItem(
-                      icon: Icons.notifications_outlined,
-                      title: context.l10n.notifications,
-                      subtitle: context.l10n.pushEmailSms,
-                      onTap: () => _showComingSoon(context),
-                    ),
-                    _SettingsItem(
-                      icon: Icons.help_outline,
-                      title: context.l10n.helpSupport,
-                      subtitle: context.l10n.faqContactUs,
-                      onTap: () => _showComingSoon(context),
-                    ),
-                    _SettingsItem(
-                      icon: Icons.info_outline,
-                      title: context.l10n.aboutApp,
-                      subtitle: context.l10n.version('1.0.0'),
-                      onTap: () => _showAboutDialog(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xl),
-
-                // Logout button
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _confirmLogout(context, provider),
-                    icon: const Icon(Icons.logout, color: AppColors.error),
-                    label: Text(
-                      context.l10n.logoutAccount,
-                      style: TextStyle(color: AppColors.error),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: AppColors.error.withOpacity(0.5)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
               ],
             ),
-          );
-        },
+            const SizedBox(height: AppSpacing.lg),
+
+            // Appearance section
+            _buildSection(
+              context,
+              title: context.l10n.appearance,
+              children: [
+                _ThemeSelector(
+                  currentTheme: themeMode,
+                  onChanged: (mode) => ref.read(themeNotifierProvider.notifier).setThemeMode(mode),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Subscription section
+            Builder(
+              builder: (context) {
+                final subscriptionState = ref.watch(subscriptionNotifierProvider);
+                final usage = subscriptionState.usage;
+                return _buildSection(
+                  context,
+                  title: context.l10n.subscription,
+                  children: [
+                    _SubscriptionCardNew(
+                      planName: usage?.planName ?? 'Free',
+                      status: usage?.status ?? 'free',
+                      expiresAt: usage?.expiresAt,
+                      currentClients: usage?.currentClients ?? 0,
+                      clientLimit: usage?.limits.clientLimit ?? 1,
+                      currentEmployees: usage?.currentEmployees ?? 0,
+                      employeeLimit: usage?.limits.employeeLimit ?? 10,
+                      onUpgrade: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SubscriptionScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Other section
+            _buildSection(
+              context,
+              title: context.l10n.other,
+              children: [
+                _SettingsItem(
+                  icon: Icons.notifications_outlined,
+                  title: context.l10n.notifications,
+                  subtitle: context.l10n.pushEmailSms,
+                  onTap: () => _showComingSoon(context),
+                ),
+                _SettingsItem(
+                  icon: Icons.help_outline,
+                  title: context.l10n.helpSupport,
+                  subtitle: context.l10n.faqContactUs,
+                  onTap: () => _showComingSoon(context),
+                ),
+                _SettingsItem(
+                  icon: Icons.info_outline,
+                  title: context.l10n.aboutApp,
+                  subtitle: context.l10n.version('1.0.0'),
+                  onTap: () => _showAboutDialog(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Logout button
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _confirmLogout(context),
+                icon: const Icon(Icons.logout, color: AppColors.error),
+                label: Text(
+                  context.l10n.logoutAccount,
+                  style: TextStyle(color: AppColors.error),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: BorderSide(color: AppColors.error.withOpacity(0.5)),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildProfileHeader(user, AppProvider provider) {
-    final subProvider = context.watch<SubscriptionProvider>();
-    final planName = subProvider.usage?.planName ?? 'Free';
+  Widget _buildProfileHeader(user) {
+    final subscriptionState = ref.watch(subscriptionNotifierProvider);
+    final planName = subscriptionState.usage?.planName ?? 'Free';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -358,7 +354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           // Avatar
           GestureDetector(
-            onTap: _isUploadingAvatar ? null : () => _showAvatarOptions(provider),
+            onTap: _isUploadingAvatar ? null : () => _showAvatarOptions(),
             child: Stack(
               children: [
                 Container(
@@ -582,7 +578,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _confirmLogout(BuildContext context, AppProvider provider) {
+  void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -596,7 +592,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              provider.logout();
+              ref.read(authNotifierProvider.notifier).logout();
             },
             child: Text(
               context.l10n.logoutButton,
@@ -1006,14 +1002,14 @@ class _UsageStat extends StatelessWidget {
   }
 }
 
-class _ChangePasswordDialog extends StatefulWidget {
+class _ChangePasswordDialog extends ConsumerStatefulWidget {
   const _ChangePasswordDialog();
 
   @override
-  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+  ConsumerState<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
 }
 
-class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -1023,8 +1019,6 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
-
-  ApiService get _api => context.read<AppProvider>().api;
 
   @override
   void dispose() {
@@ -1040,7 +1034,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final api = _api;
+      final api = ref.read(apiServiceProvider);
       await api.changePassword(
         _currentPasswordController.text,
         _newPasswordController.text,

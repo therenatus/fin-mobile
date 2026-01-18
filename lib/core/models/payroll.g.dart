@@ -25,7 +25,7 @@ Map<String, dynamic> _$EmployeePayrollDetailToJson(
 ) => <String, dynamic>{
   'totalPayout': instance.totalPayout,
   'workLogs': instance.workLogs.map((e) => e.toJson()).toList(),
-  'employee': ?instance.employee?.toJson(),
+  if (instance.employee?.toJson() case final value?) 'employee': value,
 };
 
 Payroll _$PayrollFromJson(Map<String, dynamic> json) => Payroll(

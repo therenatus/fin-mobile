@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/materials_provider.dart';
+import '../../core/riverpod/providers.dart';
 import '../../core/models/material.dart' as mat;
 import '../../core/models/stock_movement.dart';
 import '../../core/widgets/stock_indicator.dart';
 import 'stock_adjustment_screen.dart';
 
-class MaterialDetailScreen extends StatefulWidget {
+class MaterialDetailScreen extends ConsumerStatefulWidget {
   final String materialId;
 
   const MaterialDetailScreen({
@@ -18,10 +18,10 @@ class MaterialDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<MaterialDetailScreen> createState() => _MaterialDetailScreenState();
+  ConsumerState<MaterialDetailScreen> createState() => _MaterialDetailScreenState();
 }
 
-class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
+class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
   mat.Material? _material;
   List<StockMovement> _movements = [];
   bool _isLoading = true;
@@ -41,8 +41,8 @@ class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
     });
 
     try {
-      final provider = context.read<MaterialsProvider>();
-      final material = await provider.getMaterial(widget.materialId);
+      final notifier = ref.read(materialsNotifierProvider.notifier);
+      final material = await notifier.getMaterial(widget.materialId);
 
       if (material != null) {
         setState(() {
@@ -68,8 +68,8 @@ class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
     setState(() => _isLoadingMovements = true);
 
     try {
-      final provider = context.read<MaterialsProvider>();
-      final response = await provider.getStockMovements(
+      final notifier = ref.read(materialsNotifierProvider.notifier);
+      final response = await notifier.getStockMovements(
         widget.materialId,
         limit: 10,
       );
@@ -224,8 +224,8 @@ class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
                       Navigator.pop(context);
 
                       try {
-                        final provider = context.read<MaterialsProvider>();
-                        final updated = await provider.adjustStock(
+                        final notifier = ref.read(materialsNotifierProvider.notifier);
+                        final updated = await notifier.adjustStock(
                           widget.materialId,
                           quantity: -qty,
                           reason: reason,

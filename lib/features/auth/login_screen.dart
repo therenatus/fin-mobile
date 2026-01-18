@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/providers/app_provider.dart';
-import '../../core/providers/client_provider.dart';
-import '../../core/providers/employee_provider.dart';
-import '../../core/services/storage_service.dart';
+import '../../core/riverpod/providers.dart';
 import '../shell/app_shell.dart';
 import '../client_mode/shell/client_app_shell.dart';
 import '../employee_mode/shell/employee_app_shell.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _currentTabIndex = 0;
@@ -73,18 +70,18 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _submitManager() async {
     if (!_managerFormKey.currentState!.validate()) return;
 
-    final appProvider = context.read<AppProvider>();
-    final storage = context.read<StorageService>();
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    final storage = ref.read(storageServiceProvider);
 
     bool success;
     if (_isManagerRegister) {
-      success = await appProvider.register(
+      success = await authNotifier.register(
         _managerEmailController.text.trim(),
         _managerPasswordController.text,
         _businessNameController.text.trim(),
       );
     } else {
-      success = await appProvider.login(
+      success = await authNotifier.login(
         _managerEmailController.text.trim(),
         _managerPasswordController.text,
       );
@@ -97,25 +94,26 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (context) => const AppShell()),
       );
     } else if (mounted) {
-      _showError(appProvider.error ?? context.l10n.errorOccurred);
+      final authState = ref.read(authNotifierProvider);
+      _showError(authState.error ?? context.l10n.errorOccurred);
     }
   }
 
   Future<void> _submitClient() async {
     if (!_clientFormKey.currentState!.validate()) return;
 
-    final clientProvider = context.read<ClientProvider>();
-    final storage = context.read<StorageService>();
+    final clientAuthNotifier = ref.read(clientAuthNotifierProvider.notifier);
+    final storage = ref.read(storageServiceProvider);
 
     bool success;
     if (_isClientRegister) {
-      success = await clientProvider.register(
+      success = await clientAuthNotifier.register(
         email: _clientEmailController.text.trim(),
         password: _clientPasswordController.text,
         name: _clientNameController.text.trim(),
       );
     } else {
-      success = await clientProvider.login(
+      success = await clientAuthNotifier.login(
         email: _clientEmailController.text.trim(),
         password: _clientPasswordController.text,
       );
@@ -128,17 +126,18 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (context) => const ClientAppShell()),
       );
     } else if (mounted) {
-      _showError(clientProvider.error ?? context.l10n.errorOccurred);
+      final clientAuthState = ref.read(clientAuthNotifierProvider);
+      _showError(clientAuthState.error ?? context.l10n.errorOccurred);
     }
   }
 
   Future<void> _submitEmployee() async {
     if (!_employeeFormKey.currentState!.validate()) return;
 
-    final employeeProvider = context.read<EmployeeProvider>();
-    final storage = context.read<StorageService>();
+    final employeeAuthNotifier = ref.read(employeeAuthNotifierProvider.notifier);
+    final storage = ref.read(storageServiceProvider);
 
-    final success = await employeeProvider.login(
+    final success = await employeeAuthNotifier.login(
       email: _employeeEmailController.text.trim(),
       password: _employeePasswordController.text,
     );
@@ -150,7 +149,8 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (context) => const EmployeeAppShell()),
       );
     } else if (mounted) {
-      _showError(employeeProvider.error ?? context.l10n.errorOccurred);
+      final employeeAuthState = ref.read(employeeAuthNotifierProvider);
+      _showError(employeeAuthState.error ?? context.l10n.errorOccurred);
     }
   }
 
@@ -386,8 +386,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildManagerForm() {
-    final appProvider = context.watch<AppProvider>();
-    final isLoading = appProvider.state == AppState.loading;
+    final authState = ref.watch(authNotifierProvider);
+    final isLoading = authState.isLoading;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -476,8 +476,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildClientForm() {
-    final clientProvider = context.watch<ClientProvider>();
-    final isLoading = clientProvider.isLoading;
+    final clientAuthState = ref.watch(clientAuthNotifierProvider);
+    final isLoading = clientAuthState.isLoading;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -566,8 +566,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildEmployeeForm() {
-    final employeeProvider = context.watch<EmployeeProvider>();
-    final isLoading = employeeProvider.isLoading;
+    final employeeAuthState = ref.watch(employeeAuthNotifierProvider);
+    final isLoading = employeeAuthState.isLoading;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
