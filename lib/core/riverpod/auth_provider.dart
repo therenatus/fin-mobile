@@ -4,8 +4,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../models/models.dart';
 import '../services/api_service.dart';
-import '../services/base_api_service.dart';
 import '../services/notification_service.dart';
+import 'base_auth_state.dart';
+import 'base_auth_notifier.dart';
 import 'storage_provider.dart';
 import 'api_provider.dart';
 
@@ -13,33 +14,44 @@ void _log(String message) {
   debugPrint('[AuthNotifier] $message');
 }
 
-/// Auth state enum
-enum AuthState { initial, loading, authenticated, unauthenticated, error }
+/// Auth state enum - maps to shared AuthLoadingState for compatibility
+@Deprecated('Use AuthLoadingState instead')
+typedef AuthState = AuthLoadingState;
 
 /// Auth state class with user data
-class AuthStateData {
-  final AuthState state;
+class AuthStateData implements BaseAuthStateData<User> {
+  @override
+  final AuthLoadingState loadingState;
+  @override
   final User? user;
+  @override
   final String? error;
 
   const AuthStateData({
-    this.state = AuthState.initial,
+    this.loadingState = AuthLoadingState.initial,
     this.user,
     this.error,
   });
 
-  bool get isAuthenticated => state == AuthState.authenticated;
-  bool get isLoading => state == AuthState.loading;
+  /// Legacy getter for backwards compatibility
+  AuthLoadingState get state => loadingState;
+
+  @override
+  bool get isAuthenticated => loadingState == AuthLoadingState.authenticated;
+
+  @override
+  bool get isLoading => loadingState == AuthLoadingState.loading;
 
   AuthStateData copyWith({
-    AuthState? state,
+    AuthLoadingState? loadingState,
+    AuthLoadingState? state, // Legacy parameter name
     User? user,
     String? error,
     bool clearUser = false,
     bool clearError = false,
   }) {
     return AuthStateData(
-      state: state ?? this.state,
+      loadingState: loadingState ?? state ?? this.loadingState,
       user: clearUser ? null : (user ?? this.user),
       error: clearError ? null : (error ?? this.error),
     );
@@ -47,111 +59,103 @@ class AuthStateData {
 }
 
 /// Auth notifier for managing authentication state.
-class AuthNotifier extends Notifier<AuthStateData> {
+class AuthNotifier extends BaseAuthNotifier<AuthStateData, User> {
   @override
-  AuthStateData build() {
-    // Register session expired callback
-    BaseApiService.registerSessionExpiredCallback('manager', _handleSessionExpired);
+  String get authType => 'manager';
 
-    // Initialize auth state asynchronously
-    _init();
+  @override
+  AuthStateData get initialState =>
+      const AuthStateData(loadingState: AuthLoadingState.loading);
 
-    return const AuthStateData(state: AuthState.loading);
-  }
+  @override
+  AuthStateData createAuthenticatedState(User user) =>
+      AuthStateData(loadingState: AuthLoadingState.authenticated, user: user);
+
+  @override
+  AuthStateData createUnauthenticatedState({String? error}) =>
+      AuthStateData(loadingState: AuthLoadingState.unauthenticated, error: error);
+
+  @override
+  AuthStateData createLoadingState() =>
+      state.copyWith(loadingState: AuthLoadingState.loading, clearError: true);
 
   ApiService get _api => ref.read(apiServiceProvider);
 
-  void _handleSessionExpired() {
-    _log('Session expired - logging out');
+  @override
+  Future<User?> loadUserFromStorage() async {
     final storage = ref.read(storageServiceProvider);
-    storage.clearTokens();
-    storage.clearUser();
-    state = const AuthStateData(state: AuthState.unauthenticated);
+    final hasTokens = await storage.hasTokens();
+    if (hasTokens) {
+      return storage.getUser();
+    }
+    return null;
   }
 
-  Future<void> _init() async {
+  @override
+  Future<void> clearStorage() async {
     final storage = ref.read(storageServiceProvider);
+    await storage.clearTokens();
+    await storage.clearUser();
+  }
 
+  @override
+  void onLoginSuccess(User user) {
+    // Set Sentry user context for error tracking
+    Sentry.configureScope((scope) {
+      scope.setUser(SentryUser(id: user.id, email: user.email));
+      scope.setTag('tenant_id', user.tenantId);
+    });
+
+    _registerPushDevice();
+  }
+
+  @override
+  Future<void> onBeforeLogout() async {
     try {
-      final hasTokens = await storage.hasTokens();
-      if (hasTokens) {
-        final user = await storage.getUser();
-        if (user != null) {
-          state = AuthStateData(state: AuthState.authenticated, user: user);
-          return;
-        }
-      }
-      state = const AuthStateData(state: AuthState.unauthenticated);
+      await _api.unregisterPushDevice();
+      NotificationService.instance.clearUser();
     } catch (e) {
-      state = AuthStateData(
-        state: AuthState.unauthenticated,
-        error: e.toString(),
-      );
+      _log('Error during logout cleanup: $e');
     }
+
+    // Clear Sentry user context
+    Sentry.configureScope((scope) {
+      scope.setUser(null);
+      scope.removeTag('tenant_id');
+    });
   }
 
   Future<bool> login(String email, String password) async {
     _log('login() called with email: $email');
-    state = state.copyWith(state: AuthState.loading, clearError: true);
 
-    try {
-      _log('Calling api.login()...');
-      final response = await _api.login(email, password);
-      _log('Login response received, user: ${response.user.email}');
-
-      state = AuthStateData(
-        state: AuthState.authenticated,
-        user: response.user,
-      );
-
-      // Set Sentry user context for error tracking
-      Sentry.configureScope((scope) {
-        scope.setUser(SentryUser(id: response.user.id, email: response.user.email));
-        scope.setTag('tenant_id', response.user.tenantId);
-      });
-
-      _registerPushDevice();
-      return true;
-    } on ApiException catch (e) {
-      _log('ApiException: ${e.message}, code: ${e.statusCode}');
-      state = AuthStateData(
-        state: AuthState.unauthenticated,
-        error: e.message,
-      );
-      return false;
-    } catch (e, stackTrace) {
-      _log('General error: $e');
-      _log('Stack trace: $stackTrace');
-      state = AuthStateData(
-        state: AuthState.unauthenticated,
-        error: 'Не удалось подключиться к серверу: $e',
-      );
-      return false;
-    }
+    return performLogin<ApiException>(
+      apiCall: () async {
+        _log('Calling api.login()...');
+        final response = await _api.login(email, password);
+        _log('Login response received, user: ${response.user.email}');
+        return response.user;
+      },
+      getApiExceptionMessage: (e) {
+        _log('ApiException: ${e.message}, code: ${e.statusCode}');
+        return e.message;
+      },
+    );
   }
 
   Future<bool> register(String email, String password, String businessName) async {
-    state = state.copyWith(state: AuthState.loading, clearError: true);
+    state = createLoadingState();
 
     try {
       final response = await _api.register(email, password, businessName);
 
-      state = AuthStateData(
-        state: AuthState.authenticated,
-        user: response.user,
-      );
-
-      _registerPushDevice();
+      state = createAuthenticatedState(response.user);
+      onLoginSuccess(response.user);
       return true;
     } on ApiException catch (e) {
-      state = AuthStateData(
-        state: AuthState.unauthenticated,
-        error: e.message,
-      );
+      state = createUnauthenticatedState(error: e.message);
       return false;
     } catch (e) {
-      state = AuthStateData(
-        state: AuthState.unauthenticated,
+      state = createUnauthenticatedState(
         error: 'Не удалось подключиться к серверу',
       );
       return false;
@@ -159,19 +163,7 @@ class AuthNotifier extends Notifier<AuthStateData> {
   }
 
   Future<void> logout() async {
-    try {
-      await _api.unregisterPushDevice();
-      NotificationService.instance.clearUser();
-      await _api.logout();
-    } finally {
-      // Clear Sentry user context
-      Sentry.configureScope((scope) {
-        scope.setUser(null);
-        scope.removeTag('tenant_id');
-      });
-
-      state = const AuthStateData(state: AuthState.unauthenticated);
-    }
+    await performLogout(apiLogout: () => _api.logout());
   }
 
   void updateUser(User user) {
@@ -180,6 +172,7 @@ class AuthNotifier extends Notifier<AuthStateData> {
     state = state.copyWith(user: user);
   }
 
+  @override
   void clearError() {
     state = state.copyWith(clearError: true);
   }

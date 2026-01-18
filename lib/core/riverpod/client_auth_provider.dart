@@ -3,21 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/client_user.dart';
 import '../services/client_api_service.dart';
-import '../services/base_api_service.dart';
+import 'base_auth_state.dart';
+import 'base_auth_notifier.dart';
 import 'storage_provider.dart';
 
 void _log(String message) {
   debugPrint('[ClientAuthNotifier] $message');
 }
 
-/// Client auth state enum
-enum ClientAuthState { initial, loading, authenticated, unauthenticated, error }
+/// Client auth state enum - maps to shared AuthLoadingState for compatibility
+@Deprecated('Use AuthLoadingState instead')
+typedef ClientAuthState = AuthLoadingState;
 
 /// Client auth state class with user data
-class ClientAuthStateData {
-  final ClientAuthState state;
+class ClientAuthStateData implements BaseAuthStateData<ClientUser> {
+  @override
+  final AuthLoadingState loadingState;
+  @override
   final ClientUser? user;
+  @override
   final String? error;
+
+  // Client-specific fields
   final List<TenantLink> tenants;
   final List<ClientOrder> orders;
   final bool isLoadingMoreOrders;
@@ -25,7 +32,7 @@ class ClientAuthStateData {
   final int ordersPage;
 
   const ClientAuthStateData({
-    this.state = ClientAuthState.initial,
+    this.loadingState = AuthLoadingState.initial,
     this.user,
     this.error,
     this.tenants = const [],
@@ -35,11 +42,18 @@ class ClientAuthStateData {
     this.ordersPage = 1,
   });
 
-  bool get isAuthenticated => state == ClientAuthState.authenticated;
-  bool get isLoading => state == ClientAuthState.loading;
+  /// Legacy getter for backwards compatibility
+  AuthLoadingState get state => loadingState;
+
+  @override
+  bool get isAuthenticated => loadingState == AuthLoadingState.authenticated;
+
+  @override
+  bool get isLoading => loadingState == AuthLoadingState.loading;
 
   ClientAuthStateData copyWith({
-    ClientAuthState? state,
+    AuthLoadingState? loadingState,
+    AuthLoadingState? state, // Legacy parameter name
     ClientUser? user,
     String? error,
     List<TenantLink>? tenants,
@@ -51,7 +65,7 @@ class ClientAuthStateData {
     bool clearError = false,
   }) {
     return ClientAuthStateData(
-      state: state ?? this.state,
+      loadingState: loadingState ?? state ?? this.loadingState,
       user: clearUser ? null : (user ?? this.user),
       error: clearError ? null : (error ?? this.error),
       tenants: tenants ?? this.tenants,
@@ -89,77 +103,68 @@ final clientApiServiceProvider = Provider<ClientApiService>((ref) {
 });
 
 /// Client auth notifier for managing client authentication state.
-class ClientAuthNotifier extends Notifier<ClientAuthStateData> {
+class ClientAuthNotifier extends BaseAuthNotifier<ClientAuthStateData, ClientUser> {
   @override
-  ClientAuthStateData build() {
-    BaseApiService.registerSessionExpiredCallback('client', _handleSessionExpired);
-    _init();
-    return const ClientAuthStateData(state: ClientAuthState.loading);
-  }
+  String get authType => 'client';
+
+  @override
+  ClientAuthStateData get initialState =>
+      const ClientAuthStateData(loadingState: AuthLoadingState.loading);
+
+  @override
+  ClientAuthStateData createAuthenticatedState(ClientUser user) =>
+      ClientAuthStateData(loadingState: AuthLoadingState.authenticated, user: user);
+
+  @override
+  ClientAuthStateData createUnauthenticatedState({String? error}) =>
+      ClientAuthStateData(loadingState: AuthLoadingState.unauthenticated, error: error);
+
+  @override
+  ClientAuthStateData createLoadingState() =>
+      state.copyWith(loadingState: AuthLoadingState.loading, clearError: true);
 
   ClientApiService get _api => ref.read(clientApiServiceProvider);
 
-  void _handleSessionExpired() {
-    _log('Session expired - logging out');
+  @override
+  Future<ClientUser?> loadUserFromStorage() async {
     final storage = ref.read(storageServiceProvider);
-    storage.clearClientTokens();
-    storage.clearClientData();
-    state = const ClientAuthStateData(state: ClientAuthState.unauthenticated);
+    return storage.getClientUser();
   }
 
-  Future<void> _init() async {
+  @override
+  Future<void> clearStorage() async {
     final storage = ref.read(storageServiceProvider);
+    await storage.clearClientData();
+  }
 
-    try {
-      final user = await storage.getClientUser();
-      if (user != null) {
-        state = ClientAuthStateData(state: ClientAuthState.authenticated, user: user);
-        await refreshData();
-        return;
-      }
-      state = const ClientAuthStateData(state: ClientAuthState.unauthenticated);
-    } catch (e) {
-      state = ClientAuthStateData(
-        state: ClientAuthState.unauthenticated,
-        error: e.toString(),
-      );
-    }
+  @override
+  Future<void> onInitWithUser(ClientUser user) async {
+    await refreshData();
   }
 
   Future<bool> login({String? email, String? phone, required String password}) async {
     _log('login() called');
-    state = state.copyWith(state: ClientAuthState.loading, clearError: true);
 
-    try {
-      final response = await _api.login(
-        email: email,
-        phone: phone,
-        password: password,
-      );
-      _log('Login successful, user: ${response.user.name}');
+    final success = await performLogin<ClientApiException>(
+      apiCall: () async {
+        final response = await _api.login(
+          email: email,
+          phone: phone,
+          password: password,
+        );
+        _log('Login successful, user: ${response.user.name}');
+        return response.user;
+      },
+      getApiExceptionMessage: (e) {
+        _log('ClientApiException: ${e.message}');
+        return e.message;
+      },
+    );
 
-      state = ClientAuthStateData(
-        state: ClientAuthState.authenticated,
-        user: response.user,
-      );
-
+    if (success) {
       await refreshData();
-      return true;
-    } on ClientApiException catch (e) {
-      _log('ClientApiException: ${e.message}');
-      state = ClientAuthStateData(
-        state: ClientAuthState.unauthenticated,
-        error: e.message,
-      );
-      return false;
-    } catch (e) {
-      _log('General error: $e');
-      state = ClientAuthStateData(
-        state: ClientAuthState.unauthenticated,
-        error: 'Не удалось подключиться к серверу: $e',
-      );
-      return false;
     }
+    return success;
   }
 
   Future<bool> register({
@@ -168,7 +173,7 @@ class ClientAuthNotifier extends Notifier<ClientAuthStateData> {
     required String password,
     required String name,
   }) async {
-    state = state.copyWith(state: ClientAuthState.loading, clearError: true);
+    state = createLoadingState();
 
     try {
       final response = await _api.register(
@@ -178,21 +183,13 @@ class ClientAuthNotifier extends Notifier<ClientAuthStateData> {
         name: name,
       );
 
-      state = ClientAuthStateData(
-        state: ClientAuthState.authenticated,
-        user: response.user,
-      );
-
+      state = createAuthenticatedState(response.user);
       return true;
     } on ClientApiException catch (e) {
-      state = ClientAuthStateData(
-        state: ClientAuthState.unauthenticated,
-        error: e.message,
-      );
+      state = createUnauthenticatedState(error: e.message);
       return false;
     } catch (e) {
-      state = ClientAuthStateData(
-        state: ClientAuthState.unauthenticated,
+      state = createUnauthenticatedState(
         error: 'Не удалось подключиться к серверу',
       );
       return false;
@@ -200,13 +197,7 @@ class ClientAuthNotifier extends Notifier<ClientAuthStateData> {
   }
 
   Future<void> logout() async {
-    try {
-      await _api.logout();
-    } finally {
-      final storage = ref.read(storageServiceProvider);
-      await storage.clearClientData();
-      state = const ClientAuthStateData(state: ClientAuthState.unauthenticated);
-    }
+    await performLogout(apiLogout: () => _api.logout());
   }
 
   Future<void> refreshData() async {
@@ -310,6 +301,7 @@ class ClientAuthNotifier extends Notifier<ClientAuthStateData> {
     await refreshOrders();
   }
 
+  @override
   void clearError() {
     state = state.copyWith(clearError: true);
   }

@@ -12,3 +12,11 @@ export 'stock_indicator.dart';
 export 'material_card.dart';
 export 'supplier_card.dart';
 export 'purchase_card.dart';
+
+// Common reusable widgets
+export 'section_card.dart';
+export 'detail_row.dart';
+export 'metric_item.dart';
+export 'info_row.dart';
+export 'load_indicator.dart';
+export 'load_badge.dart';

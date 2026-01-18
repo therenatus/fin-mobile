@@ -3,21 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/employee_user.dart';
 import '../services/employee_api_service.dart';
-import '../services/base_api_service.dart';
+import 'base_auth_state.dart';
+import 'base_auth_notifier.dart';
 import 'storage_provider.dart';
 
 void _log(String message) {
   debugPrint('[EmployeeAuthNotifier] $message');
 }
 
-/// Employee auth state enum
-enum EmployeeAuthState { initial, loading, authenticated, unauthenticated, error }
+/// Employee auth state enum - maps to shared AuthLoadingState for compatibility
+@Deprecated('Use AuthLoadingState instead')
+typedef EmployeeAuthState = AuthLoadingState;
 
 /// Employee auth state class with user data
-class EmployeeAuthStateData {
-  final EmployeeAuthState state;
+class EmployeeAuthStateData implements BaseAuthStateData<EmployeeUser> {
+  @override
+  final AuthLoadingState loadingState;
+  @override
   final EmployeeUser? user;
+  @override
   final String? error;
+
+  // Employee-specific fields
   final List<EmployeeAssignment> assignments;
   final List<EmployeeWorkLog> workLogs;
   final List<EmployeePayroll> payrolls;
@@ -26,7 +33,7 @@ class EmployeeAuthStateData {
   final int assignmentsPage;
 
   const EmployeeAuthStateData({
-    this.state = EmployeeAuthState.initial,
+    this.loadingState = AuthLoadingState.initial,
     this.user,
     this.error,
     this.assignments = const [],
@@ -37,11 +44,18 @@ class EmployeeAuthStateData {
     this.assignmentsPage = 1,
   });
 
-  bool get isAuthenticated => state == EmployeeAuthState.authenticated;
-  bool get isLoading => state == EmployeeAuthState.loading;
+  /// Legacy getter for backwards compatibility
+  AuthLoadingState get state => loadingState;
+
+  @override
+  bool get isAuthenticated => loadingState == AuthLoadingState.authenticated;
+
+  @override
+  bool get isLoading => loadingState == AuthLoadingState.loading;
 
   EmployeeAuthStateData copyWith({
-    EmployeeAuthState? state,
+    AuthLoadingState? loadingState,
+    AuthLoadingState? state, // Legacy parameter name
     EmployeeUser? user,
     String? error,
     List<EmployeeAssignment>? assignments,
@@ -54,7 +68,7 @@ class EmployeeAuthStateData {
     bool clearError = false,
   }) {
     return EmployeeAuthStateData(
-      state: state ?? this.state,
+      loadingState: loadingState ?? state ?? this.loadingState,
       user: clearUser ? null : (user ?? this.user),
       error: clearError ? null : (error ?? this.error),
       assignments: assignments ?? this.assignments,
@@ -74,86 +88,71 @@ final employeeApiServiceProvider = Provider<EmployeeApiService>((ref) {
 });
 
 /// Employee auth notifier for managing employee authentication state.
-class EmployeeAuthNotifier extends Notifier<EmployeeAuthStateData> {
+class EmployeeAuthNotifier extends BaseAuthNotifier<EmployeeAuthStateData, EmployeeUser> {
   @override
-  EmployeeAuthStateData build() {
-    BaseApiService.registerSessionExpiredCallback('employee', _handleSessionExpired);
-    _init();
-    return const EmployeeAuthStateData(state: EmployeeAuthState.loading);
-  }
+  String get authType => 'employee';
+
+  @override
+  EmployeeAuthStateData get initialState =>
+      const EmployeeAuthStateData(loadingState: AuthLoadingState.loading);
+
+  @override
+  EmployeeAuthStateData createAuthenticatedState(EmployeeUser user) =>
+      EmployeeAuthStateData(loadingState: AuthLoadingState.authenticated, user: user);
+
+  @override
+  EmployeeAuthStateData createUnauthenticatedState({String? error}) =>
+      EmployeeAuthStateData(loadingState: AuthLoadingState.unauthenticated, error: error);
+
+  @override
+  EmployeeAuthStateData createLoadingState() =>
+      state.copyWith(loadingState: AuthLoadingState.loading, clearError: true);
 
   EmployeeApiService get _api => ref.read(employeeApiServiceProvider);
 
-  void _handleSessionExpired() {
-    _log('Session expired - logging out');
+  @override
+  Future<EmployeeUser?> loadUserFromStorage() async {
     final storage = ref.read(storageServiceProvider);
-    storage.clearEmployeeTokens();
-    storage.clearEmployeeData();
-    state = const EmployeeAuthStateData(state: EmployeeAuthState.unauthenticated);
+    return storage.getEmployeeUser();
   }
 
-  Future<void> _init() async {
+  @override
+  Future<void> clearStorage() async {
     final storage = ref.read(storageServiceProvider);
+    await storage.clearEmployeeData();
+  }
 
-    try {
-      final user = await storage.getEmployeeUser();
-      if (user != null) {
-        state = EmployeeAuthStateData(state: EmployeeAuthState.authenticated, user: user);
-        await refreshData();
-        return;
-      }
-      state = const EmployeeAuthStateData(state: EmployeeAuthState.unauthenticated);
-    } catch (e) {
-      state = EmployeeAuthStateData(
-        state: EmployeeAuthState.unauthenticated,
-        error: e.toString(),
-      );
-    }
+  @override
+  Future<void> onInitWithUser(EmployeeUser user) async {
+    await refreshData();
   }
 
   Future<bool> login({required String email, required String password}) async {
     _log('login() called with email: $email');
-    state = state.copyWith(state: EmployeeAuthState.loading, clearError: true);
 
-    try {
-      final response = await _api.login(
-        email: email,
-        password: password,
-      );
-      _log('Login successful, user: ${response.user.name}');
+    final success = await performLogin<EmployeeApiException>(
+      apiCall: () async {
+        final response = await _api.login(
+          email: email,
+          password: password,
+        );
+        _log('Login successful, user: ${response.user.name}');
+        return response.user;
+      },
+      getApiExceptionMessage: (e) {
+        _log('EmployeeApiException: ${e.message}');
+        return e.message;
+      },
+    );
 
-      state = EmployeeAuthStateData(
-        state: EmployeeAuthState.authenticated,
-        user: response.user,
-      );
-
+    if (success) {
       await refreshData();
-      return true;
-    } on EmployeeApiException catch (e) {
-      _log('EmployeeApiException: ${e.message}');
-      state = EmployeeAuthStateData(
-        state: EmployeeAuthState.unauthenticated,
-        error: e.message,
-      );
-      return false;
-    } catch (e) {
-      _log('General error: $e');
-      state = EmployeeAuthStateData(
-        state: EmployeeAuthState.unauthenticated,
-        error: 'Не удалось подключиться к серверу: $e',
-      );
-      return false;
     }
+    return success;
   }
 
   Future<void> logout() async {
-    try {
-      await _api.logout();
-    } finally {
-      final storage = ref.read(storageServiceProvider);
-      await storage.clearEmployeeData();
-      state = const EmployeeAuthStateData(state: EmployeeAuthState.unauthenticated);
-    }
+    await performLogout(apiLogout: () => _api.logout());
   }
 
   Future<void> refreshData() async {
@@ -263,6 +262,7 @@ class EmployeeAuthNotifier extends Notifier<EmployeeAuthStateData> {
     }
   }
 
+  @override
   void clearError() {
     state = state.copyWith(clearError: true);
   }

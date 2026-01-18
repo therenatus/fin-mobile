@@ -6,6 +6,12 @@
 export 'storage_provider.dart';
 export 'theme_provider.dart';
 export 'api_provider.dart';
+
+// Auth base classes (shared between Manager, Client, Employee)
+export 'base_auth_state.dart';
+export 'base_auth_notifier.dart';
+
+// Auth providers
 export 'auth_provider.dart';
 export 'client_auth_provider.dart';
 export 'employee_auth_provider.dart';
