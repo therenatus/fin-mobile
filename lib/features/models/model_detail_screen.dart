@@ -21,18 +21,27 @@ class ModelDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<ModelDetailScreen> createState() => _ModelDetailScreenState();
 }
 
-class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
+class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen>
+    with SingleTickerProviderStateMixin {
   late OrderModel _model;
   List<ProcessStep> _processSteps = [];
   Bom? _bom;
   bool _isLoading = true;
   bool _isBomLoading = true;
   bool _initialized = false;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _model = widget.model;
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -40,7 +49,7 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -102,40 +111,100 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
+      body: Column(
+        children: [
+          // Model info at top
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: _buildModelInfo(),
           ),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                100, // Space for FAB
-              ),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _buildModelInfo(),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildBomSection(),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildProcessStepsSection(),
-                ]),
-              ),
+          // Tab bar
+          Container(
+            color: context.surfaceColor,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: context.textSecondaryColor,
+              indicatorColor: AppColors.primary,
+              indicatorWeight: 2,
+              tabs: const [
+                Tab(text: 'Материалы'),
+                Tab(text: 'Этапы'),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildMaterialsTab(),
+                _buildStepsTab(),
+              ],
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'model_detail_fab',
-        onPressed: _addProcessStep,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Добавить этап'),
+      floatingActionButton: AnimatedBuilder(
+        animation: _tabController,
+        builder: (context, child) {
+          // Show different FAB based on tab
+          if (_tabController.index == 0) {
+            return FloatingActionButton.extended(
+              heroTag: 'model_materials_fab',
+              onPressed: _openBomScreen,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add),
+              label: Text(_bom == null ? 'Добавить материалы' : 'Редактировать'),
+            );
+          } else {
+            return FloatingActionButton.extended(
+              heroTag: 'model_steps_fab',
+              onPressed: _addProcessStep,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add),
+              label: const Text('Добавить этап'),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildMaterialsTab() {
+    return RefreshIndicator(
+      onRefresh: _loadBom,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          100, // Space for FAB
+        ),
+        children: [
+          _buildMaterialsContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepsTab() {
+    return RefreshIndicator(
+      onRefresh: _loadProcessSteps,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          100, // Space for FAB
+        ),
+        children: [
+          _buildProcessStepsContent(),
+        ],
       ),
     );
   }
@@ -224,7 +293,7 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
                   ),
                 ),
                 Text(
-                  '${_model.basePrice.toStringAsFixed(0)} \u20BD',
+                  '${_model.basePrice.toStringAsFixed(0)} сом',
                   style: AppTypography.h3.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -249,233 +318,232 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
     );
   }
 
-  Widget _buildBomSection() {
+  Widget _buildMaterialsContent() {
+    if (_isBomLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_bom == null) {
+      return _buildNoMaterialsCard();
+    }
+
+    final laborCost = _processSteps.fold<double>(
+      0,
+      (sum, step) => sum + (step.rate ?? 0),
+    );
+    final materialCost = _bom!.totalMaterialCost;
+    final totalCost = materialCost + laborCost;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.calculate_outlined, size: 20, color: context.textSecondaryColor),
-            const SizedBox(width: 8),
-            Text(
-              'Спецификация (BOM)',
-              style: AppTypography.h4.copyWith(
-                color: context.textPrimaryColor,
-              ),
-            ),
-            const Spacer(),
-            if (_bom != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.full),
-                ),
-                child: Text(
-                  'v${_bom!.version}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        if (_isBomLoading)
-          const Center(
+        // Materials list card
+        Card(
+          elevation: 0,
+          color: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            side: BorderSide(color: context.borderColor),
+          ),
+          child: InkWell(
+            onTap: _openBomScreen,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
             child: Padding(
-              padding: EdgeInsets.all(AppSpacing.lg),
-              child: CircularProgressIndicator(),
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with version
+                  Row(
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 20, color: context.textSecondaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Список материалов',
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: context.textPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                        ),
+                        child: Text(
+                          'v${_bom!.version}',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: context.textSecondaryColor,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  // Materials summary
+                  ..._bom!.items.take(3).map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.material?.name ?? 'Материал',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: context.textPrimaryColor,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${item.quantity} ${item.material?.materialUnit.label ?? ''}',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: context.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                  if (_bom!.items.length > 3)
+                    Text(
+                      '+ ещё ${_bom!.items.length - 3}',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          )
-        else if (_bom == null)
-          _buildNoBomCard()
-        else
-          _buildBomCard(),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        // Cost summary card
+        Card(
+          elevation: 0,
+          color: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            side: BorderSide(color: context.borderColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.calculate_outlined, size: 20, color: context.textSecondaryColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Себестоимость',
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.textPrimaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Materials cost row
+                _buildCostRow('Материалы', '${_bom!.items.length}', materialCost),
+                const SizedBox(height: AppSpacing.sm),
+                // Labor cost row
+                _buildCostRow('Работа', '${_processSteps.length} ${_getStepsLabel(_processSteps.length)}', laborCost),
+                const Divider(height: AppSpacing.lg),
+                // Total row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Итого',
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: context.textPrimaryColor,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${totalCost.toStringAsFixed(0)} сом',
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildNoBomCard() {
+  Widget _buildCostRow(String label, String count, double cost) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '$label ($count)',
+            style: AppTypography.bodyMedium.copyWith(
+              color: context.textPrimaryColor,
+            ),
+          ),
+        ),
+        Text(
+          '${cost.toStringAsFixed(0)} сом',
+          style: AppTypography.bodyMedium.copyWith(
+            color: context.textPrimaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNoMaterialsCard() {
     return Card(
       elevation: 0,
       color: context.surfaceVariantColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
-      child: InkWell(
-        onTap: _openBomScreen,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: const Icon(
-                  Icons.add_circle_outline,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Создать спецификацию',
-                      style: AppTypography.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: context.textPrimaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Добавьте материалы и операции для расчёта себестоимости',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 48,
+              color: context.textSecondaryColor.withOpacity(0.5),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Нет материалов',
+              style: AppTypography.bodyLarge.copyWith(
                 color: context.textSecondaryColor,
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBomCard() {
-    return Card(
-      elevation: 0,
-      color: AppColors.primary.withOpacity(0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
-      ),
-      child: InkWell(
-        onTap: _openBomScreen,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            children: [
-              // Cost summary row
-              Row(
-                children: [
-                  Expanded(
-                    child: _BomCostColumn(
-                      label: 'Материалы',
-                      value: _bom!.formattedMaterialCost,
-                      icon: Icons.inventory_2_outlined,
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 50,
-                    color: context.borderColor,
-                  ),
-                  Expanded(
-                    child: _BomCostColumn(
-                      label: 'Работа',
-                      value: _bom!.formattedLaborCost,
-                      icon: Icons.engineering_outlined,
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 50,
-                    color: context.borderColor,
-                  ),
-                  Expanded(
-                    child: _BomCostColumn(
-                      label: 'Итого',
-                      value: _bom!.formattedTotalCost,
-                      icon: Icons.summarize_outlined,
-                      isPrimary: true,
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Добавьте материалы для расчёта себестоимости',
+              style: AppTypography.bodySmall.copyWith(
+                color: context.textSecondaryColor,
               ),
-              const SizedBox(height: AppSpacing.md),
-              // Items/operations summary
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: 14,
-                          color: context.textSecondaryColor,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_bom!.items.length} материалов',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Icon(
-                          Icons.build_outlined,
-                          size: 14,
-                          color: context.textSecondaryColor,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_bom!.operations.length} операций',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Подробнее',
-                        style: AppTypography.labelMedium.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.chevron_right,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -497,46 +565,26 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
     }
   }
 
-  Widget _buildProcessStepsSection() {
+  Widget _buildProcessStepsContent() {
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_processSteps.isEmpty) {
+      return _buildEmptySteps();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.list_alt, size: 20, color: context.textSecondaryColor),
-            const SizedBox(width: 8),
-            Text(
-              'Этапы производства',
-              style: AppTypography.h4.copyWith(
-                color: context.textPrimaryColor,
-              ),
-            ),
-            const Spacer(),
-            if (_processSteps.isNotEmpty)
-              Text(
-                '${_processSteps.length} ${_getStepsLabel(_processSteps.length)}',
-                style: AppTypography.bodySmall.copyWith(
-                  color: context.textSecondaryColor,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        if (_isLoading)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(AppSpacing.xl),
-              child: CircularProgressIndicator(),
-            ),
-          )
-        else if (_processSteps.isEmpty)
-          _buildEmptySteps()
-        else
-          _buildStepsList(),
-        if (_processSteps.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.md),
-          _buildSummary(),
-        ],
+        _buildStepsList(),
+        const SizedBox(height: AppSpacing.sm),
+        _buildStepsSummaryRow(),
       ],
     );
   }
@@ -651,7 +699,7 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
     }
   }
 
-  Widget _buildSummary() {
+  Widget _buildStepsSummaryRow() {
     final totalTime = _processSteps.fold<int>(
       0,
       (sum, step) => sum + step.estimatedTime,
@@ -661,67 +709,13 @@ class _ModelDetailScreenState extends ConsumerState<ModelDetailScreen> {
       (sum, step) => sum + (step.rate ?? 0),
     );
 
-    return Card(
-      elevation: 0,
-      color: AppColors.primary.withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Общее время',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatTime(totalTime),
-                    style: AppTypography.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: context.borderColor,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Стоимость работы',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${totalRate.toStringAsFixed(0)} \u20BD',
-                      style: AppTypography.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      child: Text(
+        'Итого: ${_formatTime(totalTime)} · ${totalRate.toStringAsFixed(0)} сом',
+        style: AppTypography.bodyMedium.copyWith(
+          fontWeight: FontWeight.w600,
+          color: context.textSecondaryColor,
         ),
       ),
     );
@@ -947,13 +941,16 @@ class _ProcessStepCard extends StatelessWidget {
                           color: context.textSecondaryColor,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          step.executorRoleLabel,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: context.textSecondaryColor,
+                        Flexible(
+                          child: Text(
+                            step.executorRoleLabel,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: context.textSecondaryColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.md),
+                        const SizedBox(width: AppSpacing.sm),
                         Icon(
                           Icons.schedule,
                           size: 14,
@@ -974,7 +971,7 @@ class _ProcessStepCard extends StatelessWidget {
               // Rate
               if (step.rate != null && step.rate! > 0)
                 Text(
-                  '${step.rate!.toStringAsFixed(0)} \u20BD',
+                  '${step.rate!.toStringAsFixed(0)} сом',
                   style: AppTypography.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
@@ -1045,44 +1042,3 @@ class _FullScreenImageView extends StatelessWidget {
   }
 }
 
-class _BomCostColumn extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final bool isPrimary;
-
-  const _BomCostColumn({
-    required this.label,
-    required this.value,
-    required this.icon,
-    this.isPrimary = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          size: 18,
-          color: isPrimary ? AppColors.primary : context.textSecondaryColor,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: AppTypography.labelSmall.copyWith(
-            color: context.textSecondaryColor,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: AppTypography.bodyLarge.copyWith(
-            fontWeight: FontWeight.w700,
-            color: isPrimary ? AppColors.primary : context.textPrimaryColor,
-          ),
-        ),
-      ],
-    );
-  }
-}

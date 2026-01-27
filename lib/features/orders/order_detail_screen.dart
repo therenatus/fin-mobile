@@ -37,7 +37,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/riverpod/providers.dart';
-import '../../core/models/material.dart' as mat;
 
 class BarcodeScanScreen extends ConsumerStatefulWidget {
   const BarcodeScanScreen({super.key});

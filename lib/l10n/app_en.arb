@@ -63,7 +63,7 @@
   "noEmployees": "No employees",
 
   "ordersInProgress": "{count, plural, =0{no orders in progress} =1{1 order in progress} other{{count} orders in progress}}",
-  "currency": "{amount} ₽",
+  "currency": "{amount} сом",
   "daysRemaining": "{days, plural, =0{today} =1{1 day left} other{{days} days left}}",
 
   "overdue": "Overdue",
@@ -161,7 +161,7 @@
   "goodMorning": "Good morning",
   "goodAfternoon": "Good afternoon",
   "goodEvening": "Good evening",
-  "youHaveOrdersInProgress": "You have {orders} in progress",
+  "youHaveOrdersInProgress": "You have {orders}",
   "indicators": "Indicators",
   "monthlyIncome": "Monthly income",
   "monthlyFinance": "Monthly finance",
@@ -412,7 +412,7 @@
   "noPayrollRecords": "No payroll records",
   "payrollRecordsHint": "When the manager calculates salary, information will appear here",
   "entriesCount": "{count} entries",
-  "rub": "RUB",
+  "rub": "KGS",
   "details": "Details",
   "hoursAbbr": "h",
 
@@ -427,5 +427,32 @@
   "hoursAgo": "{hours} h. ago",
   "daysAgo": "{days} d. ago",
   "logoutQuestion": "Are you sure you want to log out?",
-  "appVersionEmployee": "AteliePro Employee v1.0.0"
+  "appVersionEmployee": "AteliePro Employee v1.0.0",
+
+  "faqTitle": "Frequently Asked Questions",
+  "contactSupport": "Contact Support",
+  "appVersion": "App Version",
+  "supportEmail": "Support Email",
+  "telegramChannel": "Telegram",
+
+  "faqCreateOrder": "How to create an order?",
+  "faqCreateOrderAnswer": "Go to the \"Orders\" section and tap the \"+\" button in the bottom right corner. Select a client, model, specify the quantity and due date.",
+
+  "faqAddClient": "How to add a client?",
+  "faqAddClientAnswer": "Go to the \"Customers\" section and tap the \"+\" button. Fill in the client's name, phone and email.",
+
+  "faqManageEmployees": "How to manage employees?",
+  "faqManageEmployeesAnswer": "In the side menu, select \"Employees\". Here you can add new employees, assign roles, and view work history.",
+
+  "faqPayroll": "How does payroll work?",
+  "faqPayrollAnswer": "Go to the \"Payroll\" section, select a period and tap \"Calculate\". The system will automatically calculate payment based on employee work records.",
+
+  "faqProduction": "How does production work?",
+  "faqProductionAnswer": "The \"Production\" section shows current orders in progress, their stages, and assigned workers. Employees mark stages as complete in their app.",
+
+  "faqNotifications": "How to configure notifications?",
+  "faqNotificationsAnswer": "Go to \"Settings\" → \"Notifications\". You can enable or disable push notifications about new orders, status changes, and other events.",
+
+  "faqSubscription": "How to manage subscription?",
+  "faqSubscriptionAnswer": "In the side menu, select \"Subscription\". Here you can see your current plan, resource usage, and available plans to expand capabilities."
 }

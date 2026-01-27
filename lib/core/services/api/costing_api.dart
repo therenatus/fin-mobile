@@ -106,7 +106,7 @@ mixin CostingApiMixin on BaseApiService {
 
   /// Update pricing settings
   Future<PricingSettings> updatePricingSettings({
-    double? defaultHourlyRate,
+    double? defaultRate,
     double? overheadPct,
     double? defaultMarginPct,
     Map<String, double>? roleRates,
@@ -115,7 +115,7 @@ mixin CostingApiMixin on BaseApiService {
       Uri.parse('${BaseApiService.baseUrl}/settings/pricing'),
       headers: await getHeaders(),
       body: jsonEncode({
-        if (defaultHourlyRate != null) 'defaultHourlyRate': defaultHourlyRate,
+        if (defaultRate != null) 'defaultRate': defaultRate,
         if (overheadPct != null) 'overheadPct': overheadPct,
         if (defaultMarginPct != null) 'defaultMarginPct': defaultMarginPct,
         if (roleRates != null) 'roleRates': roleRates,

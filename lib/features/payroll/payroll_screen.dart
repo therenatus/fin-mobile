@@ -43,7 +43,7 @@ class _PayrollScreenState extends ConsumerState<PayrollScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -371,7 +371,7 @@ class _PayrollScreenState extends ConsumerState<PayrollScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${NumberFormat('#,###', 'ru').format(payroll.totalPayout)} ₽',
+                            '${NumberFormat('#,###', 'ru').format(payroll.totalPayout)} сом',
                             style: AppTypography.h2.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
@@ -532,7 +532,7 @@ class _PayrollScreenState extends ConsumerState<PayrollScreen> {
                   ),
                 ),
                 trailing: Text(
-                  '${NumberFormat('#,###', 'ru').format(payroll.totalPayout)} ₽',
+                  '${NumberFormat('#,###', 'ru').format(payroll.totalPayout)} сом',
                   style: AppTypography.bodyLarge.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
@@ -670,7 +670,7 @@ class _EmployeeSalaryCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${NumberFormat('#,###', 'ru').format(detail.totalPayout)} ₽',
+                  '${NumberFormat('#,###', 'ru').format(detail.totalPayout)} сом',
                   style: AppTypography.bodyLarge.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
@@ -716,10 +716,10 @@ class _EmployeeSalaryCard extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.sm),
                     ...detail.workLogs.map((log) {
                       final rateText = log.rate != null && log.rate! > 0
-                          ? '${log.rate!.toStringAsFixed(0)} ₽/${log.rateType == 'per_hour' ? context.l10n.perHour : context.l10n.perPiece}'
+                          ? '${log.rate!.toStringAsFixed(0)} сом/${log.rateType == 'per_hour' ? context.l10n.perHour : context.l10n.perPiece}'
                           : '';
                       final payoutText = log.payout != null && log.payout! > 0
-                          ? '${NumberFormat('#,###', 'ru').format(log.payout)} ₽'
+                          ? '${NumberFormat('#,###', 'ru').format(log.payout)} сом'
                           : '';
 
                       return Container(

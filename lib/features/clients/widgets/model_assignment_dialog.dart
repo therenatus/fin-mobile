@@ -35,7 +35,7 @@ class _ModelAssignmentDialogState extends ConsumerState<ModelAssignmentDialog> {
     if (!_initialized) {
       _initialized = true;
       _selectedModelIds = Set.from(widget.assignedModelIds);
-      _loadModels();
+      Future.microtask(() => _loadModels());
     }
   }
 
@@ -207,7 +207,7 @@ class _ModelAssignmentDialogState extends ConsumerState<ModelAssignmentDialog> {
                                         const SizedBox(width: 8),
                                       ],
                                       Text(
-                                        '${model.basePrice.toStringAsFixed(0)} ₽',
+                                        '${model.basePrice.toStringAsFixed(0)} сом',
                                         style: AppTypography.labelMedium.copyWith(
                                           color: context.textSecondaryColor,
                                         ),

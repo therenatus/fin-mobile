@@ -72,7 +72,7 @@ class EmployeeAssignment {
   Map<String, dynamic> toJson() => _$EmployeeAssignmentToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 class EmployeeAssignmentOrder {
   final String id;
   final String status;

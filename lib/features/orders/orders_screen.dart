@@ -75,10 +75,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> with SingleTickerPr
         title: Text(context.l10n.orders),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: widget.onMenuPressed,
-        ),
+        leading: widget.onMenuPressed != null
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: widget.onMenuPressed,
+              )
+            : null,
         actions: [
           IconButton(
             icon: Badge(

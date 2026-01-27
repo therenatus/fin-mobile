@@ -201,11 +201,11 @@ class _ClientCardState extends State<ClientCard>
 
   String _formatMoney(double amount) {
     if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M ₽';
+      return '${(amount / 1000000).toStringAsFixed(1)}M сом';
     } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K ₽';
+      return '${(amount / 1000).toStringAsFixed(0)}K сом';
     }
-    return '${amount.toStringAsFixed(0)} ₽';
+    return '${amount.toStringAsFixed(0)} сом';
   }
 }
 

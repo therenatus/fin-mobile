@@ -45,12 +45,8 @@ abstract class BaseApiService {
     if (kIsWeb) {
       return 'http://localhost:4000/api/v1';
     }
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the special alias to host machine from Android emulator
-      return 'http://10.0.2.2:4000/api/v1';
-    }
-    // iOS Simulator uses localhost
-    return 'http://localhost:4000/api/v1';
+    // Real device — use local IP
+    return 'http://10.213.34.148:4000/api/v1';
   }
 
   /// Registry of session expiration callbacks by mode (manager, client, employee)
@@ -67,7 +63,6 @@ abstract class BaseApiService {
   }
 
   /// Notify all registered callbacks about session expiration
-  @protected
   static void notifySessionExpired() {
     for (final callback in _sessionExpiredCallbacks.values) {
       callback();
@@ -373,9 +368,13 @@ abstract class BaseApiService {
       throw createException('Retry', statusCode: 401);
     }
 
-    final errorMessage = body['error']?['message'] ??
+    final rawMessage = body['error']?['message'] ??
         body['message'] ??
         'Произошла ошибка';
+    // Handle validation errors which may be a List of messages
+    final errorMessage = rawMessage is List
+        ? rawMessage.join(', ')
+        : rawMessage.toString();
     throw createException(errorMessage, statusCode: response.statusCode, data: body);
   }
 

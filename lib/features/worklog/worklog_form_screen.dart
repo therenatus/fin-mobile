@@ -43,7 +43,7 @@ class _WorkLogFormScreenState extends ConsumerState<WorkLogFormScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -522,8 +522,8 @@ class _WorkLogFormScreenState extends ConsumerState<WorkLogFormScreen> {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 rateType == 'per_hour'
-                    ? 'Оплата за час: ${_selectedStep!.rate!.toStringAsFixed(0)} руб.'
-                    : 'Оплата за единицу: ${_selectedStep!.rate!.toStringAsFixed(0)} руб.',
+                    ? 'Оплата за час: ${_selectedStep!.rate!.toStringAsFixed(0)} сом'
+                    : 'Оплата за единицу: ${_selectedStep!.rate!.toStringAsFixed(0)} сом',
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.primary,
                 ),

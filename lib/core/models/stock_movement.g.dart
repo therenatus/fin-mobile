@@ -72,7 +72,7 @@ StockMovement _$StockMovementFromJson(Map<String, dynamic> json) =>
           : StockMovementPurchase.fromJson(
               json['purchase'] as Map<String, dynamic>,
             ),
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: dateTimeFromJson(json['createdAt']),
     );
 
 Map<String, dynamic> _$StockMovementToJson(StockMovement instance) =>
@@ -90,7 +90,7 @@ Map<String, dynamic> _$StockMovementToJson(StockMovement instance) =>
       if (instance.material?.toJson() case final value?) 'material': value,
       if (instance.order?.toJson() case final value?) 'order': value,
       if (instance.purchase?.toJson() case final value?) 'purchase': value,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'createdAt': dateTimeToJson(instance.createdAt),
     };
 
 StockMovementsResponse _$StockMovementsResponseFromJson(

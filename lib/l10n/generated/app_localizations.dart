@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// Currency format
   ///
   /// In ru, this message translates to:
-  /// **'{amount} ₽'**
+  /// **'{amount} сом'**
   String currency(String amount);
 
   /// Days remaining with pluralization
@@ -941,7 +941,7 @@ abstract class AppLocalizations {
   /// Orders in progress message
   ///
   /// In ru, this message translates to:
-  /// **'У вас {orders} в работе'**
+  /// **'У вас {orders}'**
   String youHaveOrdersInProgress(String orders);
 
   /// Dashboard indicators section
@@ -2357,7 +2357,7 @@ abstract class AppLocalizations {
   /// No description provided for @rub.
   ///
   /// In ru, this message translates to:
-  /// **'руб'**
+  /// **'сом'**
   String get rub;
 
   /// No description provided for @details.
@@ -2443,6 +2443,120 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'AteliePro Employee v1.0.0'**
   String get appVersionEmployee;
+
+  /// FAQ section title
+  ///
+  /// In ru, this message translates to:
+  /// **'Часто задаваемые вопросы'**
+  String get faqTitle;
+
+  /// Contact support section title
+  ///
+  /// In ru, this message translates to:
+  /// **'Связаться с поддержкой'**
+  String get contactSupport;
+
+  /// App version label
+  ///
+  /// In ru, this message translates to:
+  /// **'Версия приложения'**
+  String get appVersion;
+
+  /// Support email label
+  ///
+  /// In ru, this message translates to:
+  /// **'Email поддержки'**
+  String get supportEmail;
+
+  /// Telegram channel label
+  ///
+  /// In ru, this message translates to:
+  /// **'Telegram'**
+  String get telegramChannel;
+
+  /// FAQ question: how to create order
+  ///
+  /// In ru, this message translates to:
+  /// **'Как создать заказ?'**
+  String get faqCreateOrder;
+
+  /// FAQ answer: how to create order
+  ///
+  /// In ru, this message translates to:
+  /// **'Перейдите в раздел «Заказы» и нажмите кнопку «+» в правом нижнем углу. Выберите клиента, модель, укажите количество и срок выполнения.'**
+  String get faqCreateOrderAnswer;
+
+  /// FAQ question: how to add client
+  ///
+  /// In ru, this message translates to:
+  /// **'Как добавить клиента?'**
+  String get faqAddClient;
+
+  /// FAQ answer: how to add client
+  ///
+  /// In ru, this message translates to:
+  /// **'Перейдите в раздел «Заказчики» и нажмите кнопку «+». Заполните имя, телефон и email клиента.'**
+  String get faqAddClientAnswer;
+
+  /// FAQ question: how to manage employees
+  ///
+  /// In ru, this message translates to:
+  /// **'Как управлять сотрудниками?'**
+  String get faqManageEmployees;
+
+  /// FAQ answer: how to manage employees
+  ///
+  /// In ru, this message translates to:
+  /// **'В боковом меню выберите «Сотрудники». Здесь можно добавлять новых сотрудников, назначать роли и просматривать историю работы.'**
+  String get faqManageEmployeesAnswer;
+
+  /// FAQ question: how payroll works
+  ///
+  /// In ru, this message translates to:
+  /// **'Как работает расчёт зарплаты?'**
+  String get faqPayroll;
+
+  /// FAQ answer: how payroll works
+  ///
+  /// In ru, this message translates to:
+  /// **'Перейдите в раздел «Расчёт зарплаты», выберите период и нажмите «Рассчитать». Система автоматически рассчитает оплату на основе записей работы сотрудников.'**
+  String get faqPayrollAnswer;
+
+  /// FAQ question: how production works
+  ///
+  /// In ru, this message translates to:
+  /// **'Как работает производство?'**
+  String get faqProduction;
+
+  /// FAQ answer: how production works
+  ///
+  /// In ru, this message translates to:
+  /// **'Раздел «Производство» показывает текущие заказы в работе, их этапы и исполнителей. Сотрудники отмечают выполнение этапов в своём приложении.'**
+  String get faqProductionAnswer;
+
+  /// FAQ question: how to configure notifications
+  ///
+  /// In ru, this message translates to:
+  /// **'Как настроить уведомления?'**
+  String get faqNotifications;
+
+  /// FAQ answer: how to configure notifications
+  ///
+  /// In ru, this message translates to:
+  /// **'Перейдите в «Настройки» → «Уведомления». Вы можете включить или отключить push-уведомления о новых заказах, изменениях статуса и других событиях.'**
+  String get faqNotificationsAnswer;
+
+  /// FAQ question: how to manage subscription
+  ///
+  /// In ru, this message translates to:
+  /// **'Как управлять подпиской?'**
+  String get faqSubscription;
+
+  /// FAQ answer: how to manage subscription
+  ///
+  /// In ru, this message translates to:
+  /// **'В боковом меню выберите «Подписка». Здесь отображается текущий план, использование ресурсов и доступные тарифы для расширения возможностей.'**
+  String get faqSubscriptionAnswer;
 }
 
 class _AppLocalizationsDelegate

@@ -189,7 +189,7 @@ class _OrderAcceptanceSheetState extends ConsumerState<OrderAcceptanceSheet> {
             ),
             _SummaryRow(
               label: 'Стоимость',
-              value: '${widget.order.totalPrice.toStringAsFixed(0)} \u20BD',
+              value: '${widget.order.totalPrice.toStringAsFixed(0)} сом',
             ),
             if (widget.processSteps.isNotEmpty) ...[
               const Divider(height: 20),

@@ -224,7 +224,7 @@ class _ModelFormScreenState extends ConsumerState<ModelFormScreen> {
                 hint: '5000',
                 icon: Icons.attach_money_outlined,
               ).copyWith(
-                suffixText: '₽',
+                suffixText: 'сом',
                 suffixStyle: AppTypography.bodyLarge.copyWith(
                   color: context.textSecondaryColor,
                 ),

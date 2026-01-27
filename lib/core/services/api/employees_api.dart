@@ -185,18 +185,13 @@ mixin EmployeesApiMixin on BaseApiService {
     return handleResponse(response, Employee.fromJson);
   }
 
-  Future<void> deleteEmployee(String id) async {
-    final response = await http.delete(
-      Uri.parse('${BaseApiService.baseUrl}/employees/$id'),
+  Future<Employee> setEmployeeActiveStatus(String id, bool isActive) async {
+    final response = await http.post(
+      Uri.parse('${BaseApiService.baseUrl}/employees/$id/set-active'),
       headers: await getHeaders(),
+      body: jsonEncode({'isActive': isActive}),
     );
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      throw createException(
-        body['message'] ?? 'Failed to delete employee',
-        statusCode: response.statusCode,
-      );
-    }
+    return handleResponse(response, Employee.fromJson);
   }
 }

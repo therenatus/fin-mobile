@@ -29,7 +29,7 @@ class _EmployeeWorklogsScreenState extends ConsumerState<EmployeeWorklogsScreen>
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadWorkLogs();
+      Future.microtask(() => _loadWorkLogs());
     }
   }
 

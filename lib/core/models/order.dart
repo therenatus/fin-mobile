@@ -141,9 +141,13 @@ class OrdersResponse {
 
 @JsonSerializable()
 class OrdersMeta {
+  @JsonKey(defaultValue: 1)
   final int page;
+  @JsonKey(defaultValue: 20)
   final int perPage;
+  @JsonKey(defaultValue: 0)
   final int total;
+  @JsonKey(defaultValue: 0)
   final int totalPages;
 
   OrdersMeta({

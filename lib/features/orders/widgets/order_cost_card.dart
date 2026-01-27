@@ -31,7 +31,7 @@ class _OrderCostCardState extends ConsumerState<OrderCostCard> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadCost();
+      Future.microtask(() => _loadCost());
     }
   }
 
@@ -130,7 +130,7 @@ class _OrderCostCardState extends ConsumerState<OrderCostCard> {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Убедитесь, что у модели есть спецификация (BOM)',
+              'Убедитесь, что у модели добавлены материалы',
               style: AppTypography.bodySmall.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -352,7 +352,7 @@ class _CostBox extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${row.value.toStringAsFixed(0)} ₽',
+                      '${row.value.toStringAsFixed(0)} сом',
                       style: AppTypography.bodySmall.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

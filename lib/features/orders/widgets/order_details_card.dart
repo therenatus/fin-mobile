@@ -28,7 +28,7 @@ class OrderDetailsCard extends StatelessWidget {
           ),
           DetailRow(
             label: 'Стоимость',
-            value: '${order.totalPrice.toStringAsFixed(0)} \u20BD',
+            value: '${order.totalPrice.toStringAsFixed(0)} сом',
           ),
           if (order.dueDate != null)
             DetailRow(

@@ -205,7 +205,7 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        expect(payroll.formattedTotalPayout, equals('2.5 млн ₽'));
+        expect(payroll.formattedTotalPayout, equals('2.5 млн сом'));
       });
 
       test('formats thousands correctly', () {
@@ -220,7 +220,7 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        expect(payroll.formattedTotalPayout, equals('150 тыс ₽'));
+        expect(payroll.formattedTotalPayout, equals('150 тыс сом'));
       });
 
       test('formats small amounts correctly', () {
@@ -235,7 +235,7 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        expect(payroll.formattedTotalPayout, equals('500 ₽'));
+        expect(payroll.formattedTotalPayout, equals('500 сом'));
       });
     });
   });

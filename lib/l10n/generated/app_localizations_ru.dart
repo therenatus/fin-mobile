@@ -181,7 +181,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String currency(String amount) {
-    return '$amount ₽';
+    return '$amount сом';
   }
 
   @override
@@ -471,7 +471,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String youHaveOrdersInProgress(String orders) {
-    return 'У вас $orders в работе';
+    return 'У вас $orders';
   }
 
   @override
@@ -1223,7 +1223,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get rub => 'руб';
+  String get rub => 'сом';
 
   @override
   String get details => 'Детализация';
@@ -1272,4 +1272,68 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get appVersionEmployee => 'AteliePro Employee v1.0.0';
+
+  @override
+  String get faqTitle => 'Часто задаваемые вопросы';
+
+  @override
+  String get contactSupport => 'Связаться с поддержкой';
+
+  @override
+  String get appVersion => 'Версия приложения';
+
+  @override
+  String get supportEmail => 'Email поддержки';
+
+  @override
+  String get telegramChannel => 'Telegram';
+
+  @override
+  String get faqCreateOrder => 'Как создать заказ?';
+
+  @override
+  String get faqCreateOrderAnswer =>
+      'Перейдите в раздел «Заказы» и нажмите кнопку «+» в правом нижнем углу. Выберите клиента, модель, укажите количество и срок выполнения.';
+
+  @override
+  String get faqAddClient => 'Как добавить клиента?';
+
+  @override
+  String get faqAddClientAnswer =>
+      'Перейдите в раздел «Заказчики» и нажмите кнопку «+». Заполните имя, телефон и email клиента.';
+
+  @override
+  String get faqManageEmployees => 'Как управлять сотрудниками?';
+
+  @override
+  String get faqManageEmployeesAnswer =>
+      'В боковом меню выберите «Сотрудники». Здесь можно добавлять новых сотрудников, назначать роли и просматривать историю работы.';
+
+  @override
+  String get faqPayroll => 'Как работает расчёт зарплаты?';
+
+  @override
+  String get faqPayrollAnswer =>
+      'Перейдите в раздел «Расчёт зарплаты», выберите период и нажмите «Рассчитать». Система автоматически рассчитает оплату на основе записей работы сотрудников.';
+
+  @override
+  String get faqProduction => 'Как работает производство?';
+
+  @override
+  String get faqProductionAnswer =>
+      'Раздел «Производство» показывает текущие заказы в работе, их этапы и исполнителей. Сотрудники отмечают выполнение этапов в своём приложении.';
+
+  @override
+  String get faqNotifications => 'Как настроить уведомления?';
+
+  @override
+  String get faqNotificationsAnswer =>
+      'Перейдите в «Настройки» → «Уведомления». Вы можете включить или отключить push-уведомления о новых заказах, изменениях статуса и других событиях.';
+
+  @override
+  String get faqSubscription => 'Как управлять подпиской?';
+
+  @override
+  String get faqSubscriptionAnswer =>
+      'В боковом меню выберите «Подписка». Здесь отображается текущий план, использование ресурсов и доступные тарифы для расширения возможностей.';
 }

@@ -8,6 +8,7 @@ import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/widgets/app_drawer.dart';
+import 'widgets/forecasts_widgets.dart';
 
 class ForecastsScreen extends ConsumerStatefulWidget {
   const ForecastsScreen({super.key});
@@ -50,7 +51,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -332,7 +333,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
           Row(
             children: [
               Expanded(
-                child: _UsageItem(
+                child: UsageItem(
                   label: 'Прогнозы',
                   value: usage.forecastUsageText,
                   icon: Icons.auto_graph,
@@ -341,7 +342,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: _UsageItem(
+                child: UsageItem(
                   label: 'Отчёты',
                   value: usage.reportUsageText,
                   icon: Icons.description,
@@ -350,7 +351,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: _UsageItem(
+                child: UsageItem(
                   label: 'Инсайты',
                   value: usage.insightUsageText,
                   icon: Icons.lightbulb,
@@ -409,7 +410,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
         Row(
           children: [
             Expanded(
-              child: _ForecastCard(
+              child: ForecastCard(
                 title: 'Заказы',
                 forecast: _ordersForecast,
                 icon: Icons.receipt_long,
@@ -419,7 +420,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
-              child: _ForecastCard(
+              child: ForecastCard(
                 title: 'Выручка',
                 forecast: _revenueForecast,
                 icon: Icons.trending_up,
@@ -503,14 +504,14 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
               // Metrics row
               Row(
                 children: [
-                  _MetricBadge(
+                  MetricBadge(
                     label: 'Заказов',
                     value: '${_insights!.metrics.recentOrders}',
                     icon: Icons.shopping_bag,
                     color: AppColors.primary,
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  _MetricBadge(
+                  MetricBadge(
                     label: 'Просроч.',
                     value: '${_insights!.metrics.overdueOrders}',
                     icon: Icons.warning_amber,
@@ -519,7 +520,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
                         : AppColors.success,
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  _MetricBadge(
+                  MetricBadge(
                     label: 'Выручка',
                     value: '${_insights!.metrics.revenueChange > 0 ? '+' : ''}${_insights!.metrics.revenueChange.toStringAsFixed(0)}%',
                     icon: _insights!.metrics.revenueChange >= 0
@@ -535,7 +536,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
               const Divider(),
               const SizedBox(height: AppSpacing.sm),
               // Insights list
-              ..._insights!.insights.map((insight) => _InsightItem(insight: insight)),
+              ..._insights!.insights.map((insight) => InsightItem(insight: insight)),
             ],
           ),
         ),
@@ -659,7 +660,7 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
                     final report = entry.value;
                     return Column(
                       children: [
-                        _ReportHistoryItem(
+                        ReportHistoryItem(
                           report: report,
                           onTap: () => _showReportDetails(report),
                         ),
@@ -752,324 +753,10 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
 
   String _formatCurrency(double amount) {
     if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M ₽';
+      return '${(amount / 1000000).toStringAsFixed(1)}M сом';
     } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K ₽';
+      return '${(amount / 1000).toStringAsFixed(0)}K сом';
     }
-    return '${amount.toStringAsFixed(0)} ₽';
-  }
-}
-
-class _ForecastCard extends StatelessWidget {
-  final String title;
-  final Forecast? forecast;
-  final IconData icon;
-  final Color color;
-  final String Function(double) formatValue;
-
-  const _ForecastCard({
-    required this.title,
-    required this.forecast,
-    required this.icon,
-    required this.color,
-    required this.formatValue,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (forecast == null) {
-      return Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          boxShadow: [AppShadows.sm],
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    final trendIcon = forecast!.isUpTrend
-        ? Icons.trending_up
-        : forecast!.isDownTrend
-            ? Icons.trending_down
-            : Icons.trending_flat;
-
-    final trendColor = forecast!.isUpTrend
-        ? AppColors.success
-        : forecast!.isDownTrend
-            ? AppColors.error
-            : context.textSecondaryColor;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [AppShadows.sm],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 18),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: trendColor.withAlpha(25),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(trendIcon, size: 14, color: trendColor),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${forecast!.trendPercentage > 0 ? '+' : ''}${forecast!.trendPercentage.toStringAsFixed(0)}%',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: trendColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            formatValue(forecast!.predictedValue),
-            style: AppTypography.h4.copyWith(
-              color: context.textPrimaryColor,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: AppTypography.labelSmall.copyWith(
-              color: context.textSecondaryColor,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${forecast!.confidenceInterval.low.toStringAsFixed(0)} - ${forecast!.confidenceInterval.high.toStringAsFixed(0)}',
-            style: AppTypography.labelSmall.copyWith(
-              color: context.textTertiaryColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricBadge extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _MetricBadge({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: color.withAlpha(25),
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: AppTypography.labelMedium.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              label,
-              style: AppTypography.labelSmall.copyWith(
-                color: context.textSecondaryColor,
-                fontSize: 10,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InsightItem extends StatelessWidget {
-  final String insight;
-
-  const _InsightItem({required this.insight});
-
-  @override
-  Widget build(BuildContext context) {
-    IconData iconData = Icons.lightbulb_outline;
-    Color iconColor = AppColors.info;
-
-    // Determine icon based on insight content
-    if (insight.contains('Внимание') || insight.contains('просроч')) {
-      iconData = Icons.warning_amber;
-      iconColor = AppColors.warning;
-    } else if (insight.contains('вырос') || insight.contains('отлич')) {
-      iconData = Icons.thumb_up;
-      iconColor = AppColors.success;
-    } else if (insight.contains('сниз')) {
-      iconData = Icons.thumb_down;
-      iconColor = AppColors.error;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(iconData, size: 18, color: iconColor),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              insight,
-              style: AppTypography.bodySmall.copyWith(
-                color: context.textPrimaryColor,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReportHistoryItem extends StatelessWidget {
-  final MlReport report;
-  final VoidCallback onTap;
-
-  const _ReportHistoryItem({
-    required this.report,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(25),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.description,
-                size: 20,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    report.typeLabel,
-                    style: AppTypography.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    DateFormat('dd.MM.yyyy HH:mm').format(report.createdAt),
-                    style: AppTypography.labelSmall.copyWith(
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: context.textTertiaryColor,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _UsageItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _UsageItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      decoration: BoxDecoration(
-        color: color.withAlpha(15),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTypography.labelSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(
-              color: context.textSecondaryColor,
-              fontSize: 10,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    return '${amount.toStringAsFixed(0)} сом';
   }
 }

@@ -43,8 +43,8 @@ PurchaseItem _$PurchaseItemFromJson(Map<String, dynamic> json) => PurchaseItem(
   material: json['material'] == null
       ? null
       : PurchaseItemMaterial.fromJson(json['material'] as Map<String, dynamic>),
-  createdAt: DateTime.parse(json['createdAt'] as String),
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  createdAt: dateTimeFromJson(json['createdAt']),
+  updatedAt: dateTimeFromJson(json['updatedAt']),
   remainingQty: (json['remainingQty'] as num?)?.toDouble(),
   isFullyReceived: json['isFullyReceived'] as bool?,
 );
@@ -59,8 +59,8 @@ Map<String, dynamic> _$PurchaseItemToJson(PurchaseItem instance) =>
       'unitPrice': instance.unitPrice,
       'totalPrice': instance.totalPrice,
       if (instance.material?.toJson() case final value?) 'material': value,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'createdAt': dateTimeToJson(instance.createdAt),
+      'updatedAt': dateTimeToJson(instance.updatedAt),
       if (instance.remainingQty case final value?) 'remainingQty': value,
       if (instance.isFullyReceived case final value?) 'isFullyReceived': value,
     };
@@ -73,15 +73,9 @@ Purchase _$PurchaseFromJson(Map<String, dynamic> json) => Purchase(
   supplier: json['supplier'] == null
       ? null
       : PurchaseSupplier.fromJson(json['supplier'] as Map<String, dynamic>),
-  orderDate: json['orderDate'] == null
-      ? null
-      : DateTime.parse(json['orderDate'] as String),
-  expectedDate: json['expectedDate'] == null
-      ? null
-      : DateTime.parse(json['expectedDate'] as String),
-  receivedDate: json['receivedDate'] == null
-      ? null
-      : DateTime.parse(json['receivedDate'] as String),
+  orderDate: nullableDateTimeFromJson(json['orderDate']),
+  expectedDate: nullableDateTimeFromJson(json['expectedDate']),
+  receivedDate: nullableDateTimeFromJson(json['receivedDate']),
   totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
   notes: json['notes'] as String?,
   items:
@@ -90,8 +84,8 @@ Purchase _$PurchaseFromJson(Map<String, dynamic> json) => Purchase(
           .toList() ??
       [],
   itemsCount: (_readItemsCount(json, 'itemsCount') as num?)?.toInt() ?? 0,
-  createdAt: DateTime.parse(json['createdAt'] as String),
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  createdAt: dateTimeFromJson(json['createdAt']),
+  updatedAt: dateTimeFromJson(json['updatedAt']),
   isFullyReceived: json['isFullyReceived'] as bool?,
 );
 
@@ -101,18 +95,18 @@ Map<String, dynamic> _$PurchaseToJson(Purchase instance) => <String, dynamic>{
   'status': _purchaseStatusToJson(instance.status),
   if (instance.supplierId case final value?) 'supplierId': value,
   if (instance.supplier?.toJson() case final value?) 'supplier': value,
-  if (instance.orderDate?.toIso8601String() case final value?)
+  if (nullableDateTimeToJson(instance.orderDate) case final value?)
     'orderDate': value,
-  if (instance.expectedDate?.toIso8601String() case final value?)
+  if (nullableDateTimeToJson(instance.expectedDate) case final value?)
     'expectedDate': value,
-  if (instance.receivedDate?.toIso8601String() case final value?)
+  if (nullableDateTimeToJson(instance.receivedDate) case final value?)
     'receivedDate': value,
   'totalAmount': instance.totalAmount,
   if (instance.notes case final value?) 'notes': value,
   'items': instance.items.map((e) => e.toJson()).toList(),
   'itemsCount': instance.itemsCount,
-  'createdAt': instance.createdAt.toIso8601String(),
-  'updatedAt': instance.updatedAt.toIso8601String(),
+  'createdAt': dateTimeToJson(instance.createdAt),
+  'updatedAt': dateTimeToJson(instance.updatedAt),
   if (instance.isFullyReceived case final value?) 'isFullyReceived': value,
 };
 

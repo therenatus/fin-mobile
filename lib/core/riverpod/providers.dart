@@ -20,5 +20,6 @@ export 'bom_provider.dart';
 export 'materials_provider.dart';
 export 'subscription_provider.dart';
 export 'production_provider.dart';
+export 'workload_provider.dart';
 export 'qc_provider.dart';
 export 'notifications_provider.dart';

@@ -60,17 +60,17 @@ class OrderCost {
 
   /// Форматированная плановая себестоимость
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedPlannedCost => '${plannedTotalCost.toStringAsFixed(0)} ₽';
+  String get formattedPlannedCost => '${plannedTotalCost.toStringAsFixed(0)} сом';
 
   /// Форматированная фактическая себестоимость
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedActualCost => '${actualTotalCost.toStringAsFixed(0)} ₽';
+  String get formattedActualCost => '${actualTotalCost.toStringAsFixed(0)} сом';
 
   /// Форматированное отклонение
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedVariance {
     final sign = variance >= 0 ? '+' : '';
-    return '$sign${variance.toStringAsFixed(0)} ₽';
+    return '$sign${variance.toStringAsFixed(0)} сом';
   }
 
   /// Форматированный процент отклонения
@@ -115,7 +115,7 @@ class ProfitabilityItem {
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedProfit {
     final sign = totalProfit >= 0 ? '+' : '';
-    return '$sign${totalProfit.toStringAsFixed(0)} ₽';
+    return '$sign${totalProfit.toStringAsFixed(0)} сом';
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -207,7 +207,7 @@ class VarianceItem {
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get formattedVariance {
     final sign = variance >= 0 ? '+' : '';
-    return '$sign${variance.toStringAsFixed(0)} ₽';
+    return '$sign${variance.toStringAsFixed(0)} сом';
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)

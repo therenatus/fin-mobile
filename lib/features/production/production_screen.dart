@@ -4,9 +4,8 @@ import '../../core/riverpod/providers.dart';
 import '../../core/riverpod/production_provider.dart';
 import '../../core/models/models.dart';
 import 'widgets/plan_card.dart';
-import 'widgets/workload_day_card.dart';
 
-/// Main production screen with tabs for Plans, Workload, and Tasks
+/// Main production screen with tabs for Plans and Tasks
 class ProductionScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuPressed;
   final String? highlightTaskId;
@@ -29,9 +28,9 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen>
   void initState() {
     super.initState();
     // If we have a highlight task, start on Tasks tab
-    final initialIndex = widget.highlightTaskId != null ? 2 : 0;
+    final initialIndex = widget.highlightTaskId != null ? 1 : 0;
     _tabController = TabController(
-      length: 3,
+      length: 2,
       vsync: this,
       initialIndex: initialIndex,
     );
@@ -59,9 +58,7 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen>
 
   void _loadInitialData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final notifier = ref.read(productionNotifierProvider.notifier);
-      notifier.refreshPlans();
-      notifier.loadWorkloadCalendar();
+      ref.read(productionNotifierProvider.notifier).refreshPlans();
     });
   }
 
@@ -86,7 +83,6 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen>
           controller: _tabController,
           tabs: const [
             Tab(text: 'Планы', icon: Icon(Icons.assignment)),
-            Tab(text: 'Загрузка', icon: Icon(Icons.calendar_month)),
             Tab(text: 'Задачи', icon: Icon(Icons.task_alt)),
           ],
         ),
@@ -101,7 +97,6 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen>
         controller: _tabController,
         children: const [
           _PlansTab(),
-          _WorkloadTab(),
           _TasksTab(),
         ],
       ),
@@ -120,9 +115,6 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen>
         notifier.refreshPlans();
         break;
       case 1:
-        notifier.loadWorkloadCalendar();
-        break;
-      case 2:
         notifier.loadMyTasks();
         break;
     }
@@ -262,134 +254,6 @@ class _PlansTab extends ConsumerWidget {
         );
       }
     }
-  }
-}
-
-// ==================== WORKLOAD TAB ====================
-
-class _WorkloadTab extends ConsumerWidget {
-  const _WorkloadTab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final provider = ref.watch(productionNotifierProvider);
-    final calendar = provider.workloadCalendar;
-
-    if (provider.isLoading && calendar == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (calendar == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.calendar_month_outlined, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text('Нет данных о загрузке'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => ref.read(productionNotifierProvider.notifier).loadWorkloadCalendar(),
-              child: const Text('Загрузить'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () => ref.read(productionNotifierProvider.notifier).loadWorkloadCalendar(),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Summary cards
-          _buildSummaryCards(context, calendar.summary),
-          const SizedBox(height: 16),
-
-          // Calendar days
-          ...calendar.calendar.map((day) => WorkloadDayCard(day: day)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCards(BuildContext context, WorkloadSummary summary) {
-    return Row(
-      children: [
-        Expanded(
-          child: _SummaryCard(
-            title: 'Загрузка',
-            value: '${summary.averageLoad}%',
-            icon: Icons.speed,
-            color: _getLoadColor(summary.averageLoad),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _SummaryCard(
-            title: 'План/Факт',
-            value: '${summary.totalPlannedHours.toStringAsFixed(0)}/${summary.totalActualHours.toStringAsFixed(0)}ч',
-            icon: Icons.timer,
-            color: Colors.blue,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _SummaryCard(
-            title: 'Перегруз',
-            value: '${summary.overloadedDays} дн.',
-            icon: Icons.warning,
-            color: summary.overloadedDays > 0 ? Colors.red : Colors.green,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Color _getLoadColor(int load) {
-    if (load < 50) return Colors.green;
-    if (load < 80) return Colors.orange;
-    return Colors.red;
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _SummaryCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-            ),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

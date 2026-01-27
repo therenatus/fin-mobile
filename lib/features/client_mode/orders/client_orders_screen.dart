@@ -470,7 +470,7 @@ class _OrderDetailsSheetState extends ConsumerState<_OrderDetailsSheet> {
                 if (order.model.basePrice != null)
                   _DetailRow(
                     label: 'Стоимость',
-                    value: '${(order.model.basePrice! * order.quantity).toStringAsFixed(0)} ₽',
+                    value: '${(order.model.basePrice! * order.quantity).toStringAsFixed(0)} сом',
                   ),
                 if (order.dueDate != null)
                   _DetailRow(

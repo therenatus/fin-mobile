@@ -24,7 +24,6 @@ class ProductionStateData {
   final ProductionPlan? currentPlan;
   final List<ProductionTask> tasks;
   final List<ProductionTask> myTasks;
-  final WorkloadCalendar? workloadCalendar;
   final GanttData? ganttData;
   final String? error;
 
@@ -39,7 +38,6 @@ class ProductionStateData {
     this.currentPlan,
     this.tasks = const [],
     this.myTasks = const [],
-    this.workloadCalendar,
     this.ganttData,
     this.error,
     this.currentPage = 1,
@@ -55,7 +53,6 @@ class ProductionStateData {
     ProductionPlan? currentPlan,
     List<ProductionTask>? tasks,
     List<ProductionTask>? myTasks,
-    WorkloadCalendar? workloadCalendar,
     GanttData? ganttData,
     String? error,
     int? currentPage,
@@ -63,7 +60,6 @@ class ProductionStateData {
     bool? hasMorePlans,
     bool clearCurrentPlan = false,
     bool clearError = false,
-    bool clearWorkloadCalendar = false,
     bool clearGanttData = false,
   }) {
     return ProductionStateData(
@@ -72,9 +68,6 @@ class ProductionStateData {
       currentPlan: clearCurrentPlan ? null : (currentPlan ?? this.currentPlan),
       tasks: tasks ?? this.tasks,
       myTasks: myTasks ?? this.myTasks,
-      workloadCalendar: clearWorkloadCalendar
-          ? null
-          : (workloadCalendar ?? this.workloadCalendar),
       ganttData: clearGanttData ? null : (ganttData ?? this.ganttData),
       error: clearError ? null : (error ?? this.error),
       currentPage: currentPage ?? this.currentPage,
@@ -84,7 +77,7 @@ class ProductionStateData {
   }
 }
 
-/// Production Notifier for managing Production Planning and Workload
+/// Production Notifier for managing Production Planning
 class ProductionNotifier extends Notifier<ProductionStateData> {
   @override
   ProductionStateData build() {
@@ -422,41 +415,6 @@ class ProductionNotifier extends Notifier<ProductionStateData> {
     );
   }
 
-  // ==================== WORKLOAD ====================
-
-  /// Load workload calendar
-  Future<void> loadWorkloadCalendar({
-    int days = 14,
-    String? employeeId,
-  }) async {
-    state = state.copyWith(loadingState: ProductionLoadingState.loading);
-
-    try {
-      final calendar = await _api.getProductionWorkloadCalendar(
-        days: days,
-        employeeId: employeeId,
-      );
-      state = state.copyWith(
-        workloadCalendar: calendar,
-        loadingState: ProductionLoadingState.loaded,
-      );
-    } catch (e) {
-      _log('loadWorkloadCalendar error: $e');
-      state = state.copyWith(
-        error: e.toString(),
-        loadingState: ProductionLoadingState.error,
-      );
-    }
-  }
-
-  /// Refresh workload calendar
-  Future<void> refreshWorkload({
-    int days = 14,
-    String? employeeId,
-  }) async {
-    await loadWorkloadCalendar(days: days, employeeId: employeeId);
-  }
-
   // ==================== GANTT ====================
 
   /// Load Gantt chart data
@@ -527,11 +485,6 @@ final productionTasksProvider = Provider<List<ProductionTask>>((ref) {
 /// Provider for my production tasks
 final myProductionTasksProvider = Provider<List<ProductionTask>>((ref) {
   return ref.watch(productionNotifierProvider).myTasks;
-});
-
-/// Provider for workload calendar
-final workloadCalendarProvider = Provider<WorkloadCalendar?>((ref) {
-  return ref.watch(productionNotifierProvider).workloadCalendar;
 });
 
 /// Provider for Gantt data

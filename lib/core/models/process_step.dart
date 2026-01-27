@@ -9,6 +9,8 @@ class ProcessStep {
   final int stepOrder;
   final String name;
   final int estimatedTime; // in minutes
+  @JsonKey(defaultValue: 0)
+  final int setupTime; // setup time in minutes
   final String executorRole;
   final double? rate;
   final String? rateType; // 'per_unit' or 'per_hour'
@@ -21,6 +23,7 @@ class ProcessStep {
     required this.stepOrder,
     required this.name,
     required this.estimatedTime,
+    this.setupTime = 0,
     required this.executorRole,
     this.rate,
     this.rateType,
@@ -67,7 +70,7 @@ class ProcessStep {
 
   String get formattedRate {
     if (rate == null) return 'Не указана';
-    return '${rate!.toStringAsFixed(0)} руб. $rateTypeLabel';
+    return '${rate!.toStringAsFixed(0)} сом $rateTypeLabel';
   }
 
   String get formattedTime {
@@ -88,6 +91,7 @@ class ProcessStep {
     int? stepOrder,
     String? name,
     int? estimatedTime,
+    int? setupTime,
     String? executorRole,
     double? rate,
     String? rateType,
@@ -100,6 +104,7 @@ class ProcessStep {
       stepOrder: stepOrder ?? this.stepOrder,
       name: name ?? this.name,
       estimatedTime: estimatedTime ?? this.estimatedTime,
+      setupTime: setupTime ?? this.setupTime,
       executorRole: executorRole ?? this.executorRole,
       rate: rate ?? this.rate,
       rateType: rateType ?? this.rateType,

@@ -151,19 +151,6 @@ class BomSummaryCard extends StatelessWidget {
                       color: context.textSecondaryColor,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  Icon(
-                    Icons.build_outlined,
-                    size: 14,
-                    color: context.textSecondaryColor,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${bom.operations.length} операций',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
                 ],
               ),
             ),

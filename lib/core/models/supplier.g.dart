@@ -20,25 +20,9 @@ Supplier _$SupplierFromJson(Map<String, dynamic> json) => Supplier(
       (_readMaterialsCount(json, 'materialsCount') as num?)?.toInt() ?? 0,
   purchasesCount:
       (_readPurchasesCount(json, 'purchasesCount') as num?)?.toInt() ?? 0,
-  createdAt: DateTime.parse(json['createdAt'] as String),
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  createdAt: dateTimeFromJson(json['createdAt']),
+  updatedAt: dateTimeFromJson(json['updatedAt']),
 );
-
-Map<String, dynamic> _$SupplierToJson(Supplier instance) => <String, dynamic>{
-  'id': instance.id,
-  'name': instance.name,
-  if (instance.contactName case final value?) 'contactName': value,
-  if (instance.phone case final value?) 'phone': value,
-  if (instance.email case final value?) 'email': value,
-  if (instance.address case final value?) 'address': value,
-  if (instance.inn case final value?) 'inn': value,
-  if (instance.notes case final value?) 'notes': value,
-  'isActive': instance.isActive,
-  'materialsCount': instance.materialsCount,
-  'purchasesCount': instance.purchasesCount,
-  'createdAt': instance.createdAt.toIso8601String(),
-  'updatedAt': instance.updatedAt.toIso8601String(),
-};
 
 SuppliersResponse _$SuppliersResponseFromJson(Map<String, dynamic> json) =>
     SuppliersResponse(

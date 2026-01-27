@@ -66,16 +66,17 @@ class BomItemCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Row(
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: 4,
                       children: [
                         _InfoChip(
                           icon: Icons.straighten,
                           text: '${_formatQuantity(item.quantity)} ${item.material?.materialUnit.label ?? ''}',
                         ),
-                        const SizedBox(width: AppSpacing.sm),
                         _InfoChip(
                           icon: Icons.delete_outline,
-                          text: '${item.wastePct.toStringAsFixed(0)}% отходов',
+                          text: '${item.wastePct.toStringAsFixed(0)}%',
                           color: AppColors.warning,
                         ),
                       ],
@@ -89,7 +90,7 @@ class BomItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${item.calculatedUnitCost.toStringAsFixed(0)} ₽',
+                    '${item.calculatedUnitCost.toStringAsFixed(0)} сом',
                     style: AppTypography.bodyLarge.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
@@ -97,7 +98,7 @@ class BomItemCard extends StatelessWidget {
                   ),
                   if (item.material?.costPrice != null)
                     Text(
-                      '${item.material!.costPrice!.toStringAsFixed(0)} ₽/ед',
+                      '${item.material!.costPrice!.toStringAsFixed(0)} сом/ед',
                       style: AppTypography.bodySmall.copyWith(
                         color: context.textSecondaryColor,
                       ),

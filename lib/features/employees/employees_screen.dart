@@ -34,7 +34,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadEmployees();
+      Future.microtask(() => _loadEmployees());
     }
   }
 
@@ -276,7 +276,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
       builder: (context) => _EmployeeDetailsSheet(
         employee: employee,
         onEdit: () => _openEmployeeForm(employee: employee),
-        onDelete: () => _confirmDelete(employee),
+        onToggleActive: () => _confirmToggleActive(employee),
         onViewHistory: () => _openEmployeeWorkLogs(employee),
       ),
     );
@@ -304,12 +304,15 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
     }
   }
 
-  void _confirmDelete(Employee employee) {
+  void _confirmToggleActive(Employee employee) {
+    final willDeactivate = employee.isActive;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(context.l10n.deleteEmployeeTitle),
-        content: Text(context.l10n.deleteEmployeeMessage(employee.name)),
+        title: Text(willDeactivate ? 'Деактивировать сотрудника?' : 'Активировать сотрудника?'),
+        content: Text(willDeactivate
+            ? '${employee.name} будет отключён от приложения и не сможет принимать задачи.'
+            : '${employee.name} снова сможет входить в приложение и принимать задачи.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -317,16 +320,18 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(dialogContext); // Close dialog
+              Navigator.pop(dialogContext);
               Navigator.pop(context); // Close bottom sheet
               try {
                 final api = ref.read(apiServiceProvider);
-                await api.deleteEmployee(employee.id);
+                await api.setEmployeeActiveStatus(employee.id, !willDeactivate);
                 _loadEmployees();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(context.l10n.employeeDeleted),
+                      content: Text(willDeactivate
+                          ? 'Сотрудник деактивирован'
+                          : 'Сотрудник активирован'),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
@@ -347,8 +352,8 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
               }
             },
             child: Text(
-              context.l10n.delete,
-              style: TextStyle(color: AppColors.error),
+              willDeactivate ? 'Деактивировать' : 'Активировать',
+              style: TextStyle(color: willDeactivate ? AppColors.error : AppColors.success),
             ),
           ),
         ],
@@ -448,13 +453,13 @@ class _EmployeeCard extends ConsumerWidget {
 class _EmployeeDetailsSheet extends ConsumerWidget {
   final Employee employee;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onToggleActive;
   final VoidCallback onViewHistory;
 
   const _EmployeeDetailsSheet({
     required this.employee,
     required this.onEdit,
-    required this.onDelete,
+    required this.onToggleActive,
     required this.onViewHistory,
   });
 
@@ -593,16 +598,23 @@ class _EmployeeDetailsSheet extends ConsumerWidget {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Navigator.pop(context);
-                            onDelete();
+                            onToggleActive();
                           },
-                          icon: Icon(Icons.delete_outline, color: AppColors.error),
+                          icon: Icon(
+                            employee.isActive ? Icons.person_off_outlined : Icons.person_add_outlined,
+                            color: employee.isActive ? AppColors.error : AppColors.success,
+                          ),
                           label: Text(
-                            context.l10n.delete,
-                            style: TextStyle(color: AppColors.error),
+                            employee.isActive ? 'Деактивировать' : 'Активировать',
+                            style: TextStyle(
+                              color: employee.isActive ? AppColors.error : AppColors.success,
+                            ),
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(color: AppColors.error.withOpacity(0.5)),
+                            side: BorderSide(
+                              color: (employee.isActive ? AppColors.error : AppColors.success).withOpacity(0.5),
+                            ),
                           ),
                         ),
                       ),

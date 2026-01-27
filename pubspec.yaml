@@ -30,6 +30,7 @@ dependencies:
 
   # Utils
   intl: ^0.20.2
+  url_launcher: ^6.2.5
 
   # JSON Serialization
   json_annotation: ^4.9.0

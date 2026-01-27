@@ -10,16 +10,14 @@ mixin BomApiMixin on BaseApiService {
   Future<Bom> createBom({
     required String modelId,
     required List<Map<String, dynamic>> items,
-    required List<Map<String, dynamic>> operations,
     String? notes,
     bool isActive = true,
   }) async {
     final response = await http.post(
-      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/bom'),
+      Uri.parse('${BaseApiService.baseUrl}/bom/model/$modelId'),
       headers: await getHeaders(),
       body: jsonEncode({
         'items': items,
-        'operations': operations,
         if (notes != null) 'notes': notes,
         'isActive': isActive,
       }),
@@ -31,15 +29,23 @@ mixin BomApiMixin on BaseApiService {
   /// Get active BOM for model
   Future<Bom?> getModelBom(String modelId) async {
     final response = await http.get(
-      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/bom'),
+      Uri.parse('${BaseApiService.baseUrl}/bom/model/$modelId'),
       headers: await getHeaders(),
     );
 
     if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      final data = body['data'] ?? body;
-      if (data == null) return null;
-      return Bom.fromJson(data as Map<String, dynamic>);
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      // Handle response wrapper: { success: true, data: null } when no BOM exists
+      if (body['success'] == true) {
+        final data = body['data'];
+        if (data == null) return null;
+        return Bom.fromJson(data as Map<String, dynamic>);
+      }
+      // Legacy format: direct BOM object
+      if (body['id'] != null) {
+        return Bom.fromJson(body);
+      }
+      return null;
     } else if (response.statusCode == 404) {
       return null;
     }
@@ -53,7 +59,7 @@ mixin BomApiMixin on BaseApiService {
   /// Get all BOM versions for model
   Future<BomVersionsResponse> getBomVersions(String modelId) async {
     final response = await http.get(
-      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/bom/versions'),
+      Uri.parse('${BaseApiService.baseUrl}/bom/model/$modelId/versions'),
       headers: await getHeaders(),
     );
 
@@ -63,7 +69,7 @@ mixin BomApiMixin on BaseApiService {
   /// Recalculate active BOM for model
   Future<Bom> recalculateModelBom(String modelId) async {
     final response = await http.post(
-      Uri.parse('${BaseApiService.baseUrl}/models/$modelId/bom/calculate'),
+      Uri.parse('${BaseApiService.baseUrl}/bom/model/$modelId/calculate'),
       headers: await getHeaders(),
     );
 
@@ -84,7 +90,6 @@ mixin BomApiMixin on BaseApiService {
   Future<Bom> updateBom(
     String bomId, {
     List<Map<String, dynamic>>? items,
-    List<Map<String, dynamic>>? operations,
     String? notes,
     bool? isActive,
   }) async {
@@ -93,7 +98,6 @@ mixin BomApiMixin on BaseApiService {
       headers: await getHeaders(),
       body: jsonEncode({
         if (items != null) 'items': items,
-        if (operations != null) 'operations': operations,
         if (notes != null) 'notes': notes,
         if (isActive != null) 'isActive': isActive,
       }),

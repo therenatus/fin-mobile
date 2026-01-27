@@ -31,10 +31,12 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         title: Text(context.l10n.analytics),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: widget.onMenuPressed,
-        ),
+        leading: widget.onMenuPressed != null
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: widget.onMenuPressed,
+              )
+            : null,
         actions: [
           // Period selector
           PopupMenuButton<String>(
@@ -501,11 +503,11 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
 
   String _formatCurrency(double amount) {
     if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M ₽';
+      return '${(amount / 1000000).toStringAsFixed(1)}M сом';
     } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K ₽';
+      return '${(amount / 1000).toStringAsFixed(0)}K сом';
     }
-    return '${amount.toStringAsFixed(0)} ₽';
+    return '${amount.toStringAsFixed(0)} сом';
   }
 }
 
@@ -715,8 +717,8 @@ class _TopClientItem extends StatelessWidget {
 
   String _formatCurrency(double amount) {
     if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K ₽';
+      return '${(amount / 1000).toStringAsFixed(0)}K сом';
     }
-    return '${amount.toStringAsFixed(0)} ₽';
+    return '${amount.toStringAsFixed(0)} сом';
   }
 }

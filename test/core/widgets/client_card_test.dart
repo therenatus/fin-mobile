@@ -57,7 +57,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('25K ₽'), findsOneWidget);
+      expect(find.text('25K сом'), findsOneWidget);
     });
 
     testWidgets('displays large amounts in millions', (tester) async {
@@ -68,7 +68,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('1.5M ₽'), findsOneWidget);
+      expect(find.text('1.5M сом'), findsOneWidget);
     });
 
     testWidgets('displays small amounts without suffix', (tester) async {
@@ -79,7 +79,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('500 ₽'), findsOneWidget);
+      expect(find.text('500 сом'), findsOneWidget);
     });
 
     testWidgets('displays VIP badge for VIP clients', (tester) async {

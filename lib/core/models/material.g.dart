@@ -24,23 +24,9 @@ MaterialCategory _$MaterialCategoryFromJson(Map<String, dynamic> json) =>
           (_readMaterialsCount(json, 'materialsCount') as num?)?.toInt() ?? 0,
       childrenCount:
           (_readChildrenCount(json, 'childrenCount') as num?)?.toInt() ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: dateTimeFromJson(json['createdAt']),
+      updatedAt: dateTimeFromJson(json['updatedAt']),
     );
-
-Map<String, dynamic> _$MaterialCategoryToJson(MaterialCategory instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      if (instance.description case final value?) 'description': value,
-      if (instance.parentId case final value?) 'parentId': value,
-      if (instance.parent?.toJson() case final value?) 'parent': value,
-      'children': instance.children.map((e) => e.toJson()).toList(),
-      'materialsCount': instance.materialsCount,
-      'childrenCount': instance.childrenCount,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt.toIso8601String(),
-    };
 
 MaterialCategoriesResponse _$MaterialCategoriesResponseFromJson(
   Map<String, dynamic> json,
@@ -85,36 +71,11 @@ Material _$MaterialFromJson(Map<String, dynamic> json) => Material(
   supplier: json['supplier'] == null
       ? null
       : MaterialSupplier.fromJson(json['supplier'] as Map<String, dynamic>),
-  createdAt: DateTime.parse(json['createdAt'] as String),
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  createdAt: dateTimeFromJson(json['createdAt']),
+  updatedAt: dateTimeFromJson(json['updatedAt']),
   availableQty: (json['availableQty'] as num?)?.toDouble(),
   isLowStock: json['isLowStock'] as bool?,
 );
-
-Map<String, dynamic> _$MaterialToJson(Material instance) => <String, dynamic>{
-  'id': instance.id,
-  'sku': instance.sku,
-  'name': instance.name,
-  if (instance.description case final value?) 'description': value,
-  if (instance.barcode case final value?) 'barcode': value,
-  'unit': _materialUnitToJson(instance.unit),
-  'quantity': instance.quantity,
-  'reservedQty': instance.reservedQty,
-  if (instance.minStockLevel case final value?) 'minStockLevel': value,
-  if (instance.costPrice case final value?) 'costPrice': value,
-  if (instance.sellPrice case final value?) 'sellPrice': value,
-  if (instance.color case final value?) 'color': value,
-  if (instance.width case final value?) 'width': value,
-  if (instance.composition case final value?) 'composition': value,
-  if (instance.imageUrl case final value?) 'imageUrl': value,
-  'isActive': instance.isActive,
-  if (instance.category?.toJson() case final value?) 'category': value,
-  if (instance.supplier?.toJson() case final value?) 'supplier': value,
-  'createdAt': instance.createdAt.toIso8601String(),
-  'updatedAt': instance.updatedAt.toIso8601String(),
-  if (instance.availableQty case final value?) 'availableQty': value,
-  if (instance.isLowStock case final value?) 'isLowStock': value,
-};
 
 MaterialSupplier _$MaterialSupplierFromJson(Map<String, dynamic> json) =>
     MaterialSupplier(id: json['id'] as String, name: json['name'] as String);

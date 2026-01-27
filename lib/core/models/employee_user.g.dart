@@ -68,24 +68,6 @@ Map<String, dynamic> _$EmployeeAssignmentToJson(EmployeeAssignment instance) =>
       'order': instance.order.toJson(),
     };
 
-EmployeeAssignmentOrder _$EmployeeAssignmentOrderFromJson(
-  Map<String, dynamic> json,
-) => EmployeeAssignmentOrder(
-  id: json['id'] as String,
-  status: json['status'] as String,
-  quantity: (json['quantity'] as num).toInt(),
-  dueDate: json['dueDate'] == null
-      ? null
-      : DateTime.parse(json['dueDate'] as String),
-  modelName: json['modelName'] as String,
-  modelCategory: json['modelCategory'] as String?,
-  clientName: json['clientName'] as String,
-  completedQuantity: (json['completedQuantity'] as num?)?.toInt() ?? 0,
-  totalCompletedQuantity:
-      (json['totalCompletedQuantity'] as num?)?.toInt() ?? 0,
-  loggedHours: (json['loggedHours'] as num?)?.toDouble() ?? 0.0,
-);
-
 Map<String, dynamic> _$EmployeeAssignmentOrderToJson(
   EmployeeAssignmentOrder instance,
 ) => <String, dynamic>{
@@ -99,6 +81,11 @@ Map<String, dynamic> _$EmployeeAssignmentOrderToJson(
   'completedQuantity': instance.completedQuantity,
   'totalCompletedQuantity': instance.totalCompletedQuantity,
   'loggedHours': instance.loggedHours,
+  'remaining': instance.remaining,
+  'totalRemaining': instance.totalRemaining,
+  'isStepCompleted': instance.isStepCompleted,
+  'progressPercent': instance.progressPercent,
+  'totalProgressPercent': instance.totalProgressPercent,
 };
 
 EmployeeWorkLog _$EmployeeWorkLogFromJson(Map<String, dynamic> json) =>

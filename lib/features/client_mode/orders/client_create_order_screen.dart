@@ -410,7 +410,7 @@ class _ClientCreateOrderScreenState extends ConsumerState<ClientCreateOrderScree
                           ),
                         if (_selectedModel!.basePrice != null)
                           Text(
-                            '${_selectedModel!.basePrice!.toStringAsFixed(0)} ₽',
+                            '${_selectedModel!.basePrice!.toStringAsFixed(0)} сом',
                             style: AppTypography.bodyMedium.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -570,7 +570,7 @@ class _ClientCreateOrderScreenState extends ConsumerState<ClientCreateOrderScree
           ),
           if (_selectedModel!.basePrice != null)
             Text(
-              '${total.toStringAsFixed(0)} ₽',
+              '${total.toStringAsFixed(0)} сом',
               style: AppTypography.h3.copyWith(
                 color: AppColors.primary,
               ),
@@ -798,7 +798,7 @@ class _ModelTile extends StatelessWidget {
               // Price
               if (model.basePrice != null)
                 Text(
-                  '${model.basePrice!.toStringAsFixed(0)} ₽',
+                  '${model.basePrice!.toStringAsFixed(0)} сом',
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,

@@ -103,21 +103,22 @@ class DashboardNotifier extends Notifier<DashboardStateData> {
   @override
   DashboardStateData build() {
     // Listen to auth state changes
-    ref.listen<AuthStateData>(authNotifierProvider, (previous, next) {
-      if (next.isAuthenticated && previous?.isAuthenticated != true) {
-        // User just logged in - load dashboard data
-        _loadDashboardData();
-      } else if (!next.isAuthenticated && previous?.isAuthenticated == true) {
-        // User logged out - clear data
-        state = const DashboardStateData();
-      }
-    });
-
-    // If already authenticated, load data
-    final authState = ref.read(authNotifierProvider);
-    if (authState.isAuthenticated) {
-      _loadDashboardData();
-    }
+    ref.listen<AuthStateData>(
+      authNotifierProvider,
+      (previous, next) {
+        _log('Auth state changed: ${previous?.loadingState} -> ${next.loadingState}');
+        if (next.isAuthenticated && previous?.isAuthenticated != true) {
+          // User just logged in or app started with valid session - load dashboard data
+          _log('User authenticated - loading dashboard data');
+          Future.microtask(() => _loadDashboardData());
+        } else if (!next.isAuthenticated && previous?.isAuthenticated == true) {
+          // User logged out - clear data
+          _log('User logged out - clearing data');
+          state = const DashboardStateData();
+        }
+      },
+      fireImmediately: true,
+    );
 
     return const DashboardStateData();
   }

@@ -60,7 +60,7 @@ enum MaterialUnit {
   String toJson() => name.toUpperCase();
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class MaterialCategory {
   final String id;
   final String name;
@@ -125,7 +125,7 @@ class MaterialCategoriesResponse {
   Map<String, dynamic> toJson() => _$MaterialCategoriesResponseToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class Material {
   final String id;
   final String sku;

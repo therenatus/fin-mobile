@@ -356,7 +356,7 @@ class _AtelierDetailScreenState extends ConsumerState<AtelierDetailScreen> {
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0)} ₽';
+    return '${price.toStringAsFixed(0)} сом';
   }
 }
 
@@ -467,7 +467,7 @@ class _OrderCard extends StatelessWidget {
                     if (order.model.basePrice != null) ...[
                       const SizedBox(height: 4),
                       Text(
-                        '${order.totalCost.toStringAsFixed(0)} ₽',
+                        '${order.totalCost.toStringAsFixed(0)} сом',
                         style: AppTypography.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,

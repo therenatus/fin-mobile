@@ -8,6 +8,11 @@ import '../../core/riverpod/providers.dart';
 import '../../core/widgets/widgets.dart';
 import '../../core/utils/haptic_feedback.dart';
 import '../../core/utils/page_transitions.dart';
+import '../orders/order_detail_screen.dart';
+import '../orders/create_order_screen.dart';
+import '../finance/finance_screen.dart';
+import '../clients/clients_screen.dart';
+import '../orders/orders_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   final VoidCallback? onMenuPressed;
@@ -208,6 +213,10 @@ class HomeScreen extends ConsumerWidget {
                   value: '${stats?.activeOrders ?? 0}',
                   icon: Icons.receipt_long,
                   iconColor: AppColors.primary,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OrdersScreen()),
+                  ),
                 ),
               ),
               StaggeredListItem(
@@ -217,6 +226,10 @@ class HomeScreen extends ConsumerWidget {
                   value: '${stats?.totalClients ?? 0}',
                   icon: Icons.people,
                   iconColor: AppColors.secondary,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ClientsScreen()),
+                  ),
                 ),
               ),
               StaggeredListItem(
@@ -226,6 +239,10 @@ class HomeScreen extends ConsumerWidget {
                   value: _formatCurrency(stats?.monthlyRevenue ?? 0),
                   icon: Icons.account_balance_wallet,
                   iconColor: AppColors.warning,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FinanceScreen()),
+                  ),
                 ),
               ),
               StaggeredListItem(
@@ -235,6 +252,10 @@ class HomeScreen extends ConsumerWidget {
                   value: '${stats?.overdueOrders ?? 0}',
                   icon: Icons.warning_amber,
                   iconColor: AppColors.error,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OrdersScreen()),
+                  ),
                 ),
               ),
             ],
@@ -245,11 +266,11 @@ class HomeScreen extends ConsumerWidget {
 
   String _formatCurrency(double amount) {
     if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M ₽';
+      return '${(amount / 1000000).toStringAsFixed(1)}M сом';
     } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K ₽';
+      return '${(amount / 1000).toStringAsFixed(0)}K сом';
     }
-    return '${amount.toStringAsFixed(0)} ₽';
+    return '${amount.toStringAsFixed(0)} сом';
   }
 
   Widget _buildFinanceSummary(BuildContext context, WidgetRef ref) {
@@ -282,77 +303,83 @@ class HomeScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(title: context.l10n.monthlyFinance),
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: context.borderColor),
-            boxShadow: context.cardShadow,
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FinanceScreen()),
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _FinanceItem(
-                      icon: Icons.arrow_upward,
-                      label: context.l10n.income,
-                      value: income,
-                      color: AppColors.success,
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 60,
-                    color: context.borderColor,
-                  ),
-                  Expanded(
-                    child: _FinanceItem(
-                      icon: Icons.arrow_downward,
-                      label: context.l10n.expenses,
-                      value: expense,
-                      color: AppColors.error,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: profit >= 0
-                      ? AppColors.success.withOpacity(0.1)
-                      : AppColors.error.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: context.borderColor),
+              boxShadow: context.cardShadow,
+            ),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    Icon(
-                      profit >= 0 ? Icons.trending_up : Icons.trending_down,
-                      color: profit >= 0 ? AppColors.success : AppColors.error,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${context.l10n.profit}: ',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: context.textSecondaryColor,
+                    Expanded(
+                      child: _FinanceItem(
+                        icon: Icons.arrow_upward,
+                        label: context.l10n.income,
+                        value: income,
+                        color: AppColors.success,
                       ),
                     ),
-                    Text(
-                      '${NumberFormat('#,###', 'ru').format(profit)} ₽',
-                      style: AppTypography.h4.copyWith(
-                        color: profit >= 0 ? AppColors.success : AppColors.error,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      width: 1,
+                      height: 60,
+                      color: context.borderColor,
+                    ),
+                    Expanded(
+                      child: _FinanceItem(
+                        icon: Icons.arrow_downward,
+                        label: context.l10n.expenses,
+                        value: expense,
+                        color: AppColors.error,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: profit >= 0
+                        ? AppColors.success.withOpacity(0.1)
+                        : AppColors.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        profit >= 0 ? Icons.trending_up : Icons.trending_down,
+                        color: profit >= 0 ? AppColors.success : AppColors.error,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${context.l10n.profit}: ',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                      Text(
+                        '${NumberFormat('#,###', 'ru').format(profit)} сом',
+                        style: AppTypography.h4.copyWith(
+                          color: profit >= 0 ? AppColors.success : AppColors.error,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -370,7 +397,10 @@ class HomeScreen extends ConsumerWidget {
           title: context.l10n.recentOrders,
           actionLabel: context.l10n.all,
           onAction: () {
-            // Navigate to orders tab
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OrdersScreen()),
+            );
           },
         ),
         if (isLoading && orders.isEmpty)
@@ -399,7 +429,12 @@ class HomeScreen extends ConsumerWidget {
                 child: OrderCard(
                   order: orders[index],
                   onTap: () {
-                    // Navigate to order details
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OrderDetailScreen(order: orders[index]),
+                      ),
+                    );
                   },
                 ),
               );
@@ -422,8 +457,9 @@ class HomeScreen extends ConsumerWidget {
                 label: context.l10n.newOrder,
                 color: AppColors.primary,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(context.l10n.orderCreationComingSoon)),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CreateOrderScreen()),
                   );
                 },
               ),
@@ -435,8 +471,9 @@ class HomeScreen extends ConsumerWidget {
                 label: context.l10n.newCustomer,
                 color: AppColors.secondary,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(context.l10n.customerAdditionComingSoon)),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ClientsScreen()),
                   );
                 },
               ),
@@ -576,7 +613,7 @@ class _FinanceItem extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '${NumberFormat('#,###', 'ru').format(value)} ₽',
+          '${NumberFormat('#,###', 'ru').format(value)} сом',
           style: AppTypography.bodyLarge.copyWith(
             fontWeight: FontWeight.w600,
             color: color,

@@ -5,7 +5,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/riverpod/providers.dart';
 import '../../../core/services/api_service.dart';
 
-/// Dialog for changing user password
 class ChangePasswordDialog extends ConsumerStatefulWidget {
   const ChangePasswordDialog({super.key});
 
@@ -86,19 +85,11 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextFormField(
+            _buildPasswordField(
               controller: _currentPasswordController,
-              obscureText: _obscureCurrent,
-              decoration: InputDecoration(
-                labelText: 'Текущий пароль',
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureCurrent ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
-                ),
-              ),
+              label: 'Текущий пароль',
+              obscure: _obscureCurrent,
+              onToggle: () => setState(() => _obscureCurrent = !_obscureCurrent),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Введите текущий пароль';
@@ -107,19 +98,11 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            TextFormField(
+            _buildPasswordField(
               controller: _newPasswordController,
-              obscureText: _obscureNew,
-              decoration: InputDecoration(
-                labelText: 'Новый пароль',
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureNew ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () => setState(() => _obscureNew = !_obscureNew),
-                ),
-              ),
+              label: 'Новый пароль',
+              obscure: _obscureNew,
+              onToggle: () => setState(() => _obscureNew = !_obscureNew),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Введите новый пароль';
@@ -131,19 +114,11 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            TextFormField(
+            _buildPasswordField(
               controller: _confirmPasswordController,
-              obscureText: _obscureConfirm,
-              decoration: InputDecoration(
-                labelText: 'Подтвердите пароль',
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                ),
-              ),
+              label: 'Подтвердите пароль',
+              obscure: _obscureConfirm,
+              onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
               validator: (value) {
                 if (value != _newPasswordController.text) {
                   return 'Пароли не совпадают';
@@ -170,6 +145,28 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
               : const Text('Сохранить'),
         ),
       ],
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscure,
+    required VoidCallback onToggle,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: const Icon(Icons.lock_outline),
+        suffixIcon: IconButton(
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
+          onPressed: onToggle,
+        ),
+      ),
+      validator: validator,
     );
   }
 }

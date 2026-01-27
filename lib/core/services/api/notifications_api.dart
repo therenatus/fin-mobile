@@ -60,8 +60,11 @@ mixin NotificationsApiMixin on BaseApiService {
     final response = await http.get(uri, headers: await getHeaders());
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final json = jsonDecode(response.body);
-      return NotificationHistoryResponse.fromJson(json);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = json['data'] is Map<String, dynamic>
+          ? json['data'] as Map<String, dynamic>
+          : json;
+      return NotificationHistoryResponse.fromJson(data);
     } else {
       throw Exception('Failed to get notification history: ${response.statusCode}');
     }

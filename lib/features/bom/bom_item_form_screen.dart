@@ -54,7 +54,7 @@ class _BomItemFormScreenState extends ConsumerState<BomItemFormScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadMaterials();
+      Future.microtask(() => _loadMaterials());
     }
   }
 
@@ -272,7 +272,7 @@ class _BomItemFormScreenState extends ConsumerState<BomItemFormScreen> {
                               ),
                             ),
                             Text(
-                              '${_selectedMaterial!.sku} • ${_formatCost(_selectedMaterial!.costPrice)} ₽/${_selectedMaterial!.unit.label}',
+                              '${_selectedMaterial!.sku} • ${_formatCost(_selectedMaterial!.costPrice)} сом/${_selectedMaterial!.unit.label}',
                               style: AppTypography.bodySmall.copyWith(
                                 color: context.textSecondaryColor,
                               ),
@@ -337,12 +337,12 @@ class _BomItemFormScreenState extends ConsumerState<BomItemFormScreen> {
             ),
             _CostRow(
               label: 'Цена за единицу',
-              value: '${_formatCost(costPrice)} ₽',
+              value: '${_formatCost(costPrice)} сом',
             ),
             const Divider(height: AppSpacing.md),
             _CostRow(
               label: 'Итого',
-              value: '${_formatCost(totalCost)} ₽',
+              value: '${_formatCost(totalCost)} сом',
               isPrimary: true,
             ),
           ],
@@ -586,7 +586,7 @@ class _MaterialListTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${material.sku} • ${material.costPrice?.toStringAsFixed(0) ?? '0'} ₽/${material.unit.label}',
+                    '${material.sku} • ${material.costPrice?.toStringAsFixed(0) ?? '0'} сом/${material.unit.label}',
                     style: AppTypography.bodySmall.copyWith(
                       color: context.textSecondaryColor,
                     ),

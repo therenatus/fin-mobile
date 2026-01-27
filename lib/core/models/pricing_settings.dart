@@ -4,11 +4,11 @@ import 'json_converters.dart';
 part 'pricing_settings.g.dart';
 
 /// Настройки ценообразования
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class PricingSettings {
   final String id;
   final String tenantId;
-  final double defaultHourlyRate;
+  final double defaultRate;
   final double overheadPct;
   final double defaultMarginPct;
   @JsonKey(fromJson: _roleRatesFromJson, toJson: _roleRatesToJson)
@@ -21,7 +21,7 @@ class PricingSettings {
   PricingSettings({
     required this.id,
     required this.tenantId,
-    required this.defaultHourlyRate,
+    required this.defaultRate,
     required this.overheadPct,
     required this.defaultMarginPct,
     required this.roleRates,
@@ -31,15 +31,15 @@ class PricingSettings {
 
   /// Ставка для роли (или дефолтная)
   double getRateForRole(String? role) {
-    if (role == null) return defaultHourlyRate;
-    return roleRates[role] ?? defaultHourlyRate;
+    if (role == null) return defaultRate;
+    return roleRates[role] ?? defaultRate;
   }
 
   factory PricingSettings.fromJson(Map<String, dynamic> json) =>
       _$PricingSettingsFromJson(json);
 
   Map<String, dynamic> toJson() => {
-        'defaultHourlyRate': defaultHourlyRate,
+        'defaultRate': defaultRate,
         'overheadPct': overheadPct,
         'defaultMarginPct': defaultMarginPct,
         'roleRates': roleRates,
@@ -79,15 +79,15 @@ class PriceSuggestion {
 
   /// Форматированная рекомендованная цена
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedSuggestedPrice => '${suggestedTotal.toStringAsFixed(0)} ₽';
+  String get formattedSuggestedPrice => '${suggestedTotal.toStringAsFixed(0)} сом';
 
   /// Форматированная цена за единицу
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedUnitPrice => '${suggestedUnitPrice.toStringAsFixed(0)} ₽';
+  String get formattedUnitPrice => '${suggestedUnitPrice.toStringAsFixed(0)} сом';
 
   /// Форматированная себестоимость
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedCost => '${totalCost.toStringAsFixed(0)} ₽';
+  String get formattedCost => '${totalCost.toStringAsFixed(0)} сом';
 
   factory PriceSuggestion.fromJson(Map<String, dynamic> json) =>
       _$PriceSuggestionFromJson(json);

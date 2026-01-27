@@ -10,31 +10,13 @@ PricingSettings _$PricingSettingsFromJson(Map<String, dynamic> json) =>
     PricingSettings(
       id: json['id'] as String,
       tenantId: json['tenantId'] as String,
-      defaultHourlyRate: (json['defaultHourlyRate'] as num).toDouble(),
+      defaultRate: (json['defaultRate'] as num).toDouble(),
       overheadPct: (json['overheadPct'] as num).toDouble(),
       defaultMarginPct: (json['defaultMarginPct'] as num).toDouble(),
       roleRates: _roleRatesFromJson(json['roleRates']),
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      createdAt: nullableDateTimeFromJson(json['createdAt']),
+      updatedAt: nullableDateTimeFromJson(json['updatedAt']),
     );
-
-Map<String, dynamic> _$PricingSettingsToJson(PricingSettings instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'tenantId': instance.tenantId,
-      'defaultHourlyRate': instance.defaultHourlyRate,
-      'overheadPct': instance.overheadPct,
-      'defaultMarginPct': instance.defaultMarginPct,
-      'roleRates': _roleRatesToJson(instance.roleRates),
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'createdAt': value,
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updatedAt': value,
-    };
 
 PriceSuggestion _$PriceSuggestionFromJson(Map<String, dynamic> json) =>
     PriceSuggestion(

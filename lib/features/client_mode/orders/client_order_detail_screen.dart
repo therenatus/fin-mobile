@@ -295,7 +295,7 @@ class _ClientOrderDetailScreenState extends ConsumerState<ClientOrderDetailScree
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${order.model.basePrice!.toStringAsFixed(0)} ₽ × ${order.quantity} шт.',
+                      '${order.model.basePrice!.toStringAsFixed(0)} сом × ${order.quantity} шт.',
                       style: AppTypography.bodyMedium.copyWith(
                         color: context.textSecondaryColor,
                       ),
@@ -304,7 +304,7 @@ class _ClientOrderDetailScreenState extends ConsumerState<ClientOrderDetailScree
                 ),
               ),
               Text(
-                '${order.totalCost.toStringAsFixed(0)} ₽',
+                '${order.totalCost.toStringAsFixed(0)} сом',
                 style: AppTypography.h3.copyWith(
                   color: AppColors.primary,
                 ),

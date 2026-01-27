@@ -181,7 +181,7 @@ class _WorkStepCardState extends ConsumerState<WorkStepCard> {
                   if (widget.step.rate != null) ...[
                     const SizedBox(width: 8),
                     Text(
-                      '• ${widget.step.rate!.toStringAsFixed(0)} ₽/${widget.step.rateType == 'per_hour' ? 'ч' : 'ед'}',
+                      '• ${widget.step.rate!.toStringAsFixed(0)} сом/${widget.step.rateType == 'per_hour' ? 'ч' : 'ед'}',
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,

@@ -262,7 +262,7 @@ class SubscriptionNotifier extends Notifier<SubscriptionStateData> {
       return product.price;
     }
     // Fallback to plan price
-    return '${plan.price.toStringAsFixed(0)} ₽/мес';
+    return '${plan.price.toStringAsFixed(0)} сом/мес';
   }
 
   /// Clear error

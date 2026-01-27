@@ -121,14 +121,12 @@ class BomNotifier extends Notifier<BomStateData> {
   Future<Bom?> createBom({
     required String modelId,
     required List<Map<String, dynamic>> items,
-    required List<Map<String, dynamic>> operations,
     String? notes,
   }) async {
     try {
       final bom = await _api.createBom(
         modelId: modelId,
         items: items,
-        operations: operations,
         notes: notes,
       );
       state = state.copyWith(currentBom: bom);
@@ -143,7 +141,6 @@ class BomNotifier extends Notifier<BomStateData> {
   Future<Bom?> updateBom(
     String bomId, {
     List<Map<String, dynamic>>? items,
-    List<Map<String, dynamic>>? operations,
     String? notes,
     bool? isActive,
   }) async {
@@ -151,7 +148,6 @@ class BomNotifier extends Notifier<BomStateData> {
       final bom = await _api.updateBom(
         bomId,
         items: items,
-        operations: operations,
         notes: notes,
         isActive: isActive,
       );
@@ -265,14 +261,14 @@ class BomNotifier extends Notifier<BomStateData> {
 
   /// Update pricing settings
   Future<PricingSettings?> updatePricingSettings({
-    double? defaultHourlyRate,
+    double? defaultRate,
     double? overheadPct,
     double? defaultMarginPct,
     Map<String, double>? roleRates,
   }) async {
     try {
       final settings = await _api.updatePricingSettings(
-        defaultHourlyRate: defaultHourlyRate,
+        defaultRate: defaultRate,
         overheadPct: overheadPct,
         defaultMarginPct: defaultMarginPct,
         roleRates: roleRates,

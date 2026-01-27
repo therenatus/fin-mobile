@@ -7,11 +7,10 @@ import '../../core/theme/app_theme.dart';
 import '../../core/riverpod/providers.dart';
 import '../../core/models/models.dart';
 import '../../core/widgets/date_range_picker_button.dart';
+import '../../core/widgets/app_drawer.dart';
 
 class WorklogsScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onMenuPressed;
-
-  const WorklogsScreen({super.key, this.onMenuPressed});
+  const WorklogsScreen({super.key});
 
   @override
   ConsumerState<WorklogsScreen> createState() => _WorklogsScreenState();
@@ -37,7 +36,7 @@ class _WorklogsScreenState extends ConsumerState<WorklogsScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -100,13 +99,16 @@ class _WorklogsScreenState extends ConsumerState<WorklogsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
+      drawer: const AppDrawer(currentRoute: 'worklogs'),
       appBar: AppBar(
         title: Text(context.l10n.workRecords),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: widget.onMenuPressed,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
       ),
       body: Column(

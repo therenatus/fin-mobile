@@ -131,8 +131,10 @@ class InAppNotification {
 
 @JsonSerializable()
 class NotificationHistoryResponse {
+  @JsonKey(defaultValue: [])
   final List<InAppNotification> data;
   final NotificationMeta meta;
+  @JsonKey(defaultValue: 0)
   final int unreadCount;
 
   NotificationHistoryResponse({
@@ -149,9 +151,13 @@ class NotificationHistoryResponse {
 
 @JsonSerializable()
 class NotificationMeta {
+  @JsonKey(defaultValue: 1)
   final int page;
+  @JsonKey(defaultValue: 20)
   final int limit;
+  @JsonKey(defaultValue: 0)
   final int total;
+  @JsonKey(defaultValue: 0)
   final int totalPages;
 
   NotificationMeta({
@@ -187,6 +193,7 @@ class NotificationPreferences {
 
 @JsonSerializable()
 class UnreadCountResponse {
+  @JsonKey(defaultValue: 0)
   final int unreadCount;
 
   UnreadCountResponse({required this.unreadCount});

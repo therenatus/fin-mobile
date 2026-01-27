@@ -44,7 +44,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -482,7 +482,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
                       ),
                     ),
                     Text(
-                      '${_selectedModel!.basePrice.toStringAsFixed(0)} ₽',
+                      '${_selectedModel!.basePrice.toStringAsFixed(0)} сом',
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -631,7 +631,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
             ],
           ),
           Text(
-            '${total.toStringAsFixed(0)} ₽',
+            '${total.toStringAsFixed(0)} сом',
             style: AppTypography.h3.copyWith(
               color: AppColors.primary,
             ),
@@ -923,7 +923,7 @@ class _SearchableModelSheetState extends State<_SearchableModelSheet> {
                           ),
                         ),
                         subtitle: Text(
-                          '${model.basePrice.toStringAsFixed(0)} ₽${model.category != null ? ' • ${model.category}' : ''}',
+                          '${model.basePrice.toStringAsFixed(0)} сом${model.category != null ? ' • ${model.category}' : ''}',
                           style: TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w500,

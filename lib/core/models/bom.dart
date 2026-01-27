@@ -5,7 +5,7 @@ import 'json_converters.dart';
 part 'bom.g.dart';
 
 /// BOM Item - материал в спецификации
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class BomItem {
   final String id;
   final String bomId;
@@ -74,63 +74,6 @@ class BomMaterial {
   Map<String, dynamic> toJson() => _$BomMaterialToJson(this);
 }
 
-/// BOM Operation - операция в спецификации
-@JsonSerializable()
-class BomOperation {
-  final String id;
-  final String bomId;
-  final String name;
-  final int sequence;
-  @JsonKey(defaultValue: 0)
-  final int setupTime;
-  final int unitTime;
-  final double? hourlyRate;
-  final String? requiredRole;
-  final double? laborCost;
-
-  BomOperation({
-    required this.id,
-    required this.bomId,
-    required this.name,
-    required this.sequence,
-    required this.setupTime,
-    required this.unitTime,
-    this.hourlyRate,
-    this.requiredRole,
-    this.laborCost,
-  });
-
-  /// Общее время операции (наладка + работа) в минутах
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  int get totalTime => setupTime + unitTime;
-
-  /// Форматированное время
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedTime {
-    if (totalTime < 60) return '$totalTime мин';
-    final hours = totalTime ~/ 60;
-    final mins = totalTime % 60;
-    if (mins == 0) return '$hours ч';
-    return '$hours ч $mins мин';
-  }
-
-  /// Расчётная стоимость работы
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  double get calculatedLaborCost => laborCost ?? 0;
-
-  factory BomOperation.fromJson(Map<String, dynamic> json) => _$BomOperationFromJson(json);
-
-  Map<String, dynamic> toJson() => {
-        if (id.isNotEmpty) 'id': id,
-        'name': name,
-        'sequence': sequence,
-        'setupTime': setupTime,
-        'unitTime': unitTime,
-        if (hourlyRate != null) 'hourlyRate': hourlyRate,
-        if (requiredRole != null) 'requiredRole': requiredRole,
-      };
-}
-
 /// BOM Model (упрощённая версия)
 @JsonSerializable()
 class BomModel {
@@ -165,8 +108,6 @@ class Bom {
   final double totalCost;
   @JsonKey(defaultValue: [])
   final List<BomItem> items;
-  @JsonKey(defaultValue: [])
-  final List<BomOperation> operations;
   final BomModel? model;
   @JsonKey(fromJson: dateTimeFromJson, toJson: dateTimeToJson)
   final DateTime createdAt;
@@ -185,7 +126,6 @@ class Bom {
     required this.totalLaborCost,
     required this.totalCost,
     required this.items,
-    required this.operations,
     this.model,
     required this.createdAt,
     required this.updatedAt,
@@ -193,15 +133,15 @@ class Bom {
 
   /// Форматированная стоимость материалов
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedMaterialCost => '${totalMaterialCost.toStringAsFixed(0)} ₽';
+  String get formattedMaterialCost => '${totalMaterialCost.toStringAsFixed(0)} сом';
 
   /// Форматированная стоимость работы
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedLaborCost => '${totalLaborCost.toStringAsFixed(0)} ₽';
+  String get formattedLaborCost => '${totalLaborCost.toStringAsFixed(0)} сом';
 
   /// Форматированная общая себестоимость
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedTotalCost => '${totalCost.toStringAsFixed(0)} ₽';
+  String get formattedTotalCost => '${totalCost.toStringAsFixed(0)} сом';
 
   factory Bom.fromJson(Map<String, dynamic> json) => _$BomFromJson(json);
   Map<String, dynamic> toJson() => _$BomToJson(this);
@@ -236,7 +176,7 @@ class BomVersion {
   });
 
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedTotalCost => '${totalCost.toStringAsFixed(0)} ₽';
+  String get formattedTotalCost => '${totalCost.toStringAsFixed(0)} сом';
 
   factory BomVersion.fromJson(Map<String, dynamic> json) => _$BomVersionFromJson(json);
   Map<String, dynamic> toJson() => _$BomVersionToJson(this);

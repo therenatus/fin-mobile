@@ -271,7 +271,7 @@
     }
   },
 
-  "currency": "{amount} ₽",
+  "currency": "{amount} сом",
   "@currency": {
     "description": "Currency format",
     "placeholders": {
@@ -728,7 +728,7 @@
     "description": "Evening greeting"
   },
 
-  "youHaveOrdersInProgress": "У вас {orders} в работе",
+  "youHaveOrdersInProgress": "У вас {orders}",
   "@youHaveOrdersInProgress": {
     "description": "Orders in progress message",
     "placeholders": {
@@ -1360,7 +1360,7 @@
   "payrollRecordsHint": "Когда менеджер рассчитает зарплату, информация появится здесь",
   "entriesCount": "{count} записей",
   "@entriesCount": {"placeholders": {"count": {"type": "int"}}},
-  "rub": "руб",
+  "rub": "сом",
   "details": "Детализация",
   "hoursAbbr": "ч",
 
@@ -1378,5 +1378,51 @@
   "daysAgo": "{days} дн. назад",
   "@daysAgo": {"placeholders": {"days": {"type": "int"}}},
   "logoutQuestion": "Вы уверены, что хотите выйти?",
-  "appVersionEmployee": "AteliePro Employee v1.0.0"
+  "appVersionEmployee": "AteliePro Employee v1.0.0",
+
+  "faqTitle": "Часто задаваемые вопросы",
+  "@faqTitle": {"description": "FAQ section title"},
+  "contactSupport": "Связаться с поддержкой",
+  "@contactSupport": {"description": "Contact support section title"},
+  "appVersion": "Версия приложения",
+  "@appVersion": {"description": "App version label"},
+  "supportEmail": "Email поддержки",
+  "@supportEmail": {"description": "Support email label"},
+  "telegramChannel": "Telegram",
+  "@telegramChannel": {"description": "Telegram channel label"},
+
+  "faqCreateOrder": "Как создать заказ?",
+  "@faqCreateOrder": {"description": "FAQ question: how to create order"},
+  "faqCreateOrderAnswer": "Перейдите в раздел «Заказы» и нажмите кнопку «+» в правом нижнем углу. Выберите клиента, модель, укажите количество и срок выполнения.",
+  "@faqCreateOrderAnswer": {"description": "FAQ answer: how to create order"},
+
+  "faqAddClient": "Как добавить клиента?",
+  "@faqAddClient": {"description": "FAQ question: how to add client"},
+  "faqAddClientAnswer": "Перейдите в раздел «Заказчики» и нажмите кнопку «+». Заполните имя, телефон и email клиента.",
+  "@faqAddClientAnswer": {"description": "FAQ answer: how to add client"},
+
+  "faqManageEmployees": "Как управлять сотрудниками?",
+  "@faqManageEmployees": {"description": "FAQ question: how to manage employees"},
+  "faqManageEmployeesAnswer": "В боковом меню выберите «Сотрудники». Здесь можно добавлять новых сотрудников, назначать роли и просматривать историю работы.",
+  "@faqManageEmployeesAnswer": {"description": "FAQ answer: how to manage employees"},
+
+  "faqPayroll": "Как работает расчёт зарплаты?",
+  "@faqPayroll": {"description": "FAQ question: how payroll works"},
+  "faqPayrollAnswer": "Перейдите в раздел «Расчёт зарплаты», выберите период и нажмите «Рассчитать». Система автоматически рассчитает оплату на основе записей работы сотрудников.",
+  "@faqPayrollAnswer": {"description": "FAQ answer: how payroll works"},
+
+  "faqProduction": "Как работает производство?",
+  "@faqProduction": {"description": "FAQ question: how production works"},
+  "faqProductionAnswer": "Раздел «Производство» показывает текущие заказы в работе, их этапы и исполнителей. Сотрудники отмечают выполнение этапов в своём приложении.",
+  "@faqProductionAnswer": {"description": "FAQ answer: how production works"},
+
+  "faqNotifications": "Как настроить уведомления?",
+  "@faqNotifications": {"description": "FAQ question: how to configure notifications"},
+  "faqNotificationsAnswer": "Перейдите в «Настройки» → «Уведомления». Вы можете включить или отключить push-уведомления о новых заказах, изменениях статуса и других событиях.",
+  "@faqNotificationsAnswer": {"description": "FAQ answer: how to configure notifications"},
+
+  "faqSubscription": "Как управлять подпиской?",
+  "@faqSubscription": {"description": "FAQ question: how to manage subscription"},
+  "faqSubscriptionAnswer": "В боковом меню выберите «Подписка». Здесь отображается текущий план, использование ресурсов и доступные тарифы для расширения возможностей.",
+  "@faqSubscriptionAnswer": {"description": "FAQ answer: how to manage subscription"}
 }

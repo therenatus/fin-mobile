@@ -157,7 +157,7 @@ void main() {
           'rate': 500,
           'rateType': 'per_unit',
         });
-        expect(step.formattedRate, equals('500 руб. за единицу'));
+        expect(step.formattedRate, equals('500 сом за единицу'));
       });
 
       test('formats rate with per_hour label', () {
@@ -166,7 +166,7 @@ void main() {
           'rate': 300,
           'rateType': 'per_hour',
         });
-        expect(step.formattedRate, equals('300 руб. за час'));
+        expect(step.formattedRate, equals('300 сом за час'));
       });
     });
 

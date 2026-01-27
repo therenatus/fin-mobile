@@ -234,24 +234,7 @@ mixin ProductionApiMixin on BaseApiService {
     return handleResponse(response, ProductionTask.fromJson);
   }
 
-  // ==================== WORKLOAD ====================
-
-  /// Get production workload calendar
-  Future<WorkloadCalendar> getProductionWorkloadCalendar({
-    int days = 14,
-    String? employeeId,
-  }) async {
-    final queryParams = {
-      'days': days.toString(),
-      if (employeeId != null) 'employeeId': employeeId,
-    };
-
-    final uri = Uri.parse('${BaseApiService.baseUrl}/production/workload/calendar')
-        .replace(queryParameters: queryParams);
-
-    final response = await http.get(uri, headers: await getHeaders());
-    return handleResponse(response, WorkloadCalendar.fromJson);
-  }
+  // ==================== GANTT ====================
 
   /// Get Gantt chart data
   Future<GanttData> getGanttData({

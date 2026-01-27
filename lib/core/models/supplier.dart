@@ -3,7 +3,7 @@ import 'json_converters.dart';
 
 part 'supplier.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class Supplier {
   final String id;
   final String name;

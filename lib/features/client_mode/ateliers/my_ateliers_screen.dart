@@ -231,14 +231,14 @@ class _AtelierCard extends StatelessWidget {
   }
 
   String _formatPrice(double price) {
-    if (price == 0) return '0 ₽';
+    if (price == 0) return '0 сом';
     if (price >= 1000000) {
-      return '${(price / 1000000).toStringAsFixed(1)}М ₽';
+      return '${(price / 1000000).toStringAsFixed(1)}М сом';
     }
     if (price >= 1000) {
-      return '${(price / 1000).toStringAsFixed(0)}К ₽';
+      return '${(price / 1000).toStringAsFixed(0)}К сом';
     }
-    return '${price.toStringAsFixed(0)} ₽';
+    return '${price.toStringAsFixed(0)} сом';
   }
 }
 

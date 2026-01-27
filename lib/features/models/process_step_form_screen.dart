@@ -160,7 +160,7 @@ class _ProcessStepFormScreenState extends ConsumerState<ProcessStepFormScreen> {
                   child: TextFormField(
                     controller: _rateController,
                     decoration: const InputDecoration(
-                      labelText: 'Цена за шт. (₽)',
+                      labelText: 'Цена за шт. (сом)',
                       hintText: '500',
                       prefixIcon: Icon(Icons.payments_outlined),
                     ),

@@ -91,11 +91,11 @@ class Payroll {
 
   String get formattedTotalPayout {
     if (totalPayout >= 1000000) {
-      return '${(totalPayout / 1000000).toStringAsFixed(1)} млн ₽';
+      return '${(totalPayout / 1000000).toStringAsFixed(1)} млн сом';
     } else if (totalPayout >= 1000) {
-      return '${(totalPayout / 1000).toStringAsFixed(0)} тыс ₽';
+      return '${(totalPayout / 1000).toStringAsFixed(0)} тыс сом';
     }
-    return '${totalPayout.toStringAsFixed(0)} ₽';
+    return '${totalPayout.toStringAsFixed(0)} сом';
   }
 
   static String _monthName(int month) {

@@ -180,7 +180,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String currency(String amount) {
-    return '$amount ₽';
+    return '$amount сом';
   }
 
   @override
@@ -469,7 +469,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String youHaveOrdersInProgress(String orders) {
-    return 'You have $orders in progress';
+    return 'You have $orders';
   }
 
   @override
@@ -1218,7 +1218,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get rub => 'RUB';
+  String get rub => 'KGS';
 
   @override
   String get details => 'Details';
@@ -1267,4 +1267,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appVersionEmployee => 'AteliePro Employee v1.0.0';
+
+  @override
+  String get faqTitle => 'Frequently Asked Questions';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get appVersion => 'App Version';
+
+  @override
+  String get supportEmail => 'Support Email';
+
+  @override
+  String get telegramChannel => 'Telegram';
+
+  @override
+  String get faqCreateOrder => 'How to create an order?';
+
+  @override
+  String get faqCreateOrderAnswer =>
+      'Go to the \"Orders\" section and tap the \"+\" button in the bottom right corner. Select a client, model, specify the quantity and due date.';
+
+  @override
+  String get faqAddClient => 'How to add a client?';
+
+  @override
+  String get faqAddClientAnswer =>
+      'Go to the \"Customers\" section and tap the \"+\" button. Fill in the client\'s name, phone and email.';
+
+  @override
+  String get faqManageEmployees => 'How to manage employees?';
+
+  @override
+  String get faqManageEmployeesAnswer =>
+      'In the side menu, select \"Employees\". Here you can add new employees, assign roles, and view work history.';
+
+  @override
+  String get faqPayroll => 'How does payroll work?';
+
+  @override
+  String get faqPayrollAnswer =>
+      'Go to the \"Payroll\" section, select a period and tap \"Calculate\". The system will automatically calculate payment based on employee work records.';
+
+  @override
+  String get faqProduction => 'How does production work?';
+
+  @override
+  String get faqProductionAnswer =>
+      'The \"Production\" section shows current orders in progress, their stages, and assigned workers. Employees mark stages as complete in their app.';
+
+  @override
+  String get faqNotifications => 'How to configure notifications?';
+
+  @override
+  String get faqNotificationsAnswer =>
+      'Go to \"Settings\" → \"Notifications\". You can enable or disable push notifications about new orders, status changes, and other events.';
+
+  @override
+  String get faqSubscription => 'How to manage subscription?';
+
+  @override
+  String get faqSubscriptionAnswer =>
+      'In the side menu, select \"Subscription\". Here you can see your current plan, resource usage, and available plans to expand capabilities.';
 }

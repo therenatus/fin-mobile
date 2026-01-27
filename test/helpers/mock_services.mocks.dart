@@ -298,128 +298,122 @@ class _FakeProductionTask_47 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeWorkloadCalendar_48 extends _i1.SmartFake
-    implements _i6.WorkloadCalendar {
-  _FakeWorkloadCalendar_48(Object parent, Invocation parentInvocation)
+class _FakeGanttData_48 extends _i1.SmartFake implements _i6.GanttData {
+  _FakeGanttData_48(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeGanttData_49 extends _i1.SmartFake implements _i6.GanttData {
-  _FakeGanttData_49(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeTemplatesResponse_50 extends _i1.SmartFake
+class _FakeTemplatesResponse_49 extends _i1.SmartFake
     implements _i6.TemplatesResponse {
-  _FakeTemplatesResponse_50(Object parent, Invocation parentInvocation)
+  _FakeTemplatesResponse_49(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeQcTemplate_51 extends _i1.SmartFake implements _i6.QcTemplate {
-  _FakeQcTemplate_51(Object parent, Invocation parentInvocation)
+class _FakeQcTemplate_50 extends _i1.SmartFake implements _i6.QcTemplate {
+  _FakeQcTemplate_50(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeChecksResponse_52 extends _i1.SmartFake
+class _FakeChecksResponse_51 extends _i1.SmartFake
     implements _i6.ChecksResponse {
-  _FakeChecksResponse_52(Object parent, Invocation parentInvocation)
+  _FakeChecksResponse_51(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeQcCheck_53 extends _i1.SmartFake implements _i6.QcCheck {
-  _FakeQcCheck_53(Object parent, Invocation parentInvocation)
+class _FakeQcCheck_52 extends _i1.SmartFake implements _i6.QcCheck {
+  _FakeQcCheck_52(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeDefectsResponse_54 extends _i1.SmartFake
+class _FakeDefectsResponse_53 extends _i1.SmartFake
     implements _i6.DefectsResponse {
-  _FakeDefectsResponse_54(Object parent, Invocation parentInvocation)
+  _FakeDefectsResponse_53(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeDefect_55 extends _i1.SmartFake implements _i6.Defect {
-  _FakeDefect_55(Object parent, Invocation parentInvocation)
+class _FakeDefect_54 extends _i1.SmartFake implements _i6.Defect {
+  _FakeDefect_54(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeQcStats_56 extends _i1.SmartFake implements _i6.QcStats {
-  _FakeQcStats_56(Object parent, Invocation parentInvocation)
+class _FakeQcStats_55 extends _i1.SmartFake implements _i6.QcStats {
+  _FakeQcStats_55(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeClientApiException_57 extends _i1.SmartFake
+class _FakeClientApiException_56 extends _i1.SmartFake
     implements _i7.ClientApiException {
-  _FakeClientApiException_57(Object parent, Invocation parentInvocation)
+  _FakeClientApiException_56(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeClientAuthResponse_58 extends _i1.SmartFake
+class _FakeClientAuthResponse_57 extends _i1.SmartFake
     implements _i6.ClientAuthResponse {
-  _FakeClientAuthResponse_58(Object parent, Invocation parentInvocation)
+  _FakeClientAuthResponse_57(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeClientUser_59 extends _i1.SmartFake implements _i6.ClientUser {
-  _FakeClientUser_59(Object parent, Invocation parentInvocation)
+class _FakeClientUser_58 extends _i1.SmartFake implements _i6.ClientUser {
+  _FakeClientUser_58(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeTenantLink_60 extends _i1.SmartFake implements _i6.TenantLink {
-  _FakeTenantLink_60(Object parent, Invocation parentInvocation)
+class _FakeTenantLink_59 extends _i1.SmartFake implements _i6.TenantLink {
+  _FakeTenantLink_59(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeClientOrdersResponse_61 extends _i1.SmartFake
+class _FakeClientOrdersResponse_60 extends _i1.SmartFake
     implements _i6.ClientOrdersResponse {
-  _FakeClientOrdersResponse_61(Object parent, Invocation parentInvocation)
+  _FakeClientOrdersResponse_60(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeClientOrder_62 extends _i1.SmartFake implements _i6.ClientOrder {
-  _FakeClientOrder_62(Object parent, Invocation parentInvocation)
+class _FakeClientOrder_61 extends _i1.SmartFake implements _i6.ClientOrder {
+  _FakeClientOrder_61(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeEmployeeApiException_63 extends _i1.SmartFake
+class _FakeEmployeeApiException_62 extends _i1.SmartFake
     implements _i8.EmployeeApiException {
-  _FakeEmployeeApiException_63(Object parent, Invocation parentInvocation)
+  _FakeEmployeeApiException_62(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeEmployeeAuthResponse_64 extends _i1.SmartFake
+class _FakeEmployeeAuthResponse_63 extends _i1.SmartFake
     implements _i6.EmployeeAuthResponse {
-  _FakeEmployeeAuthResponse_64(Object parent, Invocation parentInvocation)
+  _FakeEmployeeAuthResponse_63(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeEmployeeUser_65 extends _i1.SmartFake implements _i6.EmployeeUser {
-  _FakeEmployeeUser_65(Object parent, Invocation parentInvocation)
+class _FakeEmployeeUser_64 extends _i1.SmartFake implements _i6.EmployeeUser {
+  _FakeEmployeeUser_64(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeEmployeeAssignmentsResponse_66 extends _i1.SmartFake
+class _FakeEmployeeAssignmentsResponse_65 extends _i1.SmartFake
     implements _i6.EmployeeAssignmentsResponse {
-  _FakeEmployeeAssignmentsResponse_66(
+  _FakeEmployeeAssignmentsResponse_65(
     Object parent,
     Invocation parentInvocation,
   ) : super(parent, parentInvocation);
 }
 
-class _FakeEmployeeWorkLog_67 extends _i1.SmartFake
+class _FakeEmployeeWorkLog_66 extends _i1.SmartFake
     implements _i6.EmployeeWorkLog {
-  _FakeEmployeeWorkLog_67(Object parent, Invocation parentInvocation)
+  _FakeEmployeeWorkLog_66(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeTokenHandler_68<T> extends _i1.SmartFake
+class _FakeTokenHandler_67<T> extends _i1.SmartFake
     implements _i2.TokenHandler<T> {
-  _FakeTokenHandler_68(Object parent, Invocation parentInvocation)
+  _FakeTokenHandler_67(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSharedPreferences_69 extends _i1.SmartFake
+class _FakeSharedPreferences_68 extends _i1.SmartFake
     implements _i9.SharedPreferences {
-  _FakeSharedPreferences_69(Object parent, Invocation parentInvocation)
+  _FakeSharedPreferences_68(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -1509,13 +1503,20 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
           as _i5.Future<_i6.Employee>);
 
   @override
-  _i5.Future<void> deleteEmployee(String? id) =>
+  _i5.Future<_i6.Employee> setEmployeeActiveStatus(
+    String? id,
+    bool? isActive,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#deleteEmployee, [id]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            Invocation.method(#setEmployeeActiveStatus, [id, isActive]),
+            returnValue: _i5.Future<_i6.Employee>.value(
+              _FakeEmployee_11(
+                this,
+                Invocation.method(#setEmployeeActiveStatus, [id, isActive]),
+              ),
+            ),
           )
-          as _i5.Future<void>);
+          as _i5.Future<_i6.Employee>);
 
   @override
   _i5.Future<List<_i6.WorkLog>> getWorkLogs() =>
@@ -2753,7 +2754,6 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
   _i5.Future<_i6.Bom> createBom({
     required String? modelId,
     required List<Map<String, dynamic>>? items,
-    required List<Map<String, dynamic>>? operations,
     String? notes,
     bool? isActive = true,
   }) =>
@@ -2761,7 +2761,6 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
             Invocation.method(#createBom, [], {
               #modelId: modelId,
               #items: items,
-              #operations: operations,
               #notes: notes,
               #isActive: isActive,
             }),
@@ -2771,7 +2770,6 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
                 Invocation.method(#createBom, [], {
                   #modelId: modelId,
                   #items: items,
-                  #operations: operations,
                   #notes: notes,
                   #isActive: isActive,
                 }),
@@ -2828,7 +2826,6 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
   _i5.Future<_i6.Bom> updateBom(
     String? bomId, {
     List<Map<String, dynamic>>? items,
-    List<Map<String, dynamic>>? operations,
     String? notes,
     bool? isActive,
   }) =>
@@ -2836,12 +2833,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
             Invocation.method(
               #updateBom,
               [bomId],
-              {
-                #items: items,
-                #operations: operations,
-                #notes: notes,
-                #isActive: isActive,
-              },
+              {#items: items, #notes: notes, #isActive: isActive},
             ),
             returnValue: _i5.Future<_i6.Bom>.value(
               _FakeBom_37(
@@ -2849,12 +2841,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
                 Invocation.method(
                   #updateBom,
                   [bomId],
-                  {
-                    #items: items,
-                    #operations: operations,
-                    #notes: notes,
-                    #isActive: isActive,
-                  },
+                  {#items: items, #notes: notes, #isActive: isActive},
                 ),
               ),
             ),
@@ -2996,14 +2983,14 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
 
   @override
   _i5.Future<_i6.PricingSettings> updatePricingSettings({
-    double? defaultHourlyRate,
+    double? defaultRate,
     double? overheadPct,
     double? defaultMarginPct,
     Map<String, double>? roleRates,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#updatePricingSettings, [], {
-              #defaultHourlyRate: defaultHourlyRate,
+              #defaultRate: defaultRate,
               #overheadPct: overheadPct,
               #defaultMarginPct: defaultMarginPct,
               #roleRates: roleRates,
@@ -3012,7 +2999,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               _FakePricingSettings_43(
                 this,
                 Invocation.method(#updatePricingSettings, [], {
-                  #defaultHourlyRate: defaultHourlyRate,
+                  #defaultRate: defaultRate,
                   #overheadPct: overheadPct,
                   #defaultMarginPct: defaultMarginPct,
                   #roleRates: roleRates,
@@ -3328,28 +3315,6 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
           as _i5.Future<_i6.ProductionTask>);
 
   @override
-  _i5.Future<_i6.WorkloadCalendar> getProductionWorkloadCalendar({
-    int? days = 14,
-    String? employeeId,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#getProductionWorkloadCalendar, [], {
-              #days: days,
-              #employeeId: employeeId,
-            }),
-            returnValue: _i5.Future<_i6.WorkloadCalendar>.value(
-              _FakeWorkloadCalendar_48(
-                this,
-                Invocation.method(#getProductionWorkloadCalendar, [], {
-                  #days: days,
-                  #employeeId: employeeId,
-                }),
-              ),
-            ),
-          )
-          as _i5.Future<_i6.WorkloadCalendar>);
-
-  @override
   _i5.Future<_i6.GanttData> getGanttData({
     String? startDate,
     String? endDate,
@@ -3360,7 +3325,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #endDate: endDate,
             }),
             returnValue: _i5.Future<_i6.GanttData>.value(
-              _FakeGanttData_49(
+              _FakeGanttData_48(
                 this,
                 Invocation.method(#getGanttData, [], {
                   #startDate: startDate,
@@ -3392,7 +3357,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #sortOrder: sortOrder,
             }),
             returnValue: _i5.Future<_i6.TemplatesResponse>.value(
-              _FakeTemplatesResponse_50(
+              _FakeTemplatesResponse_49(
                 this,
                 Invocation.method(#getQcTemplates, [], {
                   #page: page,
@@ -3413,7 +3378,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#getQcTemplate, [templateId]),
             returnValue: _i5.Future<_i6.QcTemplate>.value(
-              _FakeQcTemplate_51(
+              _FakeQcTemplate_50(
                 this,
                 Invocation.method(#getQcTemplate, [templateId]),
               ),
@@ -3438,7 +3403,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #items: items,
             }),
             returnValue: _i5.Future<_i6.QcTemplate>.value(
-              _FakeQcTemplate_51(
+              _FakeQcTemplate_50(
                 this,
                 Invocation.method(#createQcTemplate, [], {
                   #name: name,
@@ -3476,7 +3441,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               },
             ),
             returnValue: _i5.Future<_i6.QcTemplate>.value(
-              _FakeQcTemplate_51(
+              _FakeQcTemplate_50(
                 this,
                 Invocation.method(
                   #updateQcTemplate,
@@ -3531,7 +3496,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #sortOrder: sortOrder,
             }),
             returnValue: _i5.Future<_i6.ChecksResponse>.value(
-              _FakeChecksResponse_52(
+              _FakeChecksResponse_51(
                 this,
                 Invocation.method(#getQcChecks, [], {
                   #page: page,
@@ -3561,7 +3526,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #limit: limit,
             }),
             returnValue: _i5.Future<_i6.ChecksResponse>.value(
-              _FakeChecksResponse_52(
+              _FakeChecksResponse_51(
                 this,
                 Invocation.method(#getPendingQcChecks, [], {
                   #page: page,
@@ -3577,7 +3542,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#getQcCheck, [checkId]),
             returnValue: _i5.Future<_i6.QcCheck>.value(
-              _FakeQcCheck_53(this, Invocation.method(#getQcCheck, [checkId])),
+              _FakeQcCheck_52(this, Invocation.method(#getQcCheck, [checkId])),
             ),
           )
           as _i5.Future<_i6.QcCheck>);
@@ -3599,7 +3564,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #scheduledAt: scheduledAt,
             }),
             returnValue: _i5.Future<_i6.QcCheck>.value(
-              _FakeQcCheck_53(
+              _FakeQcCheck_52(
                 this,
                 Invocation.method(#createQcCheck, [], {
                   #templateId: templateId,
@@ -3618,7 +3583,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#startQcCheck, [checkId]),
             returnValue: _i5.Future<_i6.QcCheck>.value(
-              _FakeQcCheck_53(
+              _FakeQcCheck_52(
                 this,
                 Invocation.method(#startQcCheck, [checkId]),
               ),
@@ -3640,7 +3605,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               {#decision: decision, #results: results, #notes: notes},
             ),
             returnValue: _i5.Future<_i6.QcCheck>.value(
-              _FakeQcCheck_53(
+              _FakeQcCheck_52(
                 this,
                 Invocation.method(
                   #submitQcCheckResults,
@@ -3657,7 +3622,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#cancelQcCheck, [checkId]),
             returnValue: _i5.Future<_i6.QcCheck>.value(
-              _FakeQcCheck_53(
+              _FakeQcCheck_52(
                 this,
                 Invocation.method(#cancelQcCheck, [checkId]),
               ),
@@ -3692,7 +3657,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #sortOrder: sortOrder,
             }),
             returnValue: _i5.Future<_i6.DefectsResponse>.value(
-              _FakeDefectsResponse_54(
+              _FakeDefectsResponse_53(
                 this,
                 Invocation.method(#getDefects, [], {
                   #page: page,
@@ -3724,7 +3689,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #status: status,
             }),
             returnValue: _i5.Future<_i6.DefectsResponse>.value(
-              _FakeDefectsResponse_54(
+              _FakeDefectsResponse_53(
                 this,
                 Invocation.method(#getMyDefects, [], {
                   #page: page,
@@ -3741,7 +3706,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#getDefect, [defectId]),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(this, Invocation.method(#getDefect, [defectId])),
+              _FakeDefect_54(this, Invocation.method(#getDefect, [defectId])),
             ),
           )
           as _i5.Future<_i6.Defect>);
@@ -3771,7 +3736,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #photos: photos,
             }),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(
+              _FakeDefect_54(
                 this,
                 Invocation.method(#createDefect, [], {
                   #title: title,
@@ -3817,7 +3782,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               },
             ),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(
+              _FakeDefect_54(
                 this,
                 Invocation.method(
                   #updateDefect,
@@ -3843,7 +3808,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#assignDefect, [defectId, assigneeId]),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(
+              _FakeDefect_54(
                 this,
                 Invocation.method(#assignDefect, [defectId, assigneeId]),
               ),
@@ -3856,7 +3821,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#resolveDefect, [defectId, resolution]),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(
+              _FakeDefect_54(
                 this,
                 Invocation.method(#resolveDefect, [defectId, resolution]),
               ),
@@ -3869,7 +3834,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#closeDefect, [defectId]),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(this, Invocation.method(#closeDefect, [defectId])),
+              _FakeDefect_54(this, Invocation.method(#closeDefect, [defectId])),
             ),
           )
           as _i5.Future<_i6.Defect>);
@@ -3879,7 +3844,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#wontFixDefect, [defectId, reason]),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(
+              _FakeDefect_54(
                 this,
                 Invocation.method(#wontFixDefect, [defectId, reason]),
               ),
@@ -3892,7 +3857,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
       (super.noSuchMethod(
             Invocation.method(#reopenDefect, [defectId]),
             returnValue: _i5.Future<_i6.Defect>.value(
-              _FakeDefect_55(
+              _FakeDefect_54(
                 this,
                 Invocation.method(#reopenDefect, [defectId]),
               ),
@@ -3917,7 +3882,7 @@ class MockApiService extends _i1.Mock implements _i3.ApiService {
               #dateTo: dateTo,
             }),
             returnValue: _i5.Future<_i6.QcStats>.value(
-              _FakeQcStats_56(
+              _FakeQcStats_55(
                 this,
                 Invocation.method(#getQcStats, [], {
                   #dateFrom: dateFrom,
@@ -4021,7 +3986,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
                 #isNetworkError: isNetworkError,
               },
             ),
-            returnValue: _FakeClientApiException_57(
+            returnValue: _FakeClientApiException_56(
               this,
               Invocation.method(
                 #createException,
@@ -4049,7 +4014,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #password: password,
             }),
             returnValue: _i5.Future<_i6.ClientAuthResponse>.value(
-              _FakeClientAuthResponse_58(
+              _FakeClientAuthResponse_57(
                 this,
                 Invocation.method(#login, [], {
                   #email: email,
@@ -4076,7 +4041,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #name: name,
             }),
             returnValue: _i5.Future<_i6.ClientAuthResponse>.value(
-              _FakeClientAuthResponse_58(
+              _FakeClientAuthResponse_57(
                 this,
                 Invocation.method(#register, [], {
                   #email: email,
@@ -4103,7 +4068,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
       (super.noSuchMethod(
             Invocation.method(#getProfile, []),
             returnValue: _i5.Future<_i6.ClientUser>.value(
-              _FakeClientUser_59(this, Invocation.method(#getProfile, [])),
+              _FakeClientUser_58(this, Invocation.method(#getProfile, [])),
             ),
           )
           as _i5.Future<_i6.ClientUser>);
@@ -4123,7 +4088,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
       (super.noSuchMethod(
             Invocation.method(#linkToTenant, [tenantId], {#name: name}),
             returnValue: _i5.Future<_i6.TenantLink>.value(
-              _FakeTenantLink_60(
+              _FakeTenantLink_59(
                 this,
                 Invocation.method(#linkToTenant, [tenantId], {#name: name}),
               ),
@@ -4156,7 +4121,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #status: status,
             }),
             returnValue: _i5.Future<_i6.ClientOrdersResponse>.value(
-              _FakeClientOrdersResponse_61(
+              _FakeClientOrdersResponse_60(
                 this,
                 Invocation.method(#getMyOrders, [], {
                   #tenantId: tenantId,
@@ -4174,7 +4139,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
       (super.noSuchMethod(
             Invocation.method(#getOrder, [orderId]),
             returnValue: _i5.Future<_i6.ClientOrder>.value(
-              _FakeClientOrder_62(
+              _FakeClientOrder_61(
                 this,
                 Invocation.method(#getOrder, [orderId]),
               ),
@@ -4197,7 +4162,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #dueDate: dueDate,
             }),
             returnValue: _i5.Future<_i6.ClientOrder>.value(
-              _FakeClientOrder_62(
+              _FakeClientOrder_61(
                 this,
                 Invocation.method(#createOrder, [], {
                   #tenantId: tenantId,
@@ -4225,7 +4190,7 @@ class MockClientApiService extends _i1.Mock implements _i7.ClientApiService {
               #dueDate: dueDate,
             }),
             returnValue: _i5.Future<_i6.ClientOrder>.value(
-              _FakeClientOrder_62(
+              _FakeClientOrder_61(
                 this,
                 Invocation.method(#updateOrder, [], {
                   #orderId: orderId,
@@ -4628,7 +4593,7 @@ class MockEmployeeApiService extends _i1.Mock
                 #isNetworkError: isNetworkError,
               },
             ),
-            returnValue: _FakeEmployeeApiException_63(
+            returnValue: _FakeEmployeeApiException_62(
               this,
               Invocation.method(
                 #createException,
@@ -4651,7 +4616,7 @@ class MockEmployeeApiService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#login, [], {#email: email, #password: password}),
             returnValue: _i5.Future<_i6.EmployeeAuthResponse>.value(
-              _FakeEmployeeAuthResponse_64(
+              _FakeEmployeeAuthResponse_63(
                 this,
                 Invocation.method(#login, [], {
                   #email: email,
@@ -4676,7 +4641,7 @@ class MockEmployeeApiService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getProfile, []),
             returnValue: _i5.Future<_i6.EmployeeUser>.value(
-              _FakeEmployeeUser_65(this, Invocation.method(#getProfile, [])),
+              _FakeEmployeeUser_64(this, Invocation.method(#getProfile, [])),
             ),
           )
           as _i5.Future<_i6.EmployeeUser>);
@@ -4694,7 +4659,7 @@ class MockEmployeeApiService extends _i1.Mock
               #includeCompleted: includeCompleted,
             }),
             returnValue: _i5.Future<_i6.EmployeeAssignmentsResponse>.value(
-              _FakeEmployeeAssignmentsResponse_66(
+              _FakeEmployeeAssignmentsResponse_65(
                 this,
                 Invocation.method(#getAssignments, [], {
                   #page: page,
@@ -4723,7 +4688,7 @@ class MockEmployeeApiService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#createWorkLog, [request]),
             returnValue: _i5.Future<_i6.EmployeeWorkLog>.value(
-              _FakeEmployeeWorkLog_67(
+              _FakeEmployeeWorkLog_66(
                 this,
                 Invocation.method(#createWorkLog, [request]),
               ),
@@ -5086,7 +5051,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
   _i2.TokenHandler<_i6.User> get managerTokens =>
       (super.noSuchMethod(
             Invocation.getter(#managerTokens),
-            returnValue: _FakeTokenHandler_68<_i6.User>(
+            returnValue: _FakeTokenHandler_67<_i6.User>(
               this,
               Invocation.getter(#managerTokens),
             ),
@@ -5097,7 +5062,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
   _i2.TokenHandler<_i6.ClientUser> get clientTokens =>
       (super.noSuchMethod(
             Invocation.getter(#clientTokens),
-            returnValue: _FakeTokenHandler_68<_i6.ClientUser>(
+            returnValue: _FakeTokenHandler_67<_i6.ClientUser>(
               this,
               Invocation.getter(#clientTokens),
             ),
@@ -5108,7 +5073,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
   _i2.TokenHandler<_i6.EmployeeUser> get employeeTokens =>
       (super.noSuchMethod(
             Invocation.getter(#employeeTokens),
-            returnValue: _FakeTokenHandler_68<_i6.EmployeeUser>(
+            returnValue: _FakeTokenHandler_67<_i6.EmployeeUser>(
               this,
               Invocation.getter(#employeeTokens),
             ),
@@ -5120,7 +5085,7 @@ class MockStorageService extends _i1.Mock implements _i2.StorageService {
       (super.noSuchMethod(
             Invocation.getter(#prefs),
             returnValue: _i5.Future<_i9.SharedPreferences>.value(
-              _FakeSharedPreferences_69(this, Invocation.getter(#prefs)),
+              _FakeSharedPreferences_68(this, Invocation.getter(#prefs)),
             ),
           )
           as _i5.Future<_i9.SharedPreferences>);

@@ -39,11 +39,13 @@ Map<String, dynamic> _$InAppNotificationToJson(InAppNotification instance) =>
 NotificationHistoryResponse _$NotificationHistoryResponseFromJson(
   Map<String, dynamic> json,
 ) => NotificationHistoryResponse(
-  data: (json['data'] as List<dynamic>)
-      .map((e) => InAppNotification.fromJson(e as Map<String, dynamic>))
-      .toList(),
+  data:
+      (json['data'] as List<dynamic>?)
+          ?.map((e) => InAppNotification.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
   meta: NotificationMeta.fromJson(json['meta'] as Map<String, dynamic>),
-  unreadCount: (json['unreadCount'] as num).toInt(),
+  unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$NotificationHistoryResponseToJson(
@@ -56,10 +58,10 @@ Map<String, dynamic> _$NotificationHistoryResponseToJson(
 
 NotificationMeta _$NotificationMetaFromJson(Map<String, dynamic> json) =>
     NotificationMeta(
-      page: (json['page'] as num).toInt(),
-      limit: (json['limit'] as num).toInt(),
-      total: (json['total'] as num).toInt(),
-      totalPages: (json['totalPages'] as num).toInt(),
+      page: (json['page'] as num?)?.toInt() ?? 1,
+      limit: (json['limit'] as num?)?.toInt() ?? 20,
+      total: (json['total'] as num?)?.toInt() ?? 0,
+      totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$NotificationMetaToJson(NotificationMeta instance) =>
@@ -79,7 +81,9 @@ Map<String, dynamic> _$NotificationPreferencesToJson(
 ) => <String, dynamic>{'pushEnabled': instance.pushEnabled};
 
 UnreadCountResponse _$UnreadCountResponseFromJson(Map<String, dynamic> json) =>
-    UnreadCountResponse(unreadCount: (json['unreadCount'] as num).toInt());
+    UnreadCountResponse(
+      unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
+    );
 
 Map<String, dynamic> _$UnreadCountResponseToJson(
   UnreadCountResponse instance,

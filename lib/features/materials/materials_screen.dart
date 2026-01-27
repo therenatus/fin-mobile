@@ -7,6 +7,8 @@ import '../../core/models/material.dart' as mat;
 import '../../core/widgets/material_card.dart';
 import '../../core/widgets/common.dart';
 import 'material_detail_screen.dart';
+import 'material_form_screen.dart';
+import 'stock_adjustment_screen.dart';
 import 'barcode_scan_screen.dart';
 
 class MaterialsScreen extends ConsumerStatefulWidget {
@@ -61,6 +63,37 @@ class _MaterialsScreenState extends ConsumerState<MaterialsScreen> {
     );
   }
 
+  void _openCreateMaterial() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const MaterialFormScreen()),
+    );
+
+    if (result == true) {
+      ref.read(materialsNotifierProvider.notifier).refresh();
+    }
+  }
+
+  void _openQuickAdjustment() async {
+    final materials = ref.read(materialsNotifierProvider).materials;
+    final selected = await showModalBottomSheet<mat.Material>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _MaterialPickerSheet(materials: materials),
+    );
+
+    if (selected != null && mounted) {
+      await Navigator.push<mat.Material>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StockAdjustmentScreen(material: selected),
+        ),
+      );
+      ref.read(materialsNotifierProvider.notifier).refresh();
+    }
+  }
+
   void _openBarcodeScan() async {
     final result = await Navigator.push<mat.Material>(
       context,
@@ -86,11 +119,21 @@ class _MaterialsScreenState extends ConsumerState<MaterialsScreen> {
             : null,
         actions: [
           IconButton(
+            icon: const Icon(Icons.swap_vert),
+            onPressed: _openQuickAdjustment,
+            tooltip: 'Приход / Списание',
+          ),
+          IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: _openBarcodeScan,
             tooltip: 'Сканировать штрих-код',
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openCreateMaterial,
+        icon: const Icon(Icons.add),
+        label: const Text('Добавить'),
       ),
       body: Column(
         children: [
@@ -305,6 +348,130 @@ class _MaterialsScreenState extends ConsumerState<MaterialsScreen> {
           : 'Добавьте материалы для учёта на складе',
       actionLabel: hasFilters ? 'Сбросить фильтры' : null,
       onAction: hasFilters ? ref.read(materialsNotifierProvider.notifier).clearFilters : null,
+    );
+  }
+}
+
+class _MaterialPickerSheet extends StatefulWidget {
+  final List<mat.Material> materials;
+
+  const _MaterialPickerSheet({required this.materials});
+
+  @override
+  State<_MaterialPickerSheet> createState() => _MaterialPickerSheetState();
+}
+
+class _MaterialPickerSheetState extends State<_MaterialPickerSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  late List<mat.Material> _filtered;
+
+  @override
+  void initState() {
+    super.initState();
+    _filtered = widget.materials;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filter(String query) {
+    final q = query.toLowerCase();
+    setState(() {
+      if (q.isEmpty) {
+        _filtered = widget.materials;
+      } else {
+        _filtered = widget.materials
+            .where((m) =>
+                m.name.toLowerCase().contains(q) ||
+                m.sku.toLowerCase().contains(q))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Text(
+                  'Выберите материал',
+                  style: AppTypography.h4,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Поиск по названию или SKU...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                  ),
+                  onChanged: _filter,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Expanded(
+                child: _filtered.isEmpty
+                    ? const Center(child: Text('Ничего не найдено'))
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: _filtered.length,
+                        itemBuilder: (context, index) {
+                          final m = _filtered[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor:
+                                  AppColors.primary.withOpacity(0.1),
+                              child: const Icon(Icons.inventory_2_outlined,
+                                  size: 20, color: AppColors.primary),
+                            ),
+                            title: Text(m.name),
+                            subtitle: Text(
+                              'SKU: ${m.sku}  •  ${m.formattedQuantity}',
+                              style: AppTypography.bodySmall,
+                            ),
+                            onTap: () => Navigator.pop(context, m),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

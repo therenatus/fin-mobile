@@ -8,9 +8,8 @@ import '../../core/riverpod/providers.dart';
 import '../../core/utils/toast.dart';
 import 'widgets/widgets.dart';
 import 'bom_item_form_screen.dart';
-import 'bom_operation_form_screen.dart';
 
-/// Экран просмотра и редактирования BOM модели
+/// Экран просмотра и редактирования BOM модели (только материалы)
 class BomDetailScreen extends ConsumerStatefulWidget {
   final OrderModel model;
   final Bom? initialBom;
@@ -25,9 +24,7 @@ class BomDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<BomDetailScreen> createState() => _BomDetailScreenState();
 }
 
-class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _BomDetailScreenState extends ConsumerState<BomDetailScreen> {
   Bom? _bom;
   bool _isLoading = true;
   bool _isRecalculating = false;
@@ -36,7 +33,6 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _bom = widget.initialBom;
   }
 
@@ -45,14 +41,8 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadBom();
+      Future.microtask(() => _loadBom());
     }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadBom() async {
@@ -97,19 +87,9 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: Text('Спецификация (BOM)'),
+        title: const Text('Материалы'),
         backgroundColor: context.surfaceColor,
         surfaceTintColor: Colors.transparent,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: context.textSecondaryColor,
-          indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(text: 'Материалы', icon: Icon(Icons.inventory_2_outlined, size: 18)),
-            Tab(text: 'Операции', icon: Icon(Icons.build_outlined, size: 18)),
-          ],
-        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -119,7 +99,7 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
       floatingActionButton: _bom != null
           ? FloatingActionButton(
               heroTag: 'bom_detail_fab',
-              onPressed: _showAddMenu,
+              onPressed: _addItem,
               backgroundColor: AppColors.primary,
               child: const Icon(Icons.add, color: Colors.white),
             )
@@ -158,14 +138,14 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Нет спецификации',
+              'Нет материалов',
               style: AppTypography.h3.copyWith(
                 color: context.textPrimaryColor,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Создайте спецификацию (BOM) для модели "${widget.model.name}",\nчтобы рассчитать себестоимость',
+              'Добавьте материалы для модели "${widget.model.name}"\nчтобы рассчитать себестоимость',
               style: AppTypography.bodyMedium.copyWith(
                 color: context.textSecondaryColor,
               ),
@@ -190,28 +170,43 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
           ),
         ),
 
-        // Tab content
+        // Materials list
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildMaterialsTab(),
-              _buildOperationsTab(),
-            ],
-          ),
+          child: _buildMaterialsList(),
         ),
       ],
     );
   }
 
-  Widget _buildMaterialsTab() {
+  Widget _buildMaterialsList() {
     final items = _bom?.items ?? [];
 
     if (items.isEmpty) {
-      return _buildEmptyTab(
-        icon: Icons.inventory_2_outlined,
-        title: 'Нет материалов',
-        subtitle: 'Добавьте материалы в спецификацию',
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 48,
+              color: context.textSecondaryColor.withOpacity(0.5),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Нет материалов',
+              style: AppTypography.bodyLarge.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Нажмите + чтобы добавить',
+              style: AppTypography.bodySmall.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -237,139 +232,11 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
     );
   }
 
-  Widget _buildOperationsTab() {
-    final operations = _bom?.operations ?? [];
-
-    if (operations.isEmpty) {
-      return _buildEmptyTab(
-        icon: Icons.build_outlined,
-        title: 'Нет операций',
-        subtitle: 'Добавьте операции в спецификацию',
-      );
-    }
-
-    // Sort by sequence
-    final sorted = List<BomOperation>.from(operations)
-      ..sort((a, b) => a.sequence.compareTo(b.sequence));
-
-    return RefreshIndicator(
-      onRefresh: _loadBom,
-      child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
-          0,
-          AppSpacing.md,
-          100,
-        ),
-        itemCount: sorted.length,
-        itemBuilder: (context, index) {
-          final operation = sorted[index];
-          return BomOperationCard(
-            operation: operation,
-            onEdit: () => _editOperation(operation),
-            onDelete: () => _confirmDeleteOperation(operation),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyTab({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 48,
-            color: context.textSecondaryColor.withOpacity(0.5),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: AppTypography.bodyLarge.copyWith(
-              color: context.textSecondaryColor,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            subtitle,
-            style: AppTypography.bodySmall.copyWith(
-              color: context.textSecondaryColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Добавить', style: AppTypography.h3),
-              const SizedBox(height: AppSpacing.md),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.info.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: const Icon(Icons.inventory_2_outlined, color: AppColors.info),
-                ),
-                title: const Text('Материал'),
-                subtitle: const Text('Добавить материал в спецификацию'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addItem();
-                },
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: const Icon(Icons.build_outlined, color: AppColors.success),
-                ),
-                title: const Text('Операция'),
-                subtitle: const Text('Добавить производственную операцию'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addOperation();
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _createBom() async {
-    // Create empty BOM first, then add items/operations
     try {
       final bom = await ref.read(bomNotifierProvider.notifier).createBom(
         modelId: widget.model.id,
         items: [],
-        operations: [],
       );
       setState(() => _bom = bom);
       if (mounted) {
@@ -417,7 +284,7 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Удалить материал?'),
-        content: Text('Удалить "${item.material?.name ?? 'материал'}" из спецификации?'),
+        content: Text('Удалить "${item.material?.name ?? 'материал'}" из списка?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -452,95 +319,6 @@ class _BomDetailScreenState extends ConsumerState<BomDetailScreen>
       _loadBom();
       if (mounted) {
         AppToast.success(context, 'Материал удалён');
-      }
-    } catch (e) {
-      if (mounted) {
-        AppToast.error(context, 'Ошибка удаления: $e');
-      }
-    }
-  }
-
-  Future<void> _addOperation() async {
-    if (_bom == null) return;
-
-    final nextSequence = (_bom!.operations.isEmpty
-            ? 0
-            : _bom!.operations.map((o) => o.sequence).reduce((a, b) => a > b ? a : b)) +
-        1;
-
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BomOperationFormScreen(
-          bom: _bom!,
-          nextSequence: nextSequence,
-        ),
-      ),
-    );
-
-    if (result == true) {
-      _loadBom();
-    }
-  }
-
-  Future<void> _editOperation(BomOperation operation) async {
-    if (_bom == null) return;
-
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BomOperationFormScreen(
-          bom: _bom!,
-          operation: operation,
-        ),
-      ),
-    );
-
-    if (result == true) {
-      _loadBom();
-    }
-  }
-
-  void _confirmDeleteOperation(BomOperation operation) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Удалить операцию?'),
-        content: Text('Удалить "${operation.name}" из спецификации?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteOperation(operation);
-            },
-            child: Text('Удалить', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _deleteOperation(BomOperation operation) async {
-    if (_bom == null) return;
-
-    try {
-      // Remove operation and update BOM
-      final updatedOperations = _bom!.operations
-          .where((o) => o.id != operation.id)
-          .map((o) => o.toJson())
-          .toList();
-
-      await ref.read(bomNotifierProvider.notifier).updateBom(
-        _bom!.id,
-        operations: updatedOperations,
-      );
-      _loadBom();
-      if (mounted) {
-        AppToast.success(context, 'Операция удалена');
       }
     } catch (e) {
       if (mounted) {

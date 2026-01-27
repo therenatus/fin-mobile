@@ -239,7 +239,7 @@ class _ClientEditOrderScreenState extends ConsumerState<ClientEditOrderScreen> {
                     style: AppTypography.bodyMedium,
                   ),
                   Text(
-                    '${(order.model.basePrice! * _quantity).toStringAsFixed(0)} ₽',
+                    '${(order.model.basePrice! * _quantity).toStringAsFixed(0)} сом',
                     style: AppTypography.h3.copyWith(
                       color: AppColors.primary,
                     ),

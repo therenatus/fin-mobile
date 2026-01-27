@@ -139,10 +139,10 @@ class PurchaseItem {
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedUnitPrice => '${unitPrice.toStringAsFixed(2)} ₽';
+  String get formattedUnitPrice => '${unitPrice.toStringAsFixed(2)} сом';
 
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedTotalPrice => '${totalPrice.toStringAsFixed(2)} ₽';
+  String get formattedTotalPrice => '${totalPrice.toStringAsFixed(2)} сом';
 
   factory PurchaseItem.fromJson(Map<String, dynamic> json) =>
       _$PurchaseItemFromJson(json);
@@ -197,7 +197,7 @@ class Purchase {
   });
 
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get formattedTotalAmount => '${totalAmount.toStringAsFixed(2)} ₽';
+  String get formattedTotalAmount => '${totalAmount.toStringAsFixed(2)} сом';
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   bool get canEdit => status == PurchaseStatus.draft;

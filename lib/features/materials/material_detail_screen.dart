@@ -7,6 +7,7 @@ import '../../core/riverpod/providers.dart';
 import '../../core/models/material.dart' as mat;
 import '../../core/models/stock_movement.dart';
 import '../../core/widgets/stock_indicator.dart';
+import 'material_form_screen.dart';
 import 'stock_adjustment_screen.dart';
 
 class MaterialDetailScreen extends ConsumerStatefulWidget {
@@ -100,6 +101,63 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
       setState(() => _material = result);
       _loadMovements();
     }
+  }
+
+  void _openEdit() async {
+    if (_material == null) return;
+
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MaterialFormScreen(material: _material),
+      ),
+    );
+
+    if (result == true) {
+      _loadMaterial();
+    }
+  }
+
+  void _confirmDelete() {
+    if (_material == null) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить материал?'),
+        content: Text('Материал "${_material!.name}" будет удалён. Это действие нельзя отменить.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                final api = ref.read(apiServiceProvider);
+                await api.deleteMaterial(_material!.id);
+                if (mounted) {
+                  ref.read(materialsNotifierProvider.notifier).refresh();
+                  Navigator.pop(context);
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Ошибка удаления: $e'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showConsumeDialog() {
@@ -279,32 +337,32 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
             PopupMenuButton<String>(
               onSelected: (value) {
                 switch (value) {
-                  case 'adjust':
-                    _openAdjustment();
+                  case 'edit':
+                    _openEdit();
                     break;
-                  case 'consume':
-                    _showConsumeDialog();
+                  case 'delete':
+                    _confirmDelete();
                     break;
                 }
               },
               itemBuilder: (context) => [
                 const PopupMenuItem(
-                  value: 'adjust',
+                  value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.tune),
+                      Icon(Icons.edit_outlined),
                       SizedBox(width: 12),
-                      Text('Корректировка'),
+                      Text('Редактировать'),
                     ],
                   ),
                 ),
                 const PopupMenuItem(
-                  value: 'consume',
+                  value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.remove_circle_outline),
+                      Icon(Icons.delete_outline, color: AppColors.error),
                       SizedBox(width: 12),
-                      Text('Списать'),
+                      Text('Удалить', style: TextStyle(color: AppColors.error)),
                     ],
                   ),
                 ),
@@ -538,6 +596,42 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
               ),
             ),
           ],
+
+          // Action buttons
+          const SizedBox(height: AppSpacing.lg),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _openAdjustment,
+                  icon: const Icon(Icons.add_circle_outline, color: AppColors.success),
+                  label: Text(
+                    'Приход',
+                    style: TextStyle(color: AppColors.success),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: AppColors.success.withOpacity(0.5)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _showConsumeDialog,
+                  icon: const Icon(Icons.remove_circle_outline, color: AppColors.error),
+                  label: Text(
+                    'Списание',
+                    style: TextStyle(color: AppColors.error),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: AppColors.error.withOpacity(0.5)),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -585,12 +679,12 @@ class _MaterialDetailScreenState extends ConsumerState<MaterialDetailScreen> {
           if (_material!.costPrice != null)
             _buildDetailRow(
               'Себестоимость',
-              '${_material!.costPrice!.toStringAsFixed(2)} ₽',
+              '${_material!.costPrice!.toStringAsFixed(2)} сом',
             ),
           if (_material!.sellPrice != null)
             _buildDetailRow(
               'Цена продажи',
-              '${_material!.sellPrice!.toStringAsFixed(2)} ₽',
+              '${_material!.sellPrice!.toStringAsFixed(2)} сом',
             ),
           if (_material!.barcode != null)
             _buildDetailRow('Штрих-код', _material!.barcode!),

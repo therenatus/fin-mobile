@@ -195,7 +195,7 @@ class ExecutorRoleDropdown extends StatelessWidget {
   }
 }
 
-/// Категории моделей с иконками
+/// Категории моделей — горизонтальные чипсы с иконками
 class CategoryDropdown extends StatelessWidget {
   final String? value;
   final List<String> categories;
@@ -250,22 +250,41 @@ class CategoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final options = categories.map((category) {
-      return DropdownOption<String>(
-        value: category,
-        label: category,
-        icon: _getCategoryIcon(category),
-        iconColor: _getCategoryColor(category),
-      );
-    }).toList();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: categories.map((category) {
+        final isSelected = value == category;
+        final color = _getCategoryColor(category);
+        final icon = _getCategoryIcon(category);
 
-    return StyledDropdown<String>(
-      value: value,
-      options: options,
-      onChanged: onChanged,
-      label: 'Категория',
-      hint: 'Выберите категорию',
-      prefixIcon: Icons.category_outlined,
+        return ChoiceChip(
+          label: Text(category),
+          avatar: Icon(
+            icon,
+            size: 18,
+            color: isSelected ? Colors.white : color,
+          ),
+          selected: isSelected,
+          onSelected: (selected) {
+            onChanged(selected ? category : null);
+          },
+          selectedColor: color,
+          backgroundColor: context.surfaceColor,
+          labelStyle: AppTypography.bodyMedium.copyWith(
+            color: isSelected ? Colors.white : context.textPrimaryColor,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            side: BorderSide(
+              color: isSelected ? color : context.borderColor,
+            ),
+          ),
+          showCheckmark: false,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        );
+      }).toList(),
     );
   }
 }

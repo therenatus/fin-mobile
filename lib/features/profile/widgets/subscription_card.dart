@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_theme.dart';
 
-/// Subscription info card widget
 class SubscriptionCard extends StatelessWidget {
   final String planName;
   final String status;
@@ -73,115 +73,127 @@ class SubscriptionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Plan header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withOpacity(0.7),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _planIcon,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      planName,
-                      style: AppTypography.h4.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        _statusText,
-                        style: AppTypography.labelSmall.copyWith(
-                          color: _statusColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (expiresAt != null)
-                Text(
-                  'до ${expiresAt!.day.toString().padLeft(2, '0')}.${expiresAt!.month.toString().padLeft(2, '0')}.${expiresAt!.year}',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                ),
-            ],
-          ),
+          _buildPlanHeader(context),
           const SizedBox(height: AppSpacing.lg),
+          _buildUsageStats(context, isUnlimitedClients, isUnlimitedEmployees),
+          const SizedBox(height: AppSpacing.md),
+          _buildUpgradeButton(),
+        ],
+      ),
+    );
+  }
 
-          // Usage stats
-          Row(
+  Widget _buildPlanHeader(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary,
+                AppColors.primary.withOpacity(0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            _planIcon,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _UsageStat(
-                  label: 'Заказчики',
-                  current: currentClients,
-                  limit: clientLimit,
-                  isUnlimited: isUnlimitedClients,
+              Text(
+                planName,
+                style: AppTypography.h4.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _UsageStat(
-                  label: 'Сотрудники',
-                  current: currentEmployees,
-                  limit: employeeLimit,
-                  isUnlimited: isUnlimitedEmployees,
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  _statusText,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: _statusColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-
-          // Upgrade button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: onUpgrade,
-              icon: const Icon(Icons.arrow_forward),
-              label: const Text('Управление подпиской'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+        ),
+        if (expiresAt != null)
+          Text(
+            'до ${expiresAt!.day.toString().padLeft(2, '0')}.${expiresAt!.month.toString().padLeft(2, '0')}.${expiresAt!.year}',
+            style: AppTypography.bodySmall.copyWith(
+              color: context.textSecondaryColor,
             ),
           ),
-        ],
+      ],
+    );
+  }
+
+  Widget _buildUsageStats(
+    BuildContext context,
+    bool isUnlimitedClients,
+    bool isUnlimitedEmployees,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: UsageStat(
+            label: 'Заказчики',
+            current: currentClients,
+            limit: clientLimit,
+            isUnlimited: isUnlimitedClients,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: UsageStat(
+            label: 'Сотрудники',
+            current: currentEmployees,
+            limit: employeeLimit,
+            isUnlimited: isUnlimitedEmployees,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUpgradeButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onUpgrade,
+        icon: const Icon(Icons.arrow_forward),
+        label: const Text('Управление подпиской'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
       ),
     );
   }
 }
 
-class _UsageStat extends StatelessWidget {
+class UsageStat extends StatelessWidget {
   final String label;
   final int current;
   final int limit;
   final bool isUnlimited;
 
-  const _UsageStat({
+  const UsageStat({
+    super.key,
     required this.label,
     required this.current,
     required this.limit,

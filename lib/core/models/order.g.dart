@@ -100,10 +100,10 @@ Map<String, dynamic> _$OrdersResponseToJson(OrdersResponse instance) =>
     };
 
 OrdersMeta _$OrdersMetaFromJson(Map<String, dynamic> json) => OrdersMeta(
-  page: (json['page'] as num).toInt(),
-  perPage: (json['perPage'] as num).toInt(),
-  total: (json['total'] as num).toInt(),
-  totalPages: (json['totalPages'] as num).toInt(),
+  page: (json['page'] as num?)?.toInt() ?? 1,
+  perPage: (json['perPage'] as num?)?.toInt() ?? 20,
+  total: (json['total'] as num?)?.toInt() ?? 0,
+  totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$OrdersMetaToJson(OrdersMeta instance) =>

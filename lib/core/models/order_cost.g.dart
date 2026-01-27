@@ -18,12 +18,8 @@ OrderCost _$OrderCostFromJson(Map<String, dynamic> json) => OrderCost(
   actualOverheadCost: (json['actualOverheadCost'] as num).toDouble(),
   actualTotalCost: (json['actualTotalCost'] as num).toDouble(),
   variancePct: (json['variancePct'] as num).toDouble(),
-  createdAt: json['createdAt'] == null
-      ? null
-      : DateTime.parse(json['createdAt'] as String),
-  updatedAt: json['updatedAt'] == null
-      ? null
-      : DateTime.parse(json['updatedAt'] as String),
+  createdAt: nullableDateTimeFromJson(json['createdAt']),
+  updatedAt: nullableDateTimeFromJson(json['updatedAt']),
 );
 
 Map<String, dynamic> _$OrderCostToJson(OrderCost instance) => <String, dynamic>{
@@ -38,9 +34,9 @@ Map<String, dynamic> _$OrderCostToJson(OrderCost instance) => <String, dynamic>{
   'actualOverheadCost': instance.actualOverheadCost,
   'actualTotalCost': instance.actualTotalCost,
   'variancePct': instance.variancePct,
-  if (instance.createdAt?.toIso8601String() case final value?)
+  if (nullableDateTimeToJson(instance.createdAt) case final value?)
     'createdAt': value,
-  if (instance.updatedAt?.toIso8601String() case final value?)
+  if (nullableDateTimeToJson(instance.updatedAt) case final value?)
     'updatedAt': value,
 };
 
@@ -73,8 +69,8 @@ Map<String, dynamic> _$ProfitabilityItemToJson(ProfitabilityItem instance) =>
 ProfitabilityReport _$ProfitabilityReportFromJson(
   Map<String, dynamic> json,
 ) => ProfitabilityReport(
-  startDate: DateTime.parse(_readStartDate(json, 'startDate') as String),
-  endDate: DateTime.parse(_readEndDate(json, 'endDate') as String),
+  startDate: dateTimeFromJson(_readStartDate(json, 'startDate')),
+  endDate: dateTimeFromJson(_readEndDate(json, 'endDate')),
   totalOrders: (_readTotalOrders(json, 'totalOrders') as num?)?.toInt() ?? 0,
   totalRevenue:
       (_readTotalRevenue(json, 'totalRevenue') as num?)?.toDouble() ?? 0.0,
@@ -127,8 +123,8 @@ Map<String, dynamic> _$VarianceItemToJson(VarianceItem instance) =>
 VarianceReport _$VarianceReportFromJson(
   Map<String, dynamic> json,
 ) => VarianceReport(
-  startDate: DateTime.parse(_readVarStartDate(json, 'startDate') as String),
-  endDate: DateTime.parse(_readVarEndDate(json, 'endDate') as String),
+  startDate: dateTimeFromJson(_readVarStartDate(json, 'startDate')),
+  endDate: dateTimeFromJson(_readVarEndDate(json, 'endDate')),
   totalOrders: (_readVarTotalOrders(json, 'totalOrders') as num?)?.toInt() ?? 0,
   totalPlanned:
       (_readVarTotalPlanned(json, 'totalPlanned') as num?)?.toDouble() ?? 0.0,

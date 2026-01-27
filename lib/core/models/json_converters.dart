@@ -25,7 +25,7 @@ class TransactionTypeConverter implements JsonConverter<TransactionType, String>
 }
 
 /// Helper for reading id field that may come as 'id' or '_id' from MongoDB
-String? readId(Map<dynamic, dynamic> json, String key) {
+Object? readId(Map<dynamic, dynamic> json, String key) {
   return json['id'] as String? ?? json['_id'] as String?;
 }
 
@@ -53,15 +53,45 @@ class DateTimeConverter implements JsonConverter<DateTime, String> {
 
 // ============ Helper Functions for @JsonKey(fromJson:, toJson:) ============
 
-/// Parse DateTime from ISO8601 string
-DateTime dateTimeFromJson(String json) => DateTime.parse(json);
+/// Parse DateTime from various formats (String, List, Map with $date)
+DateTime dateTimeFromJson(dynamic json) {
+  if (json == null) {
+    return DateTime.now();
+  }
+  if (json is String) {
+    return DateTime.parse(json);
+  }
+  if (json is List && json.isNotEmpty) {
+    // Handle array format like ["2024-01-15T10:30:00.000Z"]
+    return dateTimeFromJson(json.first);
+  }
+  if (json is Map) {
+    // Handle MongoDB's {$date: "..."} format
+    if (json['\$date'] != null) {
+      return dateTimeFromJson(json['\$date']);
+    }
+    // Handle {_seconds: ..., _nanoseconds: ...} format
+    if (json['_seconds'] != null) {
+      return DateTime.fromMillisecondsSinceEpoch(
+        (json['_seconds'] as int) * 1000,
+      );
+    }
+  }
+  if (json is int) {
+    // Unix timestamp in milliseconds
+    return DateTime.fromMillisecondsSinceEpoch(json);
+  }
+  throw FormatException('Cannot parse DateTime from: $json (${json.runtimeType})');
+}
 
 /// Convert DateTime to ISO8601 string
 String dateTimeToJson(DateTime date) => date.toIso8601String();
 
-/// Parse nullable DateTime from ISO8601 string
-DateTime? nullableDateTimeFromJson(String? json) =>
-    json != null ? DateTime.parse(json) : null;
+/// Parse nullable DateTime from various formats
+DateTime? nullableDateTimeFromJson(dynamic json) {
+  if (json == null) return null;
+  return dateTimeFromJson(json);
+}
 
 /// Convert nullable DateTime to ISO8601 string
 String? nullableDateTimeToJson(DateTime? date) => date?.toIso8601String();

@@ -34,7 +34,7 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _loadData();
+      Future.microtask(() => _loadData());
     }
   }
 
@@ -346,11 +346,11 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen> {
 
   String _formatCurrency(double amount) {
     if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M ₽';
+      return '${(amount / 1000000).toStringAsFixed(1)}M сом';
     } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K ₽';
+      return '${(amount / 1000).toStringAsFixed(0)}K сом';
     }
-    return '${amount.toStringAsFixed(0)} ₽';
+    return '${amount.toStringAsFixed(0)} сом';
   }
 }
 
@@ -551,7 +551,7 @@ class _TransactionCard extends StatelessWidget {
           ),
         ),
         trailing: Text(
-          '${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(0)} ₽',
+          '${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(0)} сом',
           style: AppTypography.bodyLarge.copyWith(
             color: color,
             fontWeight: FontWeight.w700,
@@ -657,7 +657,7 @@ class _TransactionDetailsSheet extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(0)} ₽',
+                      '${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(0)} сом',
                       style: AppTypography.h3.copyWith(
                         color: color,
                         fontWeight: FontWeight.w700,

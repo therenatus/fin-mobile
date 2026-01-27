@@ -132,7 +132,7 @@ class MaterialCard extends StatelessWidget {
                         const Spacer(),
                         if (material.costPrice != null)
                           Text(
-                            '${material.costPrice!.toStringAsFixed(0)} ₽',
+                            '${material.costPrice!.toStringAsFixed(0)} сом',
                             style: AppTypography.bodySmall.copyWith(
                               color: context.textSecondaryColor,
                             ),
